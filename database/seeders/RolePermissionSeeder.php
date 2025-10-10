@@ -30,28 +30,6 @@ class RolePermissionSeeder extends Seeder
     private function createPermissions(): void
     {
         $permissions = [
-            // Permisos de eventos
-            [
-                'name' => 'view events',
-                'description' => 'Permite ver eventos'
-            ],
-            [
-                'name' => 'create events',
-                'description' => 'Permite crear eventos'
-            ],
-            [
-                'name' => 'edit events',
-                'description' => 'Permite editar eventos'
-            ],
-            [
-                'name' => 'delete events',
-                'description' => 'Permite eliminar eventos'
-            ],
-            [
-                'name' => 'import events',
-                'description' => 'Permite importar eventos'
-            ],
-
             // Permisos de usuarios
             [
                 'name' => 'view users',
@@ -106,7 +84,91 @@ class RolePermissionSeeder extends Seeder
                 'description' => 'Permite eliminar permisos'
             ],
 
-            // Permisos de servicios (NUEVOS)
+            // Permisos del sistema
+            [
+                'name' => 'manage permissions',
+                'description' => 'Permite gestionar permisos'
+            ],
+            [
+                'name' => 'view dashboard',
+                'description' => 'Permite ver el dashboard'
+            ],
+
+            // ========== NUEVOS PERMISOS PARA PRODUCTOS ==========
+            [
+                'name' => 'view products',
+                'description' => 'Permite ver productos'
+            ],
+            [
+                'name' => 'create products',
+                'description' => 'Permite crear productos'
+            ],
+            [
+                'name' => 'edit products',
+                'description' => 'Permite editar productos'
+            ],
+            [
+                'name' => 'delete products',
+                'description' => 'Permite eliminar productos'
+            ],
+            [
+                'name' => 'manage products',
+                'description' => 'Permite gestionar productos'
+            ],
+
+            // ========== NUEVOS PERMISOS PARA ÓRDENES DE COMPRA ==========
+            [
+                'name' => 'view purchase_orders',
+                'description' => 'Permite ver órdenes de compra'
+            ],
+            [
+                'name' => 'create purchase_orders',
+                'description' => 'Permite crear órdenes de compra'
+            ],
+            [
+                'name' => 'edit purchase_orders',
+                'description' => 'Permite editar órdenes de compra'
+            ],
+            [
+                'name' => 'delete purchase_orders',
+                'description' => 'Permite eliminar órdenes de compra'
+            ],
+            [
+                'name' => 'approve purchase_orders',
+                'description' => 'Permite aprobar órdenes de compra'
+            ],
+            [
+                'name' => 'receive purchase_orders',
+                'description' => 'Permite recibir órdenes de compra'
+            ],
+            [
+                'name' => 'manage purchase_orders',
+                'description' => 'Permite gestionar órdenes de compra'
+            ],
+
+            // ========== NUEVOS PERMISOS PARA PROVEEDORES ==========
+            [
+                'name' => 'view suppliers',
+                'description' => 'Permite ver proveedores'
+            ],
+            [
+                'name' => 'create suppliers',
+                'description' => 'Permite crear proveedores'
+            ],
+            [
+                'name' => 'edit suppliers',
+                'description' => 'Permite editar proveedores'
+            ],
+            [
+                'name' => 'delete suppliers',
+                'description' => 'Permite eliminar proveedores'
+            ],
+            [
+                'name' => 'manage suppliers',
+                'description' => 'Permite gestionar proveedores'
+            ],
+
+            // ========== PERMISOS EXISTENTES PARA SERVICIOS Y VÍDEOS ==========
             [
                 'name' => 'view services',
                 'description' => 'Permite ver servicios'
@@ -123,8 +185,11 @@ class RolePermissionSeeder extends Seeder
                 'name' => 'delete services',
                 'description' => 'Permite eliminar servicios'
             ],
+            [
+                'name' => 'manage services',
+                'description' => 'Permite gestionar servicios'
+            ],
 
-            // Permisos de vídeos (NUEVOS)
             [
                 'name' => 'view videos',
                 'description' => 'Permite ver vídeos'
@@ -141,15 +206,69 @@ class RolePermissionSeeder extends Seeder
                 'name' => 'delete videos',
                 'description' => 'Permite eliminar vídeos'
             ],
-
-            // Permisos del sistema
             [
-                'name' => 'manage permissions',
-                'description' => 'Permite gestionar permisos'
+                'name' => 'manage videos',
+                'description' => 'Permite gestionar vídeos'
+            ],
+
+            // ========== PERMISOS EXISTENTES PARA EVENTOS ==========
+            [
+                'name' => 'view events',
+                'description' => 'Permite ver eventos'
             ],
             [
-                'name' => 'view dashboard',
-                'description' => 'Permite ver el dashboard'
+                'name' => 'create events',
+                'description' => 'Permite crear eventos'
+            ],
+            [
+                'name' => 'edit events',
+                'description' => 'Permite editar eventos'
+            ],
+            [
+                'name' => 'delete events',
+                'description' => 'Permite eliminar eventos'
+            ],
+            [
+                'name' => 'manage events',
+                'description' => 'Permite gestionar eventos'
+            ],
+
+            // ========== PERMISOS PARA REPORTES ==========
+            [
+                'name' => 'view reports',
+                'description' => 'Permite ver reportes'
+            ],
+            [
+                'name' => 'generate reports',
+                'description' => 'Permite generar reportes'
+            ],
+            [
+                'name' => 'export reports',
+                'description' => 'Permite exportar reportes'
+            ],
+
+            // ========== PERMISOS PARA INVENTARIO ==========
+            [
+                'name' => 'view inventory',
+                'description' => 'Permite ver inventario'
+            ],
+            [
+                'name' => 'manage inventory',
+                'description' => 'Permite gestionar inventario'
+            ],
+            [
+                'name' => 'adjust inventory',
+                'description' => 'Permite ajustar inventario'
+            ],
+
+            // ========== PERMISOS PARA CONFIGURACIÓN ==========
+            [
+                'name' => 'view settings',
+                'description' => 'Permite ver configuración'
+            ],
+            [
+                'name' => 'manage settings',
+                'description' => 'Permite gestionar configuración'
             ]
         ];
 
@@ -178,6 +297,21 @@ class RolePermissionSeeder extends Seeder
                 'name' => 'user',
                 'description' => 'Usuario regular del sistema',
                 'is_system' => false
+            ],
+            [
+                'name' => 'manager',
+                'description' => 'Gerente con permisos de gestión',
+                'is_system' => false
+            ],
+            [
+                'name' => 'purchaser',
+                'description' => 'Comprador con permisos de órdenes de compra',
+                'is_system' => false
+            ],
+            [
+                'name' => 'viewer',
+                'description' => 'Usuario con permisos de solo lectura',
+                'is_system' => false
             ]
         ];
 
@@ -200,16 +334,103 @@ class RolePermissionSeeder extends Seeder
         $adminRole = Role::where('name', 'admin')->first();
         $adminRole->givePermissionTo(Permission::all());
 
-        // Rol User - Permisos básicos de eventos
-        $userRole = Role::where('name', 'user')->first();
-        $userRole->givePermissionTo([
+        // Rol Manager - Permisos de gestión
+        $managerRole = Role::where('name', 'manager')->first();
+        $managerRole->givePermissionTo([
+            'view dashboard',
+            'view users',
+            'view products',
+            'view purchase_orders',
+            'view suppliers',
+            'view services',
+            'view videos',
             'view events',
+            'view reports',
+            'view inventory',
+            'view settings',
+            
+            'create products',
+            'edit products',
+            'manage products',
+            
+            'create purchase_orders',
+            'edit purchase_orders',
+            'approve purchase_orders',
+            'receive purchase_orders',
+            'manage purchase_orders',
+            
+            'create suppliers',
+            'edit suppliers',
+            'manage suppliers',
+            
+            'create services',
+            'edit services',
+            'manage services',
+            
+            'create videos',
+            'edit videos',
+            'manage videos',
+            
             'create events',
             'edit events',
-            'delete events',
+            'manage events',
+            
+            'generate reports',
+            'export reports',
+            
+            'manage inventory',
+            'adjust inventory',
+            
+            'manage settings'
+        ]);
+
+        // Rol Purchaser - Permisos de compras
+        $purchaserRole = Role::where('name', 'purchaser')->first();
+        $purchaserRole->givePermissionTo([
             'view dashboard',
-            'view services', // Puede ver servicios
-            'view videos'    // Puede ver vídeos
+            'view products',
+            'view purchase_orders',
+            'view suppliers',
+            'view inventory',
+            
+            'create purchase_orders',
+            'edit purchase_orders',
+            'manage purchase_orders',
+            
+            'view suppliers',
+            'create suppliers',
+            'edit suppliers',
+            
+            'view products',
+            'create products',
+            'edit products',
+            
+            'view inventory',
+            'manage inventory'
+        ]);
+
+        // Rol User - Permisos básicos
+        $userRole = Role::where('name', 'user')->first();
+        $userRole->givePermissionTo([
+            'view dashboard',
+            'view products',
+            'view services',
+            'view videos',
+            'view events'
+        ]);
+
+        // Rol Viewer - Solo lectura
+        $viewerRole = Role::where('name', 'viewer')->first();
+        $viewerRole->givePermissionTo([
+            'view dashboard',
+            'view products',
+            'view purchase_orders',
+            'view suppliers',
+            'view services',
+            'view videos',
+            'view events',
+            'view reports',
+            'view inventory'
         ]);
 
         $this->command->info('Permissions assigned to roles successfully.');
@@ -220,7 +441,7 @@ class RolePermissionSeeder extends Seeder
      */
     private function createAdminUser(): void
     {
-        $adminEmail = 'admin@blupage.com';
+        $adminEmail = 'leoordev@gmail.com';
         $adminPassword = 'MguY!x0djuBh';
 
         // Buscar usuario admin o crear uno nuevo

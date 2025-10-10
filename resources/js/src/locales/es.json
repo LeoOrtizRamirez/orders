@@ -518,5 +518,105 @@
         "loading": "Cargando notas...",
         "add_note": "Agregar nota",
         "delete_note": "Eliminar nota"
+    },
+    "products_page": {
+        "title": "Gestión de Productos",
+        "add_product_btn": "Agregar Producto",
+        "search_placeholder": "Buscar productos...",
+        "filters": {
+            "all_categories": "Todas las categorías",
+            "all_stock": "Todo el stock",
+            "low_stock": "Stock bajo",
+            "out_of_stock": "Sin stock"
+        },
+        "stats": {
+            "total_products": "Total Productos",
+            "active_products": "Activos",
+            "low_stock": "Stock Bajo",
+            "out_of_stock": "Sin Stock"
+        },
+        "table": {
+            "sku": "SKU",
+            "product": "Producto",
+            "category": "Categoría",
+            "price": "Precio",
+            "cost": "Costo",
+            "stock": "Stock",
+            "min_stock": "Stock Mín.",
+            "status": "Estado",
+            "actions": "Acciones"
+        },
+        "status": {
+            "active": "Activo",
+            "inactive": "Inactivo"
+        },
+        "actions": {
+            "edit": "Editar",
+            "delete": "Eliminar",
+            "activate": "Activar",
+            "deactivate": "Desactivar",
+            "view": "Ver"
+        },
+        "alerts": {
+            "loading_error": "Error al cargar los productos. Por favor, intente nuevamente.",
+            "save_success": "Producto guardado satisfactoriamente!",
+            "update_success": "Producto actualizado satisfactoriamente!",
+            "delete_success": "Producto eliminado satisfactoriamente!",
+            "status_toggle_success": "Producto {status} satisfactoriamente!",
+            "validation_errors": "Por favor corrija los errores de validación.",
+            "save_error": "No se pudo guardar el producto. Inténtalo de nuevo.",
+            "delete_error": "Error al eliminar el producto.",
+            "status_error": "Error al cambiar el estado del producto.",
+            "cannot_delete": "No se puede eliminar el producto porque tiene órdenes asociadas",
+            "no_products": "No se encontraron productos"
+        },
+        "modal": {
+            "add_title": "Agregar Producto",
+            "edit_title": "Editar Producto",
+            "fields": {
+                "name": "Nombre del Producto",
+                "sku": "SKU",
+                "description": "Descripción",
+                "price": "Precio de Venta",
+                "cost": "Costo",
+                "stock": "Stock Actual",
+                "min_stock": "Stock Mínimo",
+                "reorder_point": "Punto de Reorden",
+                "unit": "Unidad",
+                "category": "Categoría",
+                "brand": "Marca",
+                "active": "Producto Activo",
+                "order": "Orden"
+            },
+            "placeholders": {
+                "name": "Ej: Laptop Dell XPS 13",
+                "sku": "Se generará automáticamente",
+                "description": "Descripción del producto...",
+                "price": "0.00",
+                "cost": "0.00",
+                "stock": "0",
+                "min_stock": "10",
+                "reorder_point": "5",
+                "unit": "Ej: unidad, kg, litro",
+                "category": "Ej: Electrónicos, Ropa",
+                "brand": "Ej: Dell, Samsung",
+                "order": "0"
+            },
+            "buttons": {
+                "cancel": "Cancelar",
+                "add": "Agregar",
+                "update": "Actualizar",
+                "saving": "Guardando..."
+            }
+        },
+        "delete_confirm": {
+            "title": "¿Estás seguro?",
+            "text": "¡No podrás revertir esta acción!",
+            "confirm": "Sí, ¡elimínalo!",
+            "cancel": "Cancelar"
+        },
+        "no_description": "Sin descripción",
+        "unit_default": "unid",
+        "no_products": "No se encontraron productos"
     }
 }

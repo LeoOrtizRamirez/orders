@@ -104,13 +104,6 @@ const routes: RouteRecordRaw[] = [
         meta: { requiresAuth: true }
     },
 
-    {
-        path: '/services/:serviceId/videos',
-        name: 'service-videos',
-        component: () => import(/* webpackChunkName: "apps-services" */ '../views/apps/services/ServiceVideos.vue'),
-        meta: { requiresAuth: true }
-    },
-
     // components
     {
         path: '/components/tabs',

@@ -518,5 +518,105 @@
         "loading": "Loading notes...",
         "add_note": "Add note",
         "delete_note": "Delete note"
+    },
+    "products_page": {
+        "title": "Products Management",
+        "add_product_btn": "Add Product",
+        "search_placeholder": "Search products...",
+        "filters": {
+            "all_categories": "All categories",
+            "all_stock": "All stock",
+            "low_stock": "Low stock",
+            "out_of_stock": "Out of stock"
+        },
+        "stats": {
+            "total_products": "Total Products",
+            "active_products": "Active",
+            "low_stock": "Low Stock",
+            "out_of_stock": "Out of Stock"
+        },
+        "table": {
+            "sku": "SKU",
+            "product": "Product",
+            "category": "Category",
+            "price": "Price",
+            "cost": "Cost",
+            "stock": "Stock",
+            "min_stock": "Min. Stock",
+            "status": "Status",
+            "actions": "Actions"
+        },
+        "status": {
+            "active": "Active",
+            "inactive": "Inactive"
+        },
+        "actions": {
+            "edit": "Edit",
+            "delete": "Delete",
+            "activate": "Activate",
+            "deactivate": "Deactivate",
+            "view": "View"
+        },
+        "alerts": {
+            "loading_error": "Error loading products. Please try again.",
+            "save_success": "Product saved successfully!",
+            "update_success": "Product updated successfully!",
+            "delete_success": "Product deleted successfully!",
+            "status_toggle_success": "Product {status} successfully!",
+            "validation_errors": "Please correct the validation errors.",
+            "save_error": "Could not save the product. Please try again.",
+            "delete_error": "Error deleting the product.",
+            "status_error": "Error changing product status.",
+            "cannot_delete": "Cannot delete the product because it has associated orders",
+            "no_products": "No products found"
+        },
+        "modal": {
+            "add_title": "Add Product",
+            "edit_title": "Edit Product",
+            "fields": {
+                "name": "Product Name",
+                "sku": "SKU",
+                "description": "Description",
+                "price": "Sale Price",
+                "cost": "Cost",
+                "stock": "Current Stock",
+                "min_stock": "Minimum Stock",
+                "reorder_point": "Reorder Point",
+                "unit": "Unit",
+                "category": "Category",
+                "brand": "Brand",
+                "active": "Active Product",
+                "order": "Order"
+            },
+            "placeholders": {
+                "name": "Ex: Dell XPS 13 Laptop",
+                "sku": "Will be generated automatically",
+                "description": "Product description...",
+                "price": "0.00",
+                "cost": "0.00",
+                "stock": "0",
+                "min_stock": "10",
+                "reorder_point": "5",
+                "unit": "Ex: unit, kg, liter",
+                "category": "Ex: Electronics, Clothing",
+                "brand": "Ex: Dell, Samsung",
+                "order": "0"
+            },
+            "buttons": {
+                "cancel": "Cancel",
+                "add": "Add",
+                "update": "Update",
+                "saving": "Saving..."
+            }
+        },
+        "delete_confirm": {
+            "title": "Are you sure?",
+            "text": "You won't be able to revert this action!",
+            "confirm": "Yes, delete it!",
+            "cancel": "Cancel"
+        },
+        "no_description": "No description",
+        "unit_default": "unit",
+        "no_products": "No products found"
     }
 }

@@ -5,6 +5,8 @@ use App\Http\Controllers\ProfileMetricController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\PermissionController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\UserController;
@@ -135,5 +137,28 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::put('/user/{userId}/{noteId}', [UserNoteController::class, 'update']);
         Route::delete('/user/{userId}/{noteId}', [UserNoteController::class, 'destroy']);
     });
+
+    // Rutas de productos
+    Route::prefix('products')->group(function () {
+        Route::get('/active/list', [ProductController::class, 'activeProducts']);
+        Route::get('/low-stock', [ProductController::class, 'lowStockProducts']);
+        Route::get('/categories', [ProductController::class, 'categories']);
+        Route::put('/{id}/toggle-status', [ProductController::class, 'toggleStatus']);
+        Route::get('/sku/{sku}', [ProductController::class, 'getProductBySku']);
+    });
+    Route::apiResource('products', ProductController::class);
+
+    // Rutas de órdenes de compra
+    Route::apiResource('purchase-orders', PurchaseOrderController::class);
+    Route::prefix('purchase-orders')->group(function () {
+        Route::get('/pending/list', [PurchaseOrderController::class, 'pending']);
+        Route::put('/{id}/approve', [PurchaseOrderController::class, 'approve']);
+        Route::put('/{id}/reject', [PurchaseOrderController::class, 'reject']);
+        Route::put('/{id}/mark-ordered', [PurchaseOrderController::class, 'markAsOrdered']);
+        Route::put('/{id}/receive', [PurchaseOrderController::class, 'receive']);
+    });
+
+    // Rutas de proveedores (si decides implementarlos)
+    //Route::apiResource('suppliers', SupplierController::class);
     
 });
