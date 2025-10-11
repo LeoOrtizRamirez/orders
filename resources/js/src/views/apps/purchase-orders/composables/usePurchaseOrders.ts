@@ -84,7 +84,18 @@ export function usePurchaseOrders() {
             if (filters.value.supplier_id) queryParams.append('supplier_id', filters.value.supplier_id);
 
             const response = await axios.get(`/api/purchase-orders?${queryParams}`);
-            ordersList.value = response.data.data || response.data;
+            
+            // Manejar diferentes estructuras de respuesta
+            if (Array.isArray(response.data)) {
+                ordersList.value = response.data;
+            } else if (response.data && Array.isArray(response.data.data)) {
+                ordersList.value = response.data.data;
+            } else if (response.data && Array.isArray(response.data.orders)) {
+                ordersList.value = response.data.orders;
+            } else {
+                console.warn('Estructura de respuesta inesperada:', response.data);
+                ordersList.value = [];
+            }
         } catch (error) {
             console.error('Error fetching orders:', error);
             errorMessage.value = t('purchase_orders_page.alerts.loading_error');
@@ -97,19 +108,78 @@ export function usePurchaseOrders() {
     const fetchSuppliers = async () => {
         try {
             const response = await axios.get('/api/suppliers/for-select');
-            suppliers.value = response.data.data || response.data;
+            if (Array.isArray(response.data)) {
+                suppliers.value = response.data;
+            } else if (response.data && Array.isArray(response.data.data)) {
+                suppliers.value = response.data.data;
+            } else {
+                console.warn('Estructura de respuesta inesperada para suppliers:', response.data);
+                suppliers.value = [];
+            }
         } catch (error) {
             console.error('Error fetching suppliers:', error);
+            suppliers.value = [];
         }
     };
 
     const fetchProducts = async () => {
         try {
             const response = await axios.get('/api/products/active/list');
-            products.value = response.data.data || response.data;
+            if (Array.isArray(response.data)) {
+                products.value = response.data;
+            } else if (response.data && Array.isArray(response.data.data)) {
+                products.value = response.data.data;
+            } else {
+                console.warn('Estructura de respuesta inesperada para products:', response.data);
+                products.value = [];
+            }
         } catch (error) {
             console.error('Error fetching products:', error);
+            products.value = [];
         }
+    };
+
+    // Función para obtener información del producto
+    const getProductInfo = (productId: number | null) => {
+        if (!productId) return null;
+        return products.value.find(product => product.id === productId) || null;
+    };
+
+    // Función para actualizar precio unitario cuando se selecciona un producto
+    const updateItemUnitPrice = (index: number, productId: number | null) => {
+        if (!productId) {
+            params.value.items[index].unit_price = 0;
+            return;
+        }
+        
+        const product = getProductInfo(productId);
+        if (product && product.price) {
+            params.value.items[index].unit_price = parseFloat(product.price);
+        } else {
+            params.value.items[index].unit_price = 0;
+        }
+    };
+
+    // Función para validar cantidad contra stock
+    const validateQuantity = (productId: number | null, quantity: number): { valid: boolean; message: string } => {
+        if (!productId) {
+            return { valid: false, message: 'Producto no seleccionado' };
+        }
+        
+        const product = getProductInfo(productId);
+        if (!product) {
+            return { valid: false, message: 'Producto no encontrado' };
+        }
+        
+        const currentStock = product.current_stock || 0;
+        if (quantity > currentStock) {
+            return { 
+                valid: false, 
+                message: `Stock insuficiente. Stock disponible: ${currentStock}` 
+            };
+        }
+        
+        return { valid: true, message: '' };
     };
 
     const saveOrder = async (): Promise<boolean> => {
@@ -119,16 +189,24 @@ export function usePurchaseOrders() {
         successMessage.value = '';
 
         try {
+            let response;
             if (params.value.id) {
-                const { data } = await axios.put(`/api/purchase-orders/${params.value.id}`, params.value);
+                response = await axios.put(`/api/purchase-orders/${params.value.id}`, params.value);
+            } else {
+                response = await axios.post('/api/purchase-orders', params.value);
+            }
+
+            // Manejar diferentes estructuras de respuesta
+            const savedOrder = response.data.data || response.data;
+
+            if (params.value.id) {
                 const index = ordersList.value.findIndex(order => order.id === params.value.id);
                 if (index !== -1) {
-                    ordersList.value.splice(index, 1, data.data || data);
+                    ordersList.value.splice(index, 1, savedOrder);
                 }
                 showMessage(t('purchase_orders_page.alerts.update_success'));
             } else {
-                const { data } = await axios.post('/api/purchase-orders', params.value);
-                ordersList.value.unshift(data.data || data);
+                ordersList.value.unshift(savedOrder);
                 showMessage(t('purchase_orders_page.alerts.save_success'));
             }
             return true;
@@ -384,7 +462,7 @@ export function usePurchaseOrders() {
         }
     };
 
-    // Resto de métodos helpers
+    // Métodos helpers
     const editOrder = (order: PurchaseOrder | null = null) => {
         errors.value = {};
         if (order) {
@@ -529,6 +607,9 @@ export function usePurchaseOrders() {
         fetchOrders,
         fetchSuppliers,
         fetchProducts,
+        getProductInfo,
+        updateItemUnitPrice,
+        validateQuantity,
         saveOrder,
         deleteOrder,
         submitOrder,

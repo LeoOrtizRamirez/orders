@@ -1,338 +1,415 @@
 <template>
-    <TransitionRoot appear :show="show" as="template">
-        <Dialog as="div" @close="$emit('close')" class="relative z-[51]">
-            <TransitionChild
-                as="template"
-                enter="duration-300 ease-out"
-                enter-from="opacity-0"
-                enter-to="opacity-100"
-                leave="duration-200 ease-in"
-                leave-from="opacity-100"
-                leave-to="opacity-0"
-            >
-                <DialogOverlay class="fixed inset-0 bg-[black]/60" />
-            </TransitionChild>
+    <div class="fixed inset-0 bg-[black]/60 z-50 overflow-y-auto" v-if="show">
+        <div class="flex items-start justify-center min-h-screen px-4">
+            <div class="panel border-0 p-0 rounded-lg overflow-hidden w-full max-w-6xl my-8">
+                <!-- Header -->
+                <div class="flex bg-[#fbfbfb] dark:bg-[#1c232f] items-center justify-between px-5 py-3">
+                    <h5 class="font-bold text-lg">
+                        {{ params.id ? $t('purchase_orders_page.create_modal.edit_title') : $t('purchase_orders_page.create_modal.add_title') }}
+                    </h5>
+                    <button type="button" class="text-white-dark hover:text-dark" @click="$emit('close')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
 
-            <div class="fixed inset-0 overflow-y-auto">
-                <div class="flex min-h-full items-center justify-center px-4 py-8">
-                    <TransitionChild
-                        as="template"
-                        enter="duration-300 ease-out"
-                        enter-from="opacity-0 scale-95"
-                        enter-to="opacity-100 scale-100"
-                        leave="duration-200 ease-in"
-                        leave-from="opacity-100 scale-100"
-                        leave-to="opacity-0 scale-95"
-                    >
-                        <DialogPanel class="panel border-0 p-0 rounded-lg overflow-hidden w-full max-w-4xl text-black dark:text-white-dark">
-                            <button
-                                type="button"
-                                class="absolute top-4 ltr:right-4 rtl:left-4 text-gray-400 hover:text-gray-800 dark:hover:text-gray-600 outline-none"
-                                @click="$emit('close')"
-                            >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="24px"
-                                    height="24px"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="1.5"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    class="w-6 h-6"
+                <!-- Form -->
+                <div class="p-5">
+                    <form @submit.prevent="$emit('save', params)">
+                        <!-- Información Básica -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+                            <!-- Proveedor -->
+                            <div>
+                                <label for="supplier" class="form-label">
+                                    {{ $t('purchase_orders_page.create_modal.fields.supplier') }} *
+                                </label>
+                                <select
+                                    id="supplier"
+                                    v-model="params.supplier_id"
+                                    class="form-select"
+                                    :class="{ 'border-danger': errors.supplier_id }"
+                                    required
                                 >
-                                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                                </svg>
-                            </button>
-                            <div class="text-lg font-medium bg-[#fbfbfb] dark:bg-[#121c2c] ltr:pl-5 rtl:pr-5 py-3 ltr:pr-[50px] rtl:pl-[50px]">
-                                {{ $t(params.id ? 'purchase_orders_page.create_modal.edit_title' : 'purchase_orders_page.create_modal.add_title') }}
+                                    <option value="">{{ $t('purchase_orders_page.create_modal.placeholders.select_supplier') }}</option>
+                                    <option v-for="supplier in suppliers" :key="supplier.id" :value="supplier.id">
+                                        {{ supplier.name }}
+                                    </option>
+                                </select>
+                                <div v-if="errors.supplier_id" class="text-danger mt-1 text-xs">
+                                    {{ errors.supplier_id[0] }}
+                                </div>
                             </div>
-                            <div class="p-5">
-                                <form @submit.prevent="handleSubmit">
-                                    <!-- Información Básica -->
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                                        <div class="mb-5">
-                                            <label for="supplier_id">{{ $t('purchase_orders_page.create_modal.fields.supplier') }} *</label>
-                                            <select 
-                                                id="supplier_id" 
-                                                class="form-select" 
-                                                v-model="params.supplier_id"
+
+                            <!-- Fecha de entrega esperada -->
+                            <div>
+                                <label for="expected_delivery_date" class="form-label">
+                                    {{ $t('purchase_orders_page.create_modal.fields.expected_delivery_date') }} *
+                                </label>
+                                <input
+                                    id="expected_delivery_date"
+                                    type="date"
+                                    v-model="params.expected_delivery_date"
+                                    class="form-input"
+                                    :class="{ 'border-danger': errors.expected_delivery_date }"
+                                    required
+                                />
+                                <div v-if="errors.expected_delivery_date" class="text-danger mt-1 text-xs">
+                                    {{ errors.expected_delivery_date[0] }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Items de la orden -->
+                        <div class="mb-5">
+                            <div class="flex justify-between items-center mb-3">
+                                <label class="form-label">
+                                    {{ $t('purchase_orders_page.create_modal.fields.items') }} *
+                                </label>
+                                <button
+                                    type="button"
+                                    class="btn btn-primary btn-sm"
+                                    @click="$emit('add-item')"
+                                >
+                                    + {{ $t('purchase_orders_page.create_modal.buttons.add_item') }}
+                                </button>
+                            </div>
+
+                            <div class="space-y-4">
+                                <div
+                                    v-for="(item, index) in params.items"
+                                    :key="index"
+                                    class="border border-[#e0e6ed] dark:border-[#1b2e4b] rounded p-4 bg-gray-50 dark:bg-[#1a2234]"
+                                >
+                                    <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
+                                        <!-- Producto -->
+                                        <div class="md:col-span-4">
+                                            <label class="form-label">
+                                                {{ $t('purchase_orders_page.create_modal.fields.product') }} *
+                                            </label>
+                                            <select
+                                                v-model="item.product_id"
+                                                class="form-select"
+                                                :class="{ 
+                                                    'border-danger': errors[`items.${index}.product_id`] || 
+                                                    !item.product_id && item.quantity > 0 
+                                                }"
+                                                @change="$emit('product-change', { index, productId: item.product_id })"
                                                 required
                                             >
-                                                <option value="">{{ $t('purchase_orders_page.create_modal.placeholders.select_supplier') }}</option>
-                                                <option v-for="supplier in suppliers" :key="supplier.id" :value="supplier.id">
-                                                    {{ supplier.name }}
+                                                <option value="">{{ $t('purchase_orders_page.create_modal.placeholders.select_product') }}</option>
+                                                <option
+                                                    v-for="product in availableProducts"
+                                                    :key="product.id"
+                                                    :value="product.id"
+                                                    :disabled="!product.stock || product.stock <= 0"
+                                                >
+                                                    {{ product.name }} 
+                                                    <span v-if="!product.stock || product.stock <= 0" class="text-danger text-xs">
+                                                        (Sin stock)
+                                                    </span>
+                                                    <span v-else class="text-success text-xs">
+                                                        (Stock: {{ product.stock }})
+                                                    </span>
                                                 </option>
                                             </select>
-                                            <div v-if="errors.supplier_id" class="text-danger mt-1">{{ errors.supplier_id[0] }}</div>
+                                            <div v-if="errors[`items.${index}.product_id`]" class="text-danger mt-1 text-xs">
+                                                {{ errors[`items.${index}.product_id`][0] }}
+                                            </div>
                                         </div>
-                                        <div class="mb-5">
-                                            <label for="expected_delivery_date">{{ $t('purchase_orders_page.create_modal.fields.expected_delivery_date') }}</label>
-                                            <input 
-                                                id="expected_delivery_date" 
-                                                type="date" 
-                                                class="form-input" 
-                                                v-model="params.expected_delivery_date"
-                                            />
-                                            <div v-if="errors.expected_delivery_date" class="text-danger mt-1">{{ errors.expected_delivery_date[0] }}</div>
-                                        </div>
-                                    </div>
 
-                                    <!-- Items de la Orden -->
-                                    <div class="mb-6">
-                                        <div class="flex justify-between items-center mb-4">
-                                            <label class="text-lg font-semibold">{{ $t('purchase_orders_page.create_modal.fields.items') }}</label>
-                                            <button 
-                                                type="button" 
-                                                class="btn btn-outline-primary btn-sm"
-                                                @click="$emit('add-item')"
+                                        <!-- Cantidad -->
+                                        <div class="md:col-span-2">
+                                            <label class="form-label">
+                                                {{ $t('purchase_orders_page.create_modal.fields.quantity') }} *
+                                            </label>
+                                            <input
+                                                type="number"
+                                                v-model.number="item.quantity"
+                                                min="1"
+                                                :max="getMaxQuantity(item.product_id)"
+                                                class="form-input"
+                                                :class="{ 
+                                                    'border-danger': errors[`items.${index}.quantity`] || 
+                                                    getQuantityValidation(item.product_id, item.quantity).hasError 
+                                                }"
+                                                @input="handleQuantityChange(index, item.quantity)"
+                                                required
+                                            />
+                                            <div v-if="errors[`items.${index}.quantity`]" class="text-danger mt-1 text-xs">
+                                                {{ errors[`items.${index}.quantity`][0] }}
+                                            </div>
+                                            <div v-if="getQuantityValidation(item.product_id, item.quantity).hasError" 
+                                                 class="text-danger mt-1 text-xs">
+                                                {{ getQuantityValidation(item.product_id, item.quantity).message }}
+                                            </div>
+                                            <div v-if="item.product_id && getMaxQuantity(item.product_id) > 0" 
+                                                 class="text-info mt-1 text-xs">
+                                                Máx: {{ getMaxQuantity(item.product_id) }}
+                                            </div>
+                                        </div>
+
+                                        <!-- Precio Unitario (Solo lectura) -->
+                                        <div class="md:col-span-2">
+                                            <label class="form-label">
+                                                {{ $t('purchase_orders_page.create_modal.fields.unit_price') }}
+                                            </label>
+                                            <input
+                                                type="text"
+                                                :value="formatCurrency(getPrice(item.product_id))"
+                                                class="form-input bg-gray-100 dark:bg-[#1b2e4b] cursor-not-allowed"
+                                                readonly
+                                                disabled
+                                            />
+                                            <div class="text-xs text-gray-500 mt-1">
+                                                Precio del producto
+                                            </div>
+                                        </div>
+
+                                        <!-- Total -->
+                                        <div class="md:col-span-2">
+                                            <label class="form-label">
+                                                {{ $t('purchase_orders_page.create_modal.fields.total_price') }}
+                                            </label>
+                                            <input
+                                                type="text"
+                                                :value="formatCurrency(calculateItemTotal(item))"
+                                                class="form-input bg-gray-100 dark:bg-[#1b2e4b] font-semibold cursor-not-allowed"
+                                                readonly
+                                                disabled
+                                            />
+                                        </div>
+
+                                        <!-- Eliminar -->
+                                        <div class="md:col-span-2">
+                                            <button
+                                                type="button"
+                                                class="btn btn-outline-danger btn-sm w-full"
+                                                @click="$emit('remove-item', index)"
+                                                :disabled="params.items.length === 1"
                                             >
-                                                <svg class="w-4 h-4 ltr:mr-1 rtl:ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                                                </svg>
-                                                {{ $t('purchase_orders_page.create_modal.buttons.add_item') }}
+                                                {{ $t('purchase_orders_page.create_modal.buttons.remove_item') }}
                                             </button>
                                         </div>
-
-                                        <div class="space-y-4">
-                                            <div 
-                                                v-for="(item, index) in params.items" 
-                                                :key="index"
-                                                class="border border-gray-200 dark:border-gray-700 rounded-lg p-4"
-                                            >
-                                                <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
-                                                    <!-- Producto -->
-                                                    <div class="md:col-span-4">
-                                                        <label class="text-sm">{{ $t('purchase_orders_page.create_modal.fields.product') }} *</label>
-                                                        <select 
-                                                            class="form-select" 
-                                                            v-model="item.product_id"
-                                                            required
-                                                        >
-                                                            <option value="">{{ $t('purchase_orders_page.create_modal.placeholders.select_product') }}</option>
-                                                            <option v-for="product in products" :key="product.id" :value="product.id">
-                                                                {{ product.name }} - {{ moneyFormat(product.price) }}
-                                                            </option>
-                                                        </select>
-                                                    </div>
-
-                                                    <!-- Cantidad -->
-                                                    <div class="md:col-span-2">
-                                                        <label class="text-sm">{{ $t('purchase_orders_page.create_modal.fields.quantity') }} *</label>
-                                                        <input 
-                                                            type="number" 
-                                                            min="1" 
-                                                            class="form-input" 
-                                                            v-model="item.quantity"
-                                                            @input="updateItemTotal(item)"
-                                                            required
-                                                        />
-                                                    </div>
-
-                                                    <!-- Precio Unitario -->
-                                                    <div class="md:col-span-2">
-                                                        <label class="text-sm">{{ $t('purchase_orders_page.create_modal.fields.unit_price') }} *</label>
-                                                        <input 
-                                                            type="number" 
-                                                            step="0.01" 
-                                                            min="0" 
-                                                            class="form-input" 
-                                                            v-model="item.unit_price"
-                                                            @input="updateItemTotal(item)"
-                                                            required
-                                                        />
-                                                    </div>
-
-                                                    <!-- Total -->
-                                                    <div class="md:col-span-2">
-                                                        <label class="text-sm">{{ $t('purchase_orders_page.create_modal.fields.total_price') }}</label>
-                                                        <div class="form-input bg-gray-50 dark:bg-gray-800">
-                                                            {{ moneyFormat(calculateItemTotal(item)) }}
-                                                        </div>
-                                                    </div>
-
-                                                    <!-- Eliminar -->
-                                                    <div class="md:col-span-2">
-                                                        <button 
-                                                            type="button" 
-                                                            class="btn btn-outline-danger w-full"
-                                                            @click="$emit('remove-item', index)"
-                                                            :disabled="params.items.length === 1"
-                                                        >
-                                                            {{ $t('purchase_orders_page.create_modal.buttons.remove_item') }}
-                                                        </button>
-                                                    </div>
-                                                </div>
-
-                                                <!-- Notas del Item -->
-                                                <div class="mt-3">
-                                                    <label class="text-sm">{{ $t('purchase_orders_page.create_modal.fields.item_notes') }}</label>
-                                                    <input 
-                                                        type="text" 
-                                                        class="form-input" 
-                                                        :placeholder="$t('purchase_orders_page.create_modal.placeholders.item_notes')"
-                                                        v-model="item.notes"
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
                                     </div>
 
-                                    <!-- Totales y Costos Adicionales -->
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                                        <div class="space-y-4">
-                                            <div class="mb-5">
-                                                <label for="tax">{{ $t('purchase_orders_page.create_modal.fields.tax') }}</label>
-                                                <input 
-                                                    id="tax" 
-                                                    type="number" 
-                                                    step="0.01" 
-                                                    min="0" 
-                                                    :placeholder="$t('purchase_orders_page.create_modal.placeholders.tax')" 
-                                                    class="form-input" 
-                                                    v-model="params.tax"
-                                                />
-                                                <div v-if="errors.tax" class="text-danger mt-1">{{ errors.tax[0] }}</div>
-                                            </div>
-                                            <div class="mb-5">
-                                                <label for="shipping">{{ $t('purchase_orders_page.create_modal.fields.shipping') }}</label>
-                                                <input 
-                                                    id="shipping" 
-                                                    type="number" 
-                                                    step="0.01" 
-                                                    min="0" 
-                                                    :placeholder="$t('purchase_orders_page.create_modal.placeholders.shipping')" 
-                                                    class="form-input" 
-                                                    v-model="params.shipping"
-                                                />
-                                                <div v-if="errors.shipping" class="text-danger mt-1">{{ errors.shipping[0] }}</div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Resumen de Totales -->
-                                        <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-                                            <h4 class="font-semibold mb-3">Resumen de Totales</h4>
-                                            <div class="space-y-2">
-                                                <div class="flex justify-between">
-                                                    <span>Subtotal:</span>
-                                                    <span class="font-semibold">{{ moneyFormat(calculateSubtotal()) }}</span>
-                                                </div>
-                                                <div class="flex justify-between">
-                                                    <span>Impuestos:</span>
-                                                    <span class="font-semibold">{{ moneyFormat(params.tax || 0) }}</span>
-                                                </div>
-                                                <div class="flex justify-between">
-                                                    <span>Envío:</span>
-                                                    <span class="font-semibold">{{ moneyFormat(params.shipping || 0) }}</span>
-                                                </div>
-                                                <hr class="my-2">
-                                                <div class="flex justify-between text-lg font-bold">
-                                                    <span>Total:</span>
-                                                    <span class="text-success">{{ moneyFormat(calculateTotal()) }}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Notas -->
-                                    <div class="mb-6">
-                                        <label for="notes">{{ $t('purchase_orders_page.create_modal.fields.notes') }}</label>
-                                        <textarea 
-                                            id="notes" 
-                                            :placeholder="$t('purchase_orders_page.create_modal.placeholders.notes')" 
-                                            class="form-textarea min-h-[80px]" 
-                                            v-model="params.notes"
+                                    <!-- Notas del item -->
+                                    <div class="mt-3">
+                                        <label class="form-label">
+                                            {{ $t('purchase_orders_page.create_modal.fields.item_notes') }}
+                                        </label>
+                                        <textarea
+                                            v-model="item.notes"
+                                            class="form-textarea min-h-[60px]"
+                                            :placeholder="$t('purchase_orders_page.create_modal.placeholders.item_notes')"
+                                            rows="2"
                                         ></textarea>
-                                        <div v-if="errors.notes" class="text-danger mt-1">{{ errors.notes[0] }}</div>
                                     </div>
-
-                                    <!-- Botones -->
-                                    <div class="flex justify-end items-center mt-8">
-                                        <button 
-                                            type="button" 
-                                            class="btn btn-outline-danger" 
-                                            @click="$emit('close')"
-                                            :disabled="saving"
-                                        >
-                                            {{ $t('purchase_orders_page.create_modal.buttons.cancel') }}
-                                        </button>
-                                        <button 
-                                            type="submit" 
-                                            class="btn btn-primary ltr:ml-4 rtl:mr-4" 
-                                            :disabled="saving"
-                                        >
-                                            <span 
-                                                v-if="saving" 
-                                                class="animate-spin border-2 border-white border-t-transparent rounded-full w-4 h-4 ltr:mr-2 rtl:ml-2 inline-block"
-                                            ></span>
-                                            {{ params.id 
-                                                ? $t('purchase_orders_page.create_modal.buttons.update') 
-                                                : $t('purchase_orders_page.create_modal.buttons.add') 
-                                            }}
-                                        </button>
-                                    </div>
-                                </form>
+                                </div>
                             </div>
-                        </DialogPanel>
-                    </TransitionChild>
+                        </div>
+
+                        <!-- Totales -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+                            <!-- Impuestos -->
+                            <div>
+                                <label for="tax" class="form-label">
+                                    {{ $t('purchase_orders_page.create_modal.fields.tax') }}
+                                </label>
+                                <input
+                                    id="tax"
+                                    type="number"
+                                    v-model.number="params.tax"
+                                    min="0"
+                                    step="0.01"
+                                    class="form-input"
+                                    :class="{ 'border-danger': errors.tax }"
+                                    :placeholder="$t('purchase_orders_page.create_modal.placeholders.tax')"
+                                />
+                                <div v-if="errors.tax" class="text-danger mt-1 text-xs">
+                                    {{ errors.tax[0] }}
+                                </div>
+                            </div>
+
+                            <!-- Envío -->
+                            <div>
+                                <label for="shipping" class="form-label">
+                                    {{ $t('purchase_orders_page.create_modal.fields.shipping') }}
+                                </label>
+                                <input
+                                    id="shipping"
+                                    type="number"
+                                    v-model.number="params.shipping"
+                                    min="0"
+                                    step="0.01"
+                                    class="form-input"
+                                    :class="{ 'border-danger': errors.shipping }"
+                                    :placeholder="$t('purchase_orders_page.create_modal.placeholders.shipping')"
+                                />
+                                <div v-if="errors.shipping" class="text-danger mt-1 text-xs">
+                                    {{ errors.shipping[0] }}
+                                </div>
+                            </div>
+
+                            <!-- Total General -->
+                            <div>
+                                <label class="form-label text-lg font-bold">
+                                    Total General
+                                </label>
+                                <div class="form-input bg-success/10 text-success dark:bg-success/20 font-bold text-lg text-center">
+                                    {{ formatCurrency(calculateOrderTotal()) }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Notas -->
+                        <div class="mb-5">
+                            <label for="notes" class="form-label">
+                                {{ $t('purchase_orders_page.create_modal.fields.notes') }}
+                            </label>
+                            <textarea
+                                id="notes"
+                                v-model="params.notes"
+                                class="form-textarea min-h-[80px]"
+                                :placeholder="$t('purchase_orders_page.create_modal.placeholders.notes')"
+                                rows="3"
+                            ></textarea>
+                        </div>
+
+                        <!-- Botones -->
+                        <div class="flex justify-end items-center mt-8 border-t pt-4">
+                            <button
+                                type="button"
+                                class="btn btn-outline-danger mr-3"
+                                @click="$emit('close')"
+                                :disabled="saving"
+                            >
+                                {{ $t('purchase_orders_page.create_modal.buttons.cancel') }}
+                            </button>
+                            <button
+                                type="submit"
+                                class="btn btn-primary"
+                                :disabled="saving || !isFormValid"
+                            >
+                                <span v-if="saving" class="flex items-center">
+                                    <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    {{ $t('purchase_orders_page.create_modal.buttons.saving') }}
+                                </span>
+                                <span v-else>
+                                    {{ params.id 
+                                        ? $t('purchase_orders_page.create_modal.buttons.update') 
+                                        : $t('purchase_orders_page.create_modal.buttons.add') 
+                                    }}
+                                </span>
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
-        </Dialog>
-    </TransitionRoot>
+        </div>
+    </div>
 </template>
 
 <script lang="ts" setup>
-    import { TransitionRoot, TransitionChild, Dialog, DialogPanel, DialogOverlay } from '@headlessui/vue';
-    import type { PurchaseOrderParams, Supplier, Product } from '@/types/purchase-orders';
+    import { computed } from 'vue';
 
     interface Props {
         show: boolean;
-        params: PurchaseOrderParams;
-        errors: Record<string, string[]>;
+        params: any;
+        errors: any;
         saving: boolean;
-        suppliers: Supplier[];
-        products: Product[];
+        suppliers: any[];
+        products: any[];
     }
 
     interface Emits {
         (e: 'close'): void;
-        (e: 'save', params: PurchaseOrderParams): void;
+        (e: 'save', params: any): void;
         (e: 'add-item'): void;
         (e: 'remove-item', index: number): void;
+        (e: 'product-change', data: { index: number; productId: number | null }): void;
     }
 
     const props = defineProps<Props>();
     const emit = defineEmits<Emits>();
 
-    const handleSubmit = async () => {
-        emit('save', props.params);
+    // Computed
+    const availableProducts = computed(() => {
+        return props.products.filter(product => product.is_active !== false);
+    });
+
+    const isFormValid = computed(() => {
+        const hasValidItems = props.params.items.length > 0 && 
+            props.params.items.every((item: any) => 
+                item.product_id && 
+                item.quantity > 0 && 
+                item.quantity <= getMaxQuantity(item.product_id)
+            );
+        
+        return props.params.supplier_id && 
+               props.params.expected_delivery_date &&
+               hasValidItems;
+    });
+
+    // Methods
+    const handleQuantityChange = (index: number, quantity: number) => {
+        // Validar cantidad en tiempo real
+        if (quantity < 1) {
+            props.params.items[index].quantity = 1;
+        }
+        
+        const maxQuantity = getMaxQuantity(props.params.items[index].product_id);
+        if (quantity > maxQuantity) {
+            props.params.items[index].quantity = maxQuantity;
+        }
+    };
+
+    const getMaxQuantity = (productId: number | null): number => {
+        if (!productId) return 0;
+        const product = props.products.find(p => p.id === productId);
+        return product?.stock || 0;
+    };
+
+    const getPrice = (productId: number | null): number => {
+        if (!productId) return 0;
+        const product = props.products.find(p => p.id === productId);
+        return product?.price || 0;
+    };
+
+    const getQuantityValidation = (productId: number | null, quantity: number) => {
+        if (!productId) return { hasError: false, message: '' };
+        
+        const maxQuantity = getMaxQuantity(productId);
+        if (quantity > maxQuantity) {
+            return { 
+                hasError: true, 
+                message: `Excede stock disponible (${maxQuantity})` 
+            };
+        }
+        return { hasError: false, message: '' };
     };
 
     const calculateItemTotal = (item: any): number => {
-        return (item.quantity || 0) * (item.unit_price || 0);
+        return (item.quantity || 0) * (getPrice(item.product_id) || 0);
     };
 
-    const calculateSubtotal = (): number => {
-        return props.params.items.reduce((total, item) => total + calculateItemTotal(item), 0);
+    const calculateOrderTotal = (): number => {
+        const itemsTotal = props.params.items.reduce((total: number, item: any) => {
+            return total + calculateItemTotal(item);
+        }, 0);
+        return itemsTotal + (props.params.tax || 0) + (props.params.shipping || 0);
     };
 
-    const calculateTotal = (): number => {
-        return calculateSubtotal() + (props.params.tax || 0) + (props.params.shipping || 0);
-    };
-
-    const updateItemTotal = (item: any) => {
-        // Esta función se llama automáticamente cuando cambia quantity o unit_price
-        // El total se calcula automáticamente en calculateItemTotal
-    };
-
-    const moneyFormat = (valor = 0): string => {
+    const formatCurrency = (value: number): string => {
         return new Intl.NumberFormat('es-CO', {
             style: 'currency',
             currency: 'COP',
             minimumFractionDigits: 0,
             maximumFractionDigits: 0
-        }).format(valor);
+        }).format(value);
     };
 </script>

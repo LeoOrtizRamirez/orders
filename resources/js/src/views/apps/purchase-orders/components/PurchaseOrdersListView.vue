@@ -65,6 +65,7 @@
                                         type="button" 
                                         class="btn btn-sm btn-outline-info" 
                                         @click="$emit('view-order', order)"
+                                        :title="$t('purchase_orders_page.actions.view')"
                                     >
                                         {{ $t('purchase_orders_page.actions.view') }}
                                     </button>
@@ -75,6 +76,7 @@
                                         type="button" 
                                         class="btn btn-sm btn-outline-primary" 
                                         @click="$emit('edit-order', order)"
+                                        :title="$t('purchase_orders_page.actions.edit')"
                                     >
                                         {{ $t('purchase_orders_page.actions.edit') }}
                                     </button>
@@ -85,6 +87,7 @@
                                         type="button" 
                                         class="btn btn-sm btn-outline-danger" 
                                         @click="$emit('delete-order', order)"
+                                        :title="$t('purchase_orders_page.actions.delete')"
                                     >
                                         {{ $t('purchase_orders_page.actions.delete') }}
                                     </button>
@@ -95,6 +98,7 @@
                                         type="button" 
                                         class="btn btn-sm btn-outline-success" 
                                         @click="$emit('submit-order', order)"
+                                        :title="$t('purchase_orders_page.actions.submit')"
                                     >
                                         {{ $t('purchase_orders_page.actions.submit') }}
                                     </button>
@@ -105,6 +109,7 @@
                                         type="button" 
                                         class="btn btn-sm btn-outline-success" 
                                         @click="$emit('approve-order', order)"
+                                        :title="$t('purchase_orders_page.actions.approve')"
                                     >
                                         {{ $t('purchase_orders_page.actions.approve') }}
                                     </button>
@@ -115,6 +120,7 @@
                                         type="button" 
                                         class="btn btn-sm btn-outline-danger" 
                                         @click="$emit('reject-order', order)"
+                                        :title="$t('purchase_orders_page.actions.reject')"
                                     >
                                         {{ $t('purchase_orders_page.actions.reject') }}
                                     </button>
@@ -125,6 +131,7 @@
                                         type="button" 
                                         class="btn btn-sm btn-outline-info" 
                                         @click="$emit('mark-ordered', order)"
+                                        :title="$t('purchase_orders_page.actions.mark_ordered')"
                                     >
                                         {{ $t('purchase_orders_page.actions.mark_ordered') }}
                                     </button>
@@ -135,6 +142,7 @@
                                         type="button" 
                                         class="btn btn-sm btn-outline-secondary" 
                                         @click="$emit('receive-order', order)"
+                                        :title="$t('purchase_orders_page.actions.receive')"
                                     >
                                         {{ $t('purchase_orders_page.actions.receive') }}
                                     </button>
@@ -145,6 +153,7 @@
                                         type="button" 
                                         class="btn btn-sm btn-outline-warning" 
                                         @click="$emit('cancel-order', order)"
+                                        :title="$t('purchase_orders_page.actions.cancel')"
                                     >
                                         {{ $t('purchase_orders_page.actions.cancel') }}
                                     </button>
@@ -155,6 +164,7 @@
                                         type="button" 
                                         class="btn btn-sm btn-outline-info" 
                                         @click="$emit('reopen-order', order)"
+                                        :title="$t('purchase_orders_page.actions.reopen')"
                                     >
                                         {{ $t('purchase_orders_page.actions.reopen') }}
                                     </button>
@@ -229,3 +239,17 @@
         }).format(valor);
     };
 </script>
+
+<style scoped>
+    .badge {
+        @apply px-2 py-1 text-xs font-medium rounded-full;
+    }
+
+    .btn {
+        @apply transition-all duration-200 ease-in-out;
+    }
+
+    .btn:hover {
+        @apply transform scale-105;
+    }
+</style>

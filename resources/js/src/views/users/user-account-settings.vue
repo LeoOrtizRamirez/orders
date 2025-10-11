@@ -241,7 +241,6 @@
     });
 
     onMounted(async () => {
-        console.log("user", authStore)
         await fetchUserData();
     });
 

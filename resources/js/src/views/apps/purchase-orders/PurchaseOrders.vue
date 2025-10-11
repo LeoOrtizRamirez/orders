@@ -57,6 +57,7 @@
             @save="handleSaveOrder"
             @add-item="addItem"
             @remove-item="removeItem"
+            @product-change="handleProductChange"
         />
 
         <!-- Modal de Vista -->
@@ -109,6 +110,7 @@
         fetchOrders,
         fetchSuppliers,
         fetchProducts,
+        updateItemUnitPrice,
         saveOrder,
         deleteOrder,
         submitOrder,
@@ -153,7 +155,7 @@
         resetParams();
     };
 
-    const handleSaveOrder = async (orderParams: any) => {
+    const handleSaveOrder = async () => {
         const success = await saveOrder();
         if (success) {
             handleCloseModal();
@@ -290,6 +292,10 @@
         if (result.isConfirmed) {
             await reopenOrder(order);
         }
+    };
+
+    const handleProductChange = ({ index, productId }: { index: number; productId: number | null }) => {
+        updateItemUnitPrice(index, productId);
     };
 
     const handleFiltersUpdate = (newFilters: any) => {

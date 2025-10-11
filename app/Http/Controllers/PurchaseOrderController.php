@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Product;
 use App\Services\PurchaseOrderManagementService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -60,6 +61,17 @@ class PurchaseOrderController extends Controller
                 'items.*.unit_price' => 'sometimes|numeric|min:0',
                 'items.*.notes' => 'nullable|string',
             ]);
+
+            foreach ($validated['items'] as $item) {
+                $product = Product::find($item['product_id']);
+                if ($product && $item['quantity'] > $product->stock) {
+                    return response()->json([
+                        'errors' => [
+                            'items' => ["El producto {$product->name} tiene stock insuficiente. Stock disponible: {$product->stock}"]
+                        ]
+                    ], 422);
+                }
+            }
 
             $purchaseOrder = $this->purchaseOrderService->createPurchaseOrder($validated, $request->user()->id);
 
