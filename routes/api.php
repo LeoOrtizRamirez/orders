@@ -9,6 +9,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VideoController;
 use Illuminate\Http\Request;
@@ -158,7 +159,18 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::put('/{id}/receive', [PurchaseOrderController::class, 'receive']);
     });
 
-    // Rutas de proveedores (si decides implementarlos)
-    //Route::apiResource('suppliers', SupplierController::class);
+    // Rutas de proveedores
+    Route::get('/suppliers/active/list', [SupplierController::class, 'activeSuppliers']);
+    Route::get('/suppliers/for-select', [SupplierController::class, 'forSelect']);
+    Route::put('/suppliers/{id}/toggle-status', [SupplierController::class, 'toggleStatus']);
+    Route::apiResource('suppliers', SupplierController::class);
+
+    // Rutas de órdenes de compra
+    Route::get('/purchase-orders/pending/list', [PurchaseOrderController::class, 'pending']);
+    Route::put('/purchase-orders/{id}/approve', [PurchaseOrderController::class, 'approve']);
+    Route::put('/purchase-orders/{id}/reject', [PurchaseOrderController::class, 'reject']);
+    Route::put('/purchase-orders/{id}/mark-ordered', [PurchaseOrderController::class, 'markAsOrdered']);
+    Route::put('/purchase-orders/{id}/receive', [PurchaseOrderController::class, 'receive']);
+    Route::apiResource('purchase-orders', PurchaseOrderController::class);
     
 });

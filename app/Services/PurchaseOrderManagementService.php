@@ -37,12 +37,12 @@ class PurchaseOrderManagementService
             $data['order_number'] = $this->purchaseOrderRepository->generateOrderNumber();
             $data['created_by'] = $userId;
             $data['order_date'] = now();
+            $data['status'] = 'draft'; // Estado inicial
 
-            // Crear la orden
-            $purchaseOrder = $this->purchaseOrderRepository->create($data);
-
-            // Crear items
+            // Calcular subtotal y total
             $subtotal = 0;
+            $itemsData = [];
+
             foreach ($data['items'] as $itemData) {
                 $product = $this->productRepository->findById($itemData['product_id']);
                 if (!$product) {
@@ -52,20 +52,43 @@ class PurchaseOrderManagementService
                 $unitPrice = $itemData['unit_price'] ?? $product->cost ?? $product->price;
                 $totalPrice = $itemData['quantity'] * $unitPrice;
 
-                $purchaseOrder->items()->create([
+                $itemsData[] = [
                     'product_id' => $itemData['product_id'],
                     'quantity' => $itemData['quantity'],
                     'unit_price' => $unitPrice,
                     'total_price' => $totalPrice,
                     'notes' => $itemData['notes'] ?? null,
-                ]);
+                ];
 
                 $subtotal += $totalPrice;
             }
 
-            // Actualizar totales
-            $purchaseOrder->calculateTotals();
-            $purchaseOrder->save();
+            // Calcular totales
+            $tax = $data['tax'] ?? 0;
+            $shipping = $data['shipping'] ?? 0;
+            $total = $subtotal + $tax + $shipping;
+
+            // Crear la orden con los totales calculados
+            $purchaseOrderData = [
+                'order_number' => $data['order_number'],
+                'supplier_id' => $data['supplier_id'],
+                'order_date' => $data['order_date'],
+                'expected_delivery_date' => $data['expected_delivery_date'] ?? null,
+                'status' => $data['status'],
+                'subtotal' => $subtotal,
+                'tax' => $tax,
+                'shipping' => $shipping,
+                'total' => $total,
+                'notes' => $data['notes'] ?? null,
+                'created_by' => $data['created_by'],
+            ];
+
+            $purchaseOrder = $this->purchaseOrderRepository->create($purchaseOrderData);
+
+            // Crear items
+            foreach ($itemsData as $itemData) {
+                $purchaseOrder->items()->create($itemData);
+            }
 
             return $this->getPurchaseOrder($purchaseOrder->id);
         });
@@ -81,16 +104,26 @@ class PurchaseOrderManagementService
 
         return DB::transaction(function () use ($purchaseOrder, $data) {
             // Actualizar datos básicos
+            $updateData = [];
+
             if (isset($data['supplier_id'])) {
-                $purchaseOrder->supplier_id = $data['supplier_id'];
+                $updateData['supplier_id'] = $data['supplier_id'];
             }
 
             if (isset($data['expected_delivery_date'])) {
-                $purchaseOrder->expected_delivery_date = $data['expected_delivery_date'];
+                $updateData['expected_delivery_date'] = $data['expected_delivery_date'];
             }
 
             if (isset($data['notes'])) {
-                $purchaseOrder->notes = $data['notes'];
+                $updateData['notes'] = $data['notes'];
+            }
+
+            if (isset($data['tax'])) {
+                $updateData['tax'] = $data['tax'];
+            }
+
+            if (isset($data['shipping'])) {
+                $updateData['shipping'] = $data['shipping'];
             }
 
             // Actualizar items si se proporcionan
@@ -118,11 +151,14 @@ class PurchaseOrderManagementService
                     $subtotal += $totalPrice;
                 }
 
-                $purchaseOrder->subtotal = $subtotal;
-                $purchaseOrder->total = $subtotal + $purchaseOrder->tax + $purchaseOrder->shipping;
+                $updateData['subtotal'] = $subtotal;
+                $updateData['total'] = $subtotal + ($updateData['tax'] ?? $purchaseOrder->tax) + ($updateData['shipping'] ?? $purchaseOrder->shipping);
             }
 
-            $purchaseOrder->save();
+            // Actualizar la orden
+            if (!empty($updateData)) {
+                $purchaseOrder->update($updateData);
+            }
 
             return $this->getPurchaseOrder($purchaseOrder->id);
         });
@@ -217,7 +253,7 @@ class PurchaseOrderManagementService
                 $item->save();
 
                 // Actualizar stock del producto
-                $this->productManagementService->updateStock($item->product_id, $receivedQuantity);
+                $this->productRepository->updateStock($item->product_id, $receivedQuantity);
 
                 if ($item->getPendingQuantity() > 0) {
                     $allReceived = false;

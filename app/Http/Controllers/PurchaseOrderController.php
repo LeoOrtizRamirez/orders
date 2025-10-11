@@ -80,7 +80,7 @@ class PurchaseOrderController extends Controller
     public function show($id): JsonResponse
     {
         try {
-            $purchaseOrder = $this->purchaseOrderService->getPurchaseOrder($id);
+            $purchaseOrder = $this->purchaseOrderService->getPurchaseOrder((int)$id);
             
             return response()->json($purchaseOrder);
         } catch (\Exception $e) {
@@ -107,7 +107,7 @@ class PurchaseOrderController extends Controller
                 'items.*.notes' => 'nullable|string',
             ]);
 
-            $purchaseOrder = $this->purchaseOrderService->updatePurchaseOrder($id, $validated);
+            $purchaseOrder = $this->purchaseOrderService->updatePurchaseOrder((int)$id, $validated);
 
             return response()->json($purchaseOrder);
         } catch (ValidationException $e) {
@@ -127,7 +127,7 @@ class PurchaseOrderController extends Controller
     public function destroy($id): JsonResponse
     {
         try {
-            $this->purchaseOrderService->deletePurchaseOrder($id);
+            $this->purchaseOrderService->deletePurchaseOrder((int)$id);
 
             return response()->json(null, 204);
         } catch (\Exception $e) {

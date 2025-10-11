@@ -98,9 +98,9 @@ const routes: RouteRecordRaw[] = [
     },
 
     {
-        path: '/apps/events/',
-        name: 'events',
-        component: () => import(/* webpackChunkName: "apps-services" */ '../views/apps/events.vue'),
+        path: '/apps/purchase-orders/',
+        name: 'purchase-orders',
+        component: () => import(/* webpackChunkName: "apps-services" */ '../views/apps/purchase-orders/PurchaseOrders.vue'),
         meta: { requiresAuth: true }
     },
 

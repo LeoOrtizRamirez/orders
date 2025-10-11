@@ -1,0 +1,76 @@
+export interface PurchaseOrder {
+    id: number;
+    order_number: string;
+    supplier_id: number;
+    supplier: Supplier;
+    order_date: string;
+    expected_delivery_date: string | null;
+    delivery_date: string | null;
+    status: 'draft' | 'pending' | 'approved' | 'rejected' | 'ordered' | 'received' | 'cancelled';
+    subtotal: number;
+    tax: number;
+    shipping: number;
+    total: number;
+    notes: string | null;
+    rejection_reason: string | null;
+    created_by: number;
+    creator: User;
+    approved_by: number | null;
+    approver: User | null;
+    approved_at: string | null;
+    items: PurchaseOrderItem[];
+    can_be_edited: boolean;
+    can_be_approved: boolean;
+    can_be_received: boolean;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface PurchaseOrderItem {
+    id: number;
+    purchase_order_id: number;
+    product_id: number;
+    product: Product;
+    quantity: number;
+    unit_price: number;
+    total_price: number;
+    received_quantity: number;
+    notes: string | null;
+}
+
+export interface PurchaseOrderFilters {
+    status: string;
+    supplier_id: string;
+}
+
+export interface PurchaseOrderParams {
+    id: number | null;
+    supplier_id: number | null;
+    expected_delivery_date: string | null;
+    notes: string;
+    tax: number;
+    shipping: number;
+    items: PurchaseOrderItemParams[];
+}
+
+export interface PurchaseOrderItemParams {
+    id?: number;
+    product_id: number | null;
+    quantity: number;
+    unit_price: number;
+    notes: string;
+}
+
+export interface Supplier {
+    id: number;
+    name: string;
+    contact_person: string | null;
+    email: string | null;
+    phone: string | null;
+}
+
+export interface User {
+    id: number;
+    name: string;
+    email: string;
+}

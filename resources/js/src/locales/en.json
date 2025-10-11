@@ -52,7 +52,7 @@
     "add": "Permissions",
     "edit": "Edit",
     "calendar": "Calendar",
-    "events": "Events",
+    "orders": "Orders",
     "services": "Services",
     "tabs": "Tabs",
     "accordions": "Accordions",
@@ -618,5 +618,126 @@
         "no_description": "No description",
         "unit_default": "unit",
         "no_products": "No products found"
+    },
+    "purchase_orders_page": {
+        "title": "Purchase Orders Management",
+        "add_order_btn": "New Order",
+        "search_placeholder": "Search orders...",
+        "filters": {
+            "all_status": "All status",
+            "all_suppliers": "All suppliers",
+            "draft": "Draft",
+            "pending": "Pending",
+            "approved": "Approved",
+            "rejected": "Rejected",
+            "ordered": "Ordered",
+            "received": "Received",
+            "cancelled": "Cancelled"
+        },
+        "stats": {
+            "total_orders": "Total Orders",
+            "pending_orders": "Pending",
+            "approved_orders": "Approved",
+            "ordered_orders": "Ordered",
+            "received_orders": "Received"
+        },
+        "table": {
+            "order_number": "Order No.",
+            "supplier": "Supplier",
+            "order_date": "Date",
+            "expected_delivery": "Expected Delivery",
+            "total": "Total",
+            "status": "Status",
+            "created_by": "Created by",
+            "actions": "Actions"
+        },
+        "status": {
+            "draft": "Draft",
+            "pending": "Pending",
+            "approved": "Approved",
+            "rejected": "Rejected",
+            "ordered": "Ordered",
+            "received": "Received",
+            "cancelled": "Cancelled"
+        },
+        "actions": {
+            "view": "View",
+            "edit": "Edit",
+            "delete": "Delete",
+            "approve": "Approve",
+            "reject": "Reject",
+            "mark_ordered": "Mark as Ordered",
+            "receive": "Receive"
+        },
+        "alerts": {
+            "loading_error": "Error loading purchase orders. Please try again.",
+            "save_success": "Purchase order saved successfully!",
+            "update_success": "Purchase order updated successfully!",
+            "delete_success": "Purchase order deleted successfully!",
+            "approve_success": "Purchase order approved successfully!",
+            "reject_success": "Purchase order rejected successfully!",
+            "receive_success": "Purchase order received successfully!",
+            "mark_ordered_success": "Purchase order marked as ordered successfully!",
+            "validation_errors": "Please correct the validation errors.",
+            "save_error": "Could not save the purchase order. Please try again.",
+            "delete_error": "Error deleting the purchase order.",
+            "cannot_delete": "Cannot delete the purchase order in this status",
+            "no_orders": "No purchase orders found"
+        },
+        "modal": {
+            "add_title": "New Purchase Order",
+            "edit_title": "Edit Purchase Order",
+            "view_title": "View Purchase Order",
+            "fields": {
+                "supplier": "Supplier",
+                "expected_delivery_date": "Expected Delivery Date",
+                "notes": "Notes",
+                "tax": "Tax",
+                "shipping": "Shipping",
+                "items": "Items",
+                "product": "Product",
+                "quantity": "Quantity",
+                "unit_price": "Unit Price",
+                "total_price": "Total Price",
+                "item_notes": "Item Notes"
+            },
+            "placeholders": {
+                "select_supplier": "Select a supplier",
+                "expected_delivery_date": "Select date",
+                "notes": "Additional notes...",
+                "tax": "0.00",
+                "shipping": "0.00",
+                "select_product": "Select a product",
+                "quantity": "Quantity",
+                "unit_price": "Unit price",
+                "item_notes": "Item notes..."
+            },
+            "buttons": {
+                "cancel": "Cancel",
+                "add": "Create Order",
+                "update": "Update",
+                "saving": "Saving...",
+                "add_item": "Add Item",
+                "remove_item": "Remove"
+            }
+        },
+        "delete_confirm": {
+            "title": "Are you sure?",
+            "text": "You won't be able to revert this action!",
+            "confirm": "Yes, delete it!",
+            "cancel": "Cancel"
+        },
+        "reject_confirm": {
+            "title": "Reject Order",
+            "text": "Please enter the rejection reason:",
+            "confirm": "Reject",
+            "cancel": "Cancel"
+        },
+        "receive_confirm": {
+            "title": "Receive Order",
+            "text": "Confirm received quantities:",
+            "confirm": "Confirm Receipt",
+            "cancel": "Cancel"
+        }
     }
 }

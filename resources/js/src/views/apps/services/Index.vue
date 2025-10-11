@@ -69,7 +69,7 @@
     
     // Components
     import ProductsHeader from './components/ProductsHeader.vue';
-    import AlertMessages from './components/AlertMessages.vue';
+    import AlertMessages from '../../components/shared/AlertMessages.vue';
     import ProductStats from './components/ProductStats.vue';
     import ProductsListView from './components/ProductsListView.vue';
     import ProductsGridView from './components/ProductsGridView.vue';

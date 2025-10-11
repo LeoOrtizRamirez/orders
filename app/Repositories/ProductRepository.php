@@ -87,4 +87,16 @@ class ProductRepository
     {
         return $this->model->active()->distinct()->pluck('category')->filter();
     }
+
+    public function updateStock(int $id, int $quantity): bool
+    {
+        $product = $this->findById($id);
+        
+        if (!$product) {
+            return false;
+        }
+
+        $product->stock += $quantity;
+        return $product->save();
+    }
 }
