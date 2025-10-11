@@ -4,7 +4,7 @@
         "desc": "Enter your email and password to sign in",
         "email": "Email",
         "enter_email": "Enter your email",
-        "password": "Password", 
+        "password": "Password",
         "enter_password": "Enter your password",
         "remember_me": "Remember me",
         "forgot_password": "Forgot your password?",
@@ -366,37 +366,37 @@
     "user_account_settings": {
         "title": "Account Settings",
         "nav": {
-        "users": "Users",
-        "account_settings": "Account Settings"
+            "users": "Users",
+            "account_settings": "Account Settings"
         },
         "tabs": {
-        "settings": {
-            "title": "Settings",
-            "account": {
-            "title": "Account Settings",
-            "full_name": "Full Name",
-            "phone": "Phone",
-            "email": "Email",
-            "password": "Password",
-            "btn_save": "Save",
-            "select_file": "Select File",
-            "change_avatar": "Change Avatar",
-            "delete_avatar": "Delete Avatar",
-            "change_image": "Change Image"
+            "settings": {
+                "title": "Settings",
+                "account": {
+                    "title": "Account Settings",
+                    "full_name": "Full Name",
+                    "phone": "Phone",
+                    "email": "Email",
+                    "password": "Password",
+                    "btn_save": "Save",
+                    "select_file": "Select File",
+                    "change_avatar": "Change Avatar",
+                    "delete_avatar": "Delete Avatar",
+                    "change_image": "Change Image"
+                },
+                "only": {
+                    "title": "Only Settings",
+                    "user_name": "Only Username",
+                    "password": "Password",
+                    "btn_save": "Save Only User"
+                }
             },
-            "only": {
-            "title": "Only Settings",
-            "user_name": "Only Username",
-            "password": "Password",
-            "btn_save": "Save Only User"
+            "preferences": {
+                "title": "Preferences",
+                "choose_theme": "Choose Theme",
+                "hide_left_navigation": "Hide Left Navigation",
+                "sidebar_will_be_hidden_by_default": "Sidebar will be hidden by default"
             }
-        },
-        "preferences": {
-            "title": "Preferences",
-            "choose_theme": "Choose Theme",
-            "hide_left_navigation": "Hide Left Navigation",
-            "sidebar_will_be_hidden_by_default": "Sidebar will be hidden by default"
-        }
         }
     },
     "events_page": {
@@ -623,7 +623,7 @@
         "title": "Purchase Orders Management",
         "add_order_btn": "New Order",
         "search_placeholder": "Search orders...",
-        
+
         "filters": {
             "all_status": "All statuses",
             "all_suppliers": "All suppliers",
@@ -635,7 +635,7 @@
             "received": "Received",
             "cancelled": "Cancelled"
         },
-        
+
         "stats": {
             "total_orders": "Total Orders",
             "pending_orders": "Pending",
@@ -643,7 +643,7 @@
             "ordered_orders": "Ordered",
             "received_orders": "Received"
         },
-        
+
         "table": {
             "order_number": "Order No.",
             "supplier": "Supplier",
@@ -654,7 +654,7 @@
             "created_by": "Created by",
             "actions": "Actions"
         },
-        
+
         "status": {
             "draft": "Draft",
             "pending": "Pending",
@@ -664,7 +664,7 @@
             "received": "Received",
             "cancelled": "Cancelled"
         },
-        
+
         "actions": {
             "view": "View",
             "edit": "Edit",
@@ -677,7 +677,7 @@
             "cancel": "Cancel",
             "reopen": "Reopen"
         },
-        
+
         "alerts": {
             "loading_error": "Error loading purchase orders. Please try again.",
             "save_success": "Purchase order saved successfully!",
@@ -696,28 +696,28 @@
             "cannot_delete": "Cannot delete purchase order in this state",
             "no_orders": "No purchase orders found"
         },
-        
+
         "delete_confirm": {
             "title": "Are you sure?",
             "text": "You won't be able to revert this!",
             "confirm": "Yes, delete it!",
             "cancel": "Cancel"
         },
-        
+
         "submit_confirm": {
             "title": "Submit for Approval",
             "text": "Are you sure you want to submit this order for approval?",
             "confirm": "Yes, submit",
             "cancel": "Cancel"
         },
-        
+
         "approve_confirm": {
             "title": "Approve Order",
             "text": "Are you sure you want to approve this order?",
             "confirm": "Yes, approve",
             "cancel": "Cancel"
         },
-        
+
         "reject_confirm": {
             "title": "Reject Order",
             "input_label": "Rejection reason",
@@ -726,21 +726,21 @@
             "confirm": "Reject",
             "cancel": "Cancel"
         },
-        
+
         "mark_ordered_confirm": {
             "title": "Mark as Ordered",
             "text": "Are you sure you want to mark this order as sent to supplier?",
             "confirm": "Yes, mark as ordered",
             "cancel": "Cancel"
         },
-        
+
         "receive_confirm": {
             "title": "Receive Order",
             "text": "Are you sure you want to mark this order as received?",
             "confirm": "Yes, receive",
             "cancel": "Cancel"
         },
-        
+
         "cancel_confirm": {
             "title": "Cancel Order",
             "input_label": "Cancellation reason (optional)",
@@ -748,14 +748,14 @@
             "confirm": "Yes, cancel",
             "cancel": "Cancel"
         },
-        
+
         "reopen_confirm": {
             "title": "Reopen Order",
             "text": "Are you sure you want to reopen this order?",
             "confirm": "Yes, reopen",
             "cancel": "Cancel"
         },
-        
+
         "view_modal": {
             "title": "View Purchase Order",
             "sections": {
@@ -798,7 +798,7 @@
                 "delayed": "Delayed"
             }
         },
-        
+
         "create_modal": {
             "add_title": "New Purchase Order",
             "edit_title": "Edit Purchase Order",
@@ -845,12 +845,103 @@
                 "unit_price_min": "Unit price must be greater than 0"
             }
         },
-        
+
         "empty_states": {
             "no_orders": "No purchase orders",
             "no_orders_description": "Start by creating your first purchase order",
             "no_results": "No results found",
             "no_results_description": "Try adjusting your search filters"
+        }
+    },
+    "suppliers_page": {
+        "title": "Suppliers Management",
+        "add_supplier_btn": "Add Supplier",
+        "search_placeholder": "Search suppliers...",
+        "alerts": {
+            "loading_error": "Error loading suppliers",
+            "save_success": "Supplier saved successfully",
+            "update_success": "Supplier updated successfully",
+            "delete_success": "Supplier deleted successfully",
+            "validation_errors": "Validation errors",
+            "save_error": "Error saving supplier",
+            "delete_error": "Error deleting supplier",
+            "cannot_delete": "Cannot delete supplier because it has associated purchase orders",
+            "status_toggle_success": "Supplier {status} successfully",
+            "status_error": "Error changing supplier status",
+            "no_suppliers": "No suppliers found"
+        },
+        "delete_confirm": {
+            "title": "Delete supplier?",
+            "text": "This action cannot be undone",
+            "confirm": "Yes, delete",
+            "cancel": "Cancel"
+        },
+        "filters": {
+            "all_status": "All status",
+            "active": "Active",
+            "inactive": "Inactive"
+        },
+        "stats": {
+            "total_suppliers": "Total Suppliers",
+            "active_suppliers": "Active Suppliers",
+            "inactive_suppliers": "Inactive Suppliers",
+            "with_purchase_orders": "With Purchase Orders"
+        },
+        "table": {
+            "name": "Name",
+            "contact_person": "Contact",
+            "email": "Email",
+            "phone": "Phone",
+            "city": "City",
+            "country": "Country",
+            "tax_id": "Tax ID",
+            "purchase_orders": "Orders",
+            "status": "Status",
+            "actions": "Actions"
+        },
+        "status": {
+            "active": "Active",
+            "inactive": "Inactive"
+        },
+        "actions": {
+            "edit": "Edit",
+            "delete": "Delete",
+            "activate": "Activate",
+            "deactivate": "Deactivate"
+        },
+        "modal": {
+            "add_title": "Add Supplier",
+            "edit_title": "Edit Supplier",
+            "fields": {
+                "name": "Name",
+                "contact_person": "Contact Person",
+                "email": "Email",
+                "phone": "Phone",
+                "address": "Address",
+                "city": "City",
+                "country": "Country",
+                "tax_id": "Tax ID",
+                "payment_terms": "Payment Terms",
+                "notes": "Notes",
+                "active": "Active Supplier"
+            },
+            "placeholders": {
+                "name": "Enter supplier name",
+                "contact_person": "Enter Contact person name",
+                "email": "Enter email",
+                "phone": "Enter phone",
+                "address": "Enter address",
+                "city": "Enter city",
+                "country": "Enter country",
+                "tax_id": "Enter tax identification number",
+                "payment_terms": "Enter payment terms and conditions",
+                "notes": "Enter additional notes"
+            },
+            "buttons": {
+                "cancel": "Cancel",
+                "add": "Add",
+                "update": "Update"
+            }
         }
     }
 }

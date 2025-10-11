@@ -98,6 +98,13 @@ const routes: RouteRecordRaw[] = [
     },
 
     {
+        path: '/apps/suppliers/',
+        name: 'suppliers',
+        component: () => import(/* webpackChunkName: "apps-services" */ '../views/apps/suppliers/SuppliersPage.vue'),
+        meta: { requiresAuth: true }
+    },
+
+    {
         path: '/apps/purchase-orders/',
         name: 'purchase-orders',
         component: () => import(/* webpackChunkName: "apps-services" */ '../views/apps/purchase-orders/PurchaseOrders.vue'),

@@ -98,10 +98,11 @@ class PurchaseOrderManagementService
     {
         $purchaseOrder = $this->getPurchaseOrder($id);
 
-        if (!$purchaseOrder->canBeEdited()) {
+        /* if (!$purchaseOrder->canBeEdited()) {
             throw new Exception('No se puede editar una orden en este estado', 400);
         }
-
+        */
+        
         return DB::transaction(function () use ($purchaseOrder, $data) {
             // Actualizar datos básicos
             $updateData = [];
@@ -168,9 +169,9 @@ class PurchaseOrderManagementService
     {
         $purchaseOrder = $this->getPurchaseOrder($id);
 
-        if (!$purchaseOrder->canBeEdited()) {
+        /* if (!$purchaseOrder->canBeEdited()) {
             throw new Exception('No se puede eliminar una orden en este estado', 400);
-        }
+        } */
 
         $deleted = $this->purchaseOrderRepository->delete($id);
         

@@ -1,5 +1,5 @@
 {
-    "login_page":{
+    "login_page": {
         "sign_in": "Iniciar sesión",
         "desc": "Ingrese su correo electrónico y contraseña para iniciar sesión",
         "email": "Correo electrónico",
@@ -53,6 +53,7 @@
     "edit": "Editar",
     "calendar": "Calendario",
     "orders": "Pedidos",
+    "suppliers": "Proveedores",
     "products": "Productos",
     "tabs": "pestañas",
     "accordions": "acordeón",
@@ -146,57 +147,57 @@
     "contact_us_boxed": "Comuníquese con nosotros",
     "contact_us_cover": "Contáctenos Portada",
 
-    "contacts_page":{
+    "contacts_page": {
         "title": "Usuarios",
         "search_placeholder": "Buscar usuarios",
-        "add_user_btn" : "Agregar Usuario",
-        "add_btn" : "Agregar",
-        "edit_btn" : "Editar",
-        "delete_btn" : "Eliminar",
-        "update_btn" : "Actualizar",
-        "cancel_btn" : "Cancelar",
-        "name" : "Nombre",
-        "name_placeholder" : "Ingresar Nombre",
-        "email" : "Correo electrónico",
-        "email_placeholder" : "Ingresar Correo electrónico",
-        "role" : "Rol",
-        "role_placeholder" : "Seleccionar un Rol",
-        "password" : "Contraseña",
-        "password_placeholder" : "Ingresar Contraseña",
-        "confirm_password" : "Confirmar contraseña",
-        "confirm_password_placeholder" : "Confirmar contraseña",
-        "actions" : "Acciones",
+        "add_user_btn": "Agregar Usuario",
+        "add_btn": "Agregar",
+        "edit_btn": "Editar",
+        "delete_btn": "Eliminar",
+        "update_btn": "Actualizar",
+        "cancel_btn": "Cancelar",
+        "name": "Nombre",
+        "name_placeholder": "Ingresar Nombre",
+        "email": "Correo electrónico",
+        "email_placeholder": "Ingresar Correo electrónico",
+        "role": "Rol",
+        "role_placeholder": "Seleccionar un Rol",
+        "password": "Contraseña",
+        "password_placeholder": "Ingresar Contraseña",
+        "confirm_password": "Confirmar contraseña",
+        "confirm_password_placeholder": "Confirmar contraseña",
+        "actions": "Acciones",
         "modal_add_title": "Agregar usuario",
         "modal_edit_title": "Editar usuario"
     },
 
-    "services_page":{
+    "services_page": {
         "title": "Servicios",
         "search_placeholder": "Buscar servicios",
-        "add_service_btn" : "Agregar Servicio",
-        "videos_btn" : "Videos",
-        "edit_btn" : "Editar",
-        "delete_btn" : "Eliminar",
-        "update_btn" : "Actualizar",
-        "add_btn" : "Agregar",
-        "cancel_btn" : "Cancelar",
-        "deactivate_btn" : "Desactivar",
-        "activate_btn" : "Activar",
-        "name" : "Nombre del servicio",
-        "name_placeholder" : "Ej: Asesoría Financiera",
-        "descripcion" : "Descripción",
-        "videos" : "Vídeos",
-        "status" : "Estado",
-        "slug" : "Slug (URL)",
-        "slug_placeholder" : "Ej: asesoria-financiera",
-        "price" : "Precio ($)",
-        "time" : "Duración (minutos)",
-        "order" : "Orden de visualización",
-        "icon" : "Ícono (emoji)",
-        "icono_placeholder" : "Ej: 💰",
-        "color" : "Color (#hex)",
-        "active_check" : "Servicio activo",
-        "actions" : "Acciones",
+        "add_service_btn": "Agregar Servicio",
+        "videos_btn": "Videos",
+        "edit_btn": "Editar",
+        "delete_btn": "Eliminar",
+        "update_btn": "Actualizar",
+        "add_btn": "Agregar",
+        "cancel_btn": "Cancelar",
+        "deactivate_btn": "Desactivar",
+        "activate_btn": "Activar",
+        "name": "Nombre del servicio",
+        "name_placeholder": "Ej: Asesoría Financiera",
+        "descripcion": "Descripción",
+        "videos": "Vídeos",
+        "status": "Estado",
+        "slug": "Slug (URL)",
+        "slug_placeholder": "Ej: asesoria-financiera",
+        "price": "Precio ($)",
+        "time": "Duración (minutos)",
+        "order": "Orden de visualización",
+        "icon": "Ícono (emoji)",
+        "icono_placeholder": "Ej: 💰",
+        "color": "Color (#hex)",
+        "active_check": "Servicio activo",
+        "actions": "Acciones",
         "modal_add_title": "Agregar servicio",
         "modal_edit_title": "Editar servicio",
         "manage_videos": "Gestionar vídeos",
@@ -369,7 +370,7 @@
             "users": "Usuarios",
             "account_settings": "Configuraciones de la cuenta"
         },
-        "tabs" : {
+        "tabs": {
             "settings": {
                 "title": "Configuraciones",
                 "account": {
@@ -384,7 +385,7 @@
                     "delete_avatar": "Eliminar avatar",
                     "change_image": "Cambiar imagen"
                 },
-                "only" : {
+                "only": {
                     "title": "Configuraciones de Only",
                     "user_name": "Nombre de usuario Only",
                     "password": "Contraseña",
@@ -395,7 +396,7 @@
                 "title": "Preferencias",
                 "choose_theme": "Elegir tema",
                 "hide_left_navigation": "Ocultar navegación izquierda",
-                "sidebar_will_be_hidden_by_default": "La barra lateral estará oculta por defecto",
+                "sidebar_will_be_hidden_by_default": "La barra lateral estará oculta por defecto"
             }
         }
     },
@@ -623,7 +624,7 @@
         "title": "Gestión de Órdenes de Compra",
         "add_order_btn": "Nueva Orden",
         "search_placeholder": "Buscar órdenes...",
-        
+
         "filters": {
             "all_status": "Todos los estados",
             "all_suppliers": "Todos los proveedores",
@@ -635,7 +636,7 @@
             "received": "Recibido",
             "cancelled": "Cancelado"
         },
-        
+
         "stats": {
             "total_orders": "Total Órdenes",
             "pending_orders": "Pendientes",
@@ -643,7 +644,7 @@
             "ordered_orders": "Ordenados",
             "received_orders": "Recibidos"
         },
-        
+
         "table": {
             "order_number": "N° Orden",
             "supplier": "Proveedor",
@@ -654,7 +655,7 @@
             "created_by": "Creado por",
             "actions": "Acciones"
         },
-        
+
         "status": {
             "draft": "Borrador",
             "pending": "Pendiente",
@@ -664,7 +665,7 @@
             "received": "Recibido",
             "cancelled": "Cancelado"
         },
-        
+
         "actions": {
             "view": "Ver",
             "edit": "Editar",
@@ -677,7 +678,7 @@
             "cancel": "Cancelar",
             "reopen": "Reabrir"
         },
-        
+
         "alerts": {
             "loading_error": "Error al cargar las órdenes de compra. Por favor, intente nuevamente.",
             "save_success": "Orden de compra guardada satisfactoriamente!",
@@ -696,28 +697,28 @@
             "cannot_delete": "No se puede eliminar la orden de compra en este estado",
             "no_orders": "No se encontraron órdenes de compra"
         },
-        
+
         "delete_confirm": {
             "title": "¿Estás seguro?",
             "text": "¡No podrás revertir esta acción!",
             "confirm": "Sí, ¡elimínalo!",
             "cancel": "Cancelar"
         },
-        
+
         "submit_confirm": {
             "title": "Enviar a Aprobación",
             "text": "¿Estás seguro de que deseas enviar esta orden para aprobación?",
             "confirm": "Sí, enviar",
             "cancel": "Cancelar"
         },
-        
+
         "approve_confirm": {
             "title": "Aprobar Orden",
             "text": "¿Estás seguro de que deseas aprobar esta orden?",
             "confirm": "Sí, aprobar",
             "cancel": "Cancelar"
         },
-        
+
         "reject_confirm": {
             "title": "Rechazar Orden",
             "input_label": "Motivo del rechazo",
@@ -726,21 +727,21 @@
             "confirm": "Rechazar",
             "cancel": "Cancelar"
         },
-        
+
         "mark_ordered_confirm": {
             "title": "Marcar como Ordenada",
             "text": "¿Estás seguro de que deseas marcar esta orden como enviada al proveedor?",
             "confirm": "Sí, marcar como ordenada",
             "cancel": "Cancelar"
         },
-        
+
         "receive_confirm": {
             "title": "Recibir Orden",
             "text": "¿Estás seguro de que deseas marcar esta orden como recibida?",
             "confirm": "Sí, recibir",
             "cancel": "Cancelar"
         },
-        
+
         "cancel_confirm": {
             "title": "Cancelar Orden",
             "input_label": "Motivo de cancelación (opcional)",
@@ -748,14 +749,14 @@
             "confirm": "Sí, cancelar",
             "cancel": "Cancelar"
         },
-        
+
         "reopen_confirm": {
             "title": "Reabrir Orden",
             "text": "¿Estás seguro de que deseas reabrir esta orden?",
             "confirm": "Sí, reabrir",
             "cancel": "Cancelar"
         },
-        
+
         "view_modal": {
             "title": "Ver Orden de Compra",
             "sections": {
@@ -798,7 +799,7 @@
                 "delayed": "Retrasado"
             }
         },
-        
+
         "create_modal": {
             "add_title": "Nueva Orden de Compra",
             "edit_title": "Editar Orden de Compra",
@@ -845,12 +846,103 @@
                 "unit_price_min": "El precio unitario debe ser mayor a 0"
             }
         },
-        
+
         "empty_states": {
             "no_orders": "No hay órdenes de compra",
             "no_orders_description": "Comienza creando tu primera orden de compra",
             "no_results": "No se encontraron resultados",
             "no_results_description": "Intenta ajustar tus filtros de búsqueda"
+        }
+    },
+    "suppliers_page": {
+        "title": "Gestión de Proveedores",
+        "add_supplier_btn": "Agregar Proveedor",
+        "search_placeholder": "Buscar proveedores...",
+        "alerts": {
+            "loading_error": "Error al cargar los proveedores",
+            "save_success": "Proveedor guardado exitosamente",
+            "update_success": "Proveedor actualizado exitosamente",
+            "delete_success": "Proveedor eliminado exitosamente",
+            "validation_errors": "Errores de validación",
+            "save_error": "Error al guardar el proveedor",
+            "delete_error": "Error al eliminar el proveedor",
+            "cannot_delete": "No se puede eliminar el proveedor porque tiene órdenes de compra asociadas",
+            "status_toggle_success": "Proveedor {status} exitosamente",
+            "status_error": "Error al cambiar el estado del proveedor",
+            "no_suppliers": "No se encontraron proveedores"
+        },
+        "delete_confirm": {
+            "title": "¿Eliminar proveedor?",
+            "text": "Esta acción no se puede deshacer",
+            "confirm": "Sí, eliminar",
+            "cancel": "Cancelar"
+        },
+        "filters": {
+            "all_status": "Todos los estados",
+            "active": "Activos",
+            "inactive": "Inactivos"
+        },
+        "stats": {
+            "total_suppliers": "Total Proveedores",
+            "active_suppliers": "Proveedores Activos",
+            "inactive_suppliers": "Proveedores Inactivos",
+            "with_purchase_orders": "Con Órdenes de Compra"
+        },
+        "table": {
+            "name": "Nombre",
+            "contact_person": "Contacto",
+            "email": "Email",
+            "phone": "Teléfono",
+            "city": "Ciudad",
+            "country": "País",
+            "tax_id": "NIT/RUT",
+            "purchase_orders": "Órdenes",
+            "status": "Estado",
+            "actions": "Acciones"
+        },
+        "status": {
+            "active": "Activo",
+            "inactive": "Inactivo"
+        },
+        "actions": {
+            "edit": "Editar",
+            "delete": "Eliminar",
+            "activate": "Activar",
+            "deactivate": "Desactivar"
+        },
+        "modal": {
+            "add_title": "Agregar Proveedor",
+            "edit_title": "Editar Proveedor",
+            "fields": {
+                "name": "Nombre",
+                "contact_person": "Persona de Contacto",
+                "email": "Email",
+                "phone": "Teléfono",
+                "address": "Dirección",
+                "city": "Ciudad",
+                "country": "País",
+                "tax_id": "NIT/RUT",
+                "payment_terms": "Términos de Pago",
+                "notes": "Notas",
+                "active": "Proveedor Activo"
+            },
+            "placeholders": {
+                "name": "Ingrese el nombre del proveedor",
+                "contact_person": "Ingrese el nombre de la persona de contacto",
+                "email": "Ingrese el correo del proveedor",
+                "phone": "Ingrese el teléfono",
+                "address": "Ingrese la dirección",
+                "city": "Ingrese la ciudad",
+                "country": "Ingrese el país",
+                "tax_id": "Ingrese el número de identificación tributaria",
+                "payment_terms": "Ingrese términos y condiciones de pago",
+                "notes": "Ingrese notas adicionales"
+            },
+            "buttons": {
+                "cancel": "Cancelar",
+                "add": "Agregar",
+                "update": "Actualizar"
+            }
         }
     }
 }
