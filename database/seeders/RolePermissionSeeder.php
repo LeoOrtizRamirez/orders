@@ -146,6 +146,40 @@ class RolePermissionSeeder extends Seeder
                 'description' => 'Permite gestionar órdenes de compra'
             ],
 
+            // ========== NUEVOS PERMISOS ESPECÍFICOS PARA ÓRDENES ==========
+            [
+                'name' => 'change_order_status',
+                'description' => 'Permite cambiar el estado de las órdenes'
+            ],
+            [
+                'name' => 'assign_order_driver',
+                'description' => 'Permite asignar conductor a órdenes'
+            ],
+            [
+                'name' => 'view_order_history',
+                'description' => 'Permite ver el historial de órdenes'
+            ],
+            [
+                'name' => 'export_orders',
+                'description' => 'Permite exportar órdenes'
+            ],
+            [
+                'name' => 'view_order_reports',
+                'description' => 'Permite ver reportes de órdenes'
+            ],
+            [
+                'name' => 'manage_order_settings',
+                'description' => 'Permite gestionar configuraciones de órdenes'
+            ],
+            [
+                'name' => 'bulk_order_actions',
+                'description' => 'Permite realizar acciones masivas en órdenes'
+            ],
+            [
+                'name' => 'override_order_restrictions',
+                'description' => 'Permite sobreescribir restricciones de órdenes'
+            ],
+
             // ========== NUEVOS PERMISOS PARA PROVEEDORES ==========
             [
                 'name' => 'view suppliers',
@@ -312,6 +346,12 @@ class RolePermissionSeeder extends Seeder
                 'name' => 'viewer',
                 'description' => 'Usuario con permisos de solo lectura',
                 'is_system' => false
+            ],
+            // ========== NUEVO ROL PARA OPERACIONES DE ÓRDENES ==========
+            [
+                'name' => 'order_operator',
+                'description' => 'Operador con permisos específicos para gestión de órdenes',
+                'is_system' => false
             ]
         ];
 
@@ -359,6 +399,16 @@ class RolePermissionSeeder extends Seeder
             'receive purchase_orders',
             'manage purchase_orders',
             
+            // Nuevos permisos de órdenes para manager
+            'change_order_status',
+            'assign_order_driver',
+            'view_order_history',
+            'export_orders',
+            'view_order_reports',
+            'manage_order_settings',
+            'bulk_order_actions',
+            'override_order_restrictions',
+            
             'create suppliers',
             'edit suppliers',
             'manage suppliers',
@@ -397,6 +447,13 @@ class RolePermissionSeeder extends Seeder
             'edit purchase_orders',
             'manage purchase_orders',
             
+            // Permisos específicos de órdenes para purchaser
+            'change_order_status',
+            'view_order_history',
+            'export_orders',
+            'view_order_reports',
+            'bulk_order_actions',
+            
             'view suppliers',
             'create suppliers',
             'edit suppliers',
@@ -407,6 +464,31 @@ class RolePermissionSeeder extends Seeder
             
             'view inventory',
             'manage inventory'
+        ]);
+
+        // ========== NUEVO ROL ORDER OPERATOR ==========
+        $orderOperatorRole = Role::where('name', 'order_operator')->first();
+        $orderOperatorRole->givePermissionTo([
+            'view dashboard',
+            'view purchase_orders',
+            'view products',
+            'view suppliers',
+            'view inventory',
+            
+            'create purchase_orders',
+            'edit purchase_orders',
+            
+            // Permisos específicos de operaciones de órdenes
+            'change_order_status',
+            'assign_order_driver',
+            'view_order_history',
+            'export_orders',
+            'view_order_reports',
+            'bulk_order_actions',
+            
+            'view products',
+            'view suppliers',
+            'view inventory'
         ]);
 
         // Rol User - Permisos básicos
@@ -430,7 +512,9 @@ class RolePermissionSeeder extends Seeder
             'view videos',
             'view events',
             'view reports',
-            'view inventory'
+            'view inventory',
+            'view_order_history',
+            'view_order_reports'
         ]);
 
         $this->command->info('Permissions assigned to roles successfully.');
