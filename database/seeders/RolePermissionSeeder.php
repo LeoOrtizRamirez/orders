@@ -94,7 +94,7 @@ class RolePermissionSeeder extends Seeder
                 'description' => 'Permite ver el dashboard'
             ],
 
-            // ========== NUEVOS PERMISOS PARA PRODUCTOS ==========
+            // ========== PERMISOS PARA PRODUCTOS ==========
             [
                 'name' => 'view products',
                 'description' => 'Permite ver productos'
@@ -116,7 +116,7 @@ class RolePermissionSeeder extends Seeder
                 'description' => 'Permite gestionar productos'
             ],
 
-            // ========== NUEVOS PERMISOS PARA ÓRDENES DE COMPRA ==========
+            // ========== PERMISOS PARA ÓRDENES DE COMPRA ==========
             [
                 'name' => 'view purchase_orders',
                 'description' => 'Permite ver órdenes de compra'
@@ -146,7 +146,7 @@ class RolePermissionSeeder extends Seeder
                 'description' => 'Permite gestionar órdenes de compra'
             ],
 
-            // ========== NUEVOS PERMISOS ESPECÍFICOS PARA ÓRDENES ==========
+            // ========== PERMISOS ESPECÍFICOS PARA ÓRDENES ==========
             [
                 'name' => 'change_order_status',
                 'description' => 'Permite cambiar el estado de las órdenes'
@@ -180,7 +180,7 @@ class RolePermissionSeeder extends Seeder
                 'description' => 'Permite sobreescribir restricciones de órdenes'
             ],
 
-            // ========== NUEVOS PERMISOS PARA PROVEEDORES ==========
+            // ========== PERMISOS PARA PROVEEDORES ==========
             [
                 'name' => 'view suppliers',
                 'description' => 'Permite ver proveedores'
@@ -202,7 +202,57 @@ class RolePermissionSeeder extends Seeder
                 'description' => 'Permite gestionar proveedores'
             ],
 
-            // ========== PERMISOS EXISTENTES PARA SERVICIOS Y VÍDEOS ==========
+            // ========== PERMISOS ESPECÍFICOS PARA PROVEEDORES ==========
+            [
+                'name' => 'toggle_supplier_status',
+                'description' => 'Permite activar/desactivar proveedores'
+            ],
+            [
+                'name' => 'view_supplier_details',
+                'description' => 'Permite ver detalles completos de proveedores'
+            ],
+            [
+                'name' => 'export_suppliers',
+                'description' => 'Permite exportar listas de proveedores'
+            ],
+            [
+                'name' => 'import_suppliers',
+                'description' => 'Permite importar proveedores'
+            ],
+            [
+                'name' => 'view_supplier_reports',
+                'description' => 'Permite ver reportes de proveedores'
+            ],
+            [
+                'name' => 'manage_supplier_categories',
+                'description' => 'Permite gestionar categorías de proveedores'
+            ],
+            [
+                'name' => 'view_supplier_purchase_orders',
+                'description' => 'Permite ver órdenes de compra por proveedor'
+            ],
+            [
+                'name' => 'manage_supplier_contacts',
+                'description' => 'Permite gestionar contactos de proveedores'
+            ],
+            [
+                'name' => 'view_supplier_performance',
+                'description' => 'Permite ver rendimiento de proveedores'
+            ],
+            [
+                'name' => 'manage_supplier_evaluations',
+                'description' => 'Permite gestionar evaluaciones de proveedores'
+            ],
+            [
+                'name' => 'bulk_supplier_actions',
+                'description' => 'Permite realizar acciones masivas en proveedores'
+            ],
+            [
+                'name' => 'override_supplier_restrictions',
+                'description' => 'Permite sobreescribir restricciones de proveedores'
+            ],
+
+            // ========== PERMISOS PARA SERVICIOS Y VÍDEOS ==========
             [
                 'name' => 'view services',
                 'description' => 'Permite ver servicios'
@@ -245,7 +295,7 @@ class RolePermissionSeeder extends Seeder
                 'description' => 'Permite gestionar vídeos'
             ],
 
-            // ========== PERMISOS EXISTENTES PARA EVENTOS ==========
+            // ========== PERMISOS PARA EVENTOS ==========
             [
                 'name' => 'view events',
                 'description' => 'Permite ver eventos'
@@ -347,10 +397,15 @@ class RolePermissionSeeder extends Seeder
                 'description' => 'Usuario con permisos de solo lectura',
                 'is_system' => false
             ],
-            // ========== NUEVO ROL PARA OPERACIONES DE ÓRDENES ==========
             [
                 'name' => 'order_operator',
                 'description' => 'Operador con permisos específicos para gestión de órdenes',
+                'is_system' => false
+            ],
+            // ========== ROL ESPECÍFICO PARA PROVEEDORES ==========
+            [
+                'name' => 'supplier_manager',
+                'description' => 'Gestor especializado en proveedores',
                 'is_system' => false
             ]
         ];
@@ -399,7 +454,7 @@ class RolePermissionSeeder extends Seeder
             'receive purchase_orders',
             'manage purchase_orders',
             
-            // Nuevos permisos de órdenes para manager
+            // Permisos de órdenes para manager
             'change_order_status',
             'assign_order_driver',
             'view_order_history',
@@ -412,6 +467,18 @@ class RolePermissionSeeder extends Seeder
             'create suppliers',
             'edit suppliers',
             'manage suppliers',
+            
+            // Permisos de proveedores para manager
+            'toggle_supplier_status',
+            'view_supplier_details',
+            'export_suppliers',
+            'import_suppliers',
+            'view_supplier_reports',
+            'manage_supplier_categories',
+            'view_supplier_purchase_orders',
+            'manage_supplier_contacts',
+            'view_supplier_performance',
+            'bulk_supplier_actions',
             
             'create services',
             'edit services',
@@ -458,6 +525,14 @@ class RolePermissionSeeder extends Seeder
             'create suppliers',
             'edit suppliers',
             
+            // Permisos de proveedores para purchaser
+            'toggle_supplier_status',
+            'view_supplier_details',
+            'export_suppliers',
+            'view_supplier_purchase_orders',
+            'view_supplier_performance',
+            'bulk_supplier_actions',
+            
             'view products',
             'create products',
             'edit products',
@@ -466,7 +541,42 @@ class RolePermissionSeeder extends Seeder
             'manage inventory'
         ]);
 
-        // ========== NUEVO ROL ORDER OPERATOR ==========
+        // ========== ROL SUPPLIER MANAGER ==========
+        $supplierManagerRole = Role::where('name', 'supplier_manager')->first();
+        $supplierManagerRole->givePermissionTo([
+            'view dashboard',
+            'view suppliers',
+            'view products',
+            'view purchase_orders',
+            'view inventory',
+            
+            // Permisos completos de proveedores
+            'create suppliers',
+            'edit suppliers',
+            'delete suppliers',
+            'manage suppliers',
+            'toggle_supplier_status',
+            'view_supplier_details',
+            'export_suppliers',
+            'import_suppliers',
+            'view_supplier_reports',
+            'manage_supplier_categories',
+            'view_supplier_purchase_orders',
+            'manage_supplier_contacts',
+            'view_supplier_performance',
+            'manage_supplier_evaluations',
+            'bulk_supplier_actions',
+            'override_supplier_restrictions',
+            
+            // Permisos relacionados
+            'view products',
+            'view purchase_orders',
+            'view_order_history',
+            'view_order_reports',
+            'view inventory'
+        ]);
+
+        // Rol Order Operator - Permisos de operaciones de órdenes
         $orderOperatorRole = Role::where('name', 'order_operator')->first();
         $orderOperatorRole->givePermissionTo([
             'view dashboard',
@@ -488,6 +598,8 @@ class RolePermissionSeeder extends Seeder
             
             'view products',
             'view suppliers',
+            'view_supplier_details',
+            'view_supplier_purchase_orders',
             'view inventory'
         ]);
 
@@ -514,7 +626,10 @@ class RolePermissionSeeder extends Seeder
             'view reports',
             'view inventory',
             'view_order_history',
-            'view_order_reports'
+            'view_order_reports',
+            'view_supplier_details',
+            'view_supplier_purchase_orders',
+            'view_supplier_performance'
         ]);
 
         $this->command->info('Permissions assigned to roles successfully.');
