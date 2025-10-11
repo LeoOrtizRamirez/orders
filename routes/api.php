@@ -7,6 +7,7 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PurchaseOrderController;
+use App\Http\Controllers\PurchaseOrderStatusController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\SupplierController;
@@ -165,12 +166,21 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::put('/suppliers/{id}/toggle-status', [SupplierController::class, 'toggleStatus']);
     Route::apiResource('suppliers', SupplierController::class);
 
-    // Rutas de órdenes de compra
-    Route::get('/purchase-orders/pending/list', [PurchaseOrderController::class, 'pending']);
-    Route::put('/purchase-orders/{id}/approve', [PurchaseOrderController::class, 'approve']);
-    Route::put('/purchase-orders/{id}/reject', [PurchaseOrderController::class, 'reject']);
-    Route::put('/purchase-orders/{id}/mark-ordered', [PurchaseOrderController::class, 'markAsOrdered']);
-    Route::put('/purchase-orders/{id}/receive', [PurchaseOrderController::class, 'receive']);
     Route::apiResource('purchase-orders', PurchaseOrderController::class);
     
+    Route::prefix('purchase-orders')->group(function () {
+        // Rutas adicionales existentes
+        Route::get('/pending/list', [PurchaseOrderController::class, 'pending']);
+        
+        // Rutas para cambio de estado
+        Route::prefix('{purchaseOrder}')->group(function () {
+            Route::post('/submit', [PurchaseOrderStatusController::class, 'submit']);
+            Route::post('/approve', [PurchaseOrderStatusController::class, 'approve']);
+            Route::post('/reject', [PurchaseOrderStatusController::class, 'reject']);
+            Route::post('/mark-ordered', [PurchaseOrderStatusController::class, 'markOrdered']);
+            Route::post('/receive', [PurchaseOrderStatusController::class, 'receive']);
+            Route::post('/cancel', [PurchaseOrderStatusController::class, 'cancel']);
+            Route::post('/reopen', [PurchaseOrderStatusController::class, 'reopen']);
+        });
+    });
 });

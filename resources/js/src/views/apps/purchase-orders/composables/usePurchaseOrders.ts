@@ -52,9 +52,17 @@ export function usePurchaseOrders() {
         if (searchOrder.value) {
             const search = searchOrder.value.toLowerCase();
             filtered = filtered.filter((order) => 
-                order.order_number.toLowerCase().includes(search) ||
-                order.supplier.name.toLowerCase().includes(search)
+                order.order_number?.toLowerCase().includes(search) ||
+                order.supplier?.name?.toLowerCase().includes(search)
             );
+        }
+
+        if (filters.value.status) {
+            filtered = filtered.filter(order => order.status === filters.value.status);
+        }
+
+        if (filters.value.supplier_id) {
+            filtered = filtered.filter(order => order.supplier_id === parseInt(filters.value.supplier_id));
         }
 
         return filtered;
@@ -76,7 +84,7 @@ export function usePurchaseOrders() {
             if (filters.value.supplier_id) queryParams.append('supplier_id', filters.value.supplier_id);
 
             const response = await axios.get(`/api/purchase-orders?${queryParams}`);
-            ordersList.value = response.data.data;
+            ordersList.value = response.data.data || response.data;
         } catch (error) {
             console.error('Error fetching orders:', error);
             errorMessage.value = t('purchase_orders_page.alerts.loading_error');
@@ -89,7 +97,7 @@ export function usePurchaseOrders() {
     const fetchSuppliers = async () => {
         try {
             const response = await axios.get('/api/suppliers/for-select');
-            suppliers.value = response.data.data;
+            suppliers.value = response.data.data || response.data;
         } catch (error) {
             console.error('Error fetching suppliers:', error);
         }
@@ -98,7 +106,7 @@ export function usePurchaseOrders() {
     const fetchProducts = async () => {
         try {
             const response = await axios.get('/api/products/active/list');
-            products.value = response.data.data;
+            products.value = response.data.data || response.data;
         } catch (error) {
             console.error('Error fetching products:', error);
         }
@@ -115,12 +123,12 @@ export function usePurchaseOrders() {
                 const { data } = await axios.put(`/api/purchase-orders/${params.value.id}`, params.value);
                 const index = ordersList.value.findIndex(order => order.id === params.value.id);
                 if (index !== -1) {
-                    ordersList.value.splice(index, 1, data);
+                    ordersList.value.splice(index, 1, data.data || data);
                 }
                 showMessage(t('purchase_orders_page.alerts.update_success'));
             } else {
                 const { data } = await axios.post('/api/purchase-orders', params.value);
-                ordersList.value.unshift(data);
+                ordersList.value.unshift(data.data || data);
                 showMessage(t('purchase_orders_page.alerts.save_success'));
             }
             return true;
@@ -140,7 +148,7 @@ export function usePurchaseOrders() {
     };
 
     const deleteOrder = async (order: PurchaseOrder): Promise<boolean> => {
-        if (!order.can_be_edited) {
+        if (!order.can_be_deleted) {
             showMessage(t('purchase_orders_page.alerts.cannot_delete'), 'error');
             return false;
         }
@@ -175,58 +183,208 @@ export function usePurchaseOrders() {
         return false;
     };
 
-    const approveOrder = async (order: PurchaseOrder): Promise<boolean> => {
+    // Métodos de estado
+    const submitOrder = async (order: PurchaseOrder): Promise<boolean> => {
         try {
-            await axios.put(`/api/purchase-orders/${order.id}/approve`);
-            await fetchOrders(); // Refresh the list
-            showMessage(t('purchase_orders_page.alerts.approve_success'));
-            return true;
-        } catch (error) {
-            console.error('Error approving order:', error);
-            showMessage(t('purchase_orders_page.alerts.save_error'), 'error');
+            const response = await axios.post(`/api/purchase-orders/${order.id}/submit`);
+            
+            if (response.data.success) {
+                const index = ordersList.value.findIndex(o => o.id === order.id);
+                if (index !== -1) {
+                    ordersList.value.splice(index, 1, response.data.order);
+                }
+                showMessage(t('purchase_orders_page.alerts.submit_success'));
+                return true;
+            } else {
+                showMessage(response.data.message || t('purchase_orders_page.alerts.save_error'), 'error');
+                return false;
+            }
+        } catch (error: any) {
+            console.error('Error submitting order:', error);
+            const message = error.response?.data?.message || t('purchase_orders_page.alerts.save_error');
+            showMessage(message, 'error');
             return false;
         }
     };
 
-    const rejectOrder = async (order: PurchaseOrder, reason: string): Promise<boolean> => {
+    const approveOrder = async (order: PurchaseOrder): Promise<boolean> => {
         try {
-            await axios.put(`/api/purchase-orders/${order.id}/reject`, { reason });
-            await fetchOrders(); // Refresh the list
-            showMessage(t('purchase_orders_page.alerts.reject_success'));
-            return true;
-        } catch (error) {
-            console.error('Error rejecting order:', error);
-            showMessage(t('purchase_orders_page.alerts.save_error'), 'error');
+            const response = await axios.post(`/api/purchase-orders/${order.id}/approve`);
+            
+            if (response.data.success) {
+                const index = ordersList.value.findIndex(o => o.id === order.id);
+                if (index !== -1) {
+                    ordersList.value.splice(index, 1, response.data.order);
+                }
+                showMessage(t('purchase_orders_page.alerts.approve_success'));
+                return true;
+            } else {
+                showMessage(response.data.message || t('purchase_orders_page.alerts.save_error'), 'error');
+                return false;
+            }
+        } catch (error: any) {
+            console.error('Error approving order:', error);
+            const message = error.response?.data?.message || t('purchase_orders_page.alerts.save_error');
+            showMessage(message, 'error');
             return false;
         }
+    };
+
+    const rejectOrder = async (order: PurchaseOrder): Promise<boolean> => {
+        const { value: reason } = await Swal.fire({
+            title: t('purchase_orders_page.reject_confirm.title'),
+            input: 'textarea',
+            inputLabel: t('purchase_orders_page.reject_confirm.input_label'),
+            inputPlaceholder: t('purchase_orders_page.reject_confirm.input_placeholder'),
+            inputAttributes: {
+                'aria-label': t('purchase_orders_page.reject_confirm.input_label')
+            },
+            showCancelButton: true,
+            confirmButtonText: t('purchase_orders_page.reject_confirm.confirm'),
+            cancelButtonText: t('purchase_orders_page.reject_confirm.cancel'),
+            inputValidator: (value) => {
+                if (!value) {
+                    return t('purchase_orders_page.reject_confirm.input_required');
+                }
+                return null;
+            }
+        });
+
+        if (reason) {
+            try {
+                const response = await axios.post(`/api/purchase-orders/${order.id}/reject`, {
+                    rejection_reason: reason
+                });
+                
+                if (response.data.success) {
+                    const index = ordersList.value.findIndex(o => o.id === order.id);
+                    if (index !== -1) {
+                        ordersList.value.splice(index, 1, response.data.order);
+                    }
+                    showMessage(t('purchase_orders_page.alerts.reject_success'));
+                    return true;
+                } else {
+                    showMessage(response.data.message || t('purchase_orders_page.alerts.save_error'), 'error');
+                    return false;
+                }
+            } catch (error: any) {
+                console.error('Error rejecting order:', error);
+                const message = error.response?.data?.message || t('purchase_orders_page.alerts.save_error');
+                showMessage(message, 'error');
+                return false;
+            }
+        }
+        return false;
     };
 
     const markAsOrdered = async (order: PurchaseOrder): Promise<boolean> => {
         try {
-            await axios.put(`/api/purchase-orders/${order.id}/mark-ordered`);
-            await fetchOrders(); // Refresh the list
-            showMessage(t('purchase_orders_page.alerts.mark_ordered_success'));
-            return true;
-        } catch (error) {
+            const response = await axios.post(`/api/purchase-orders/${order.id}/mark-ordered`);
+            
+            if (response.data.success) {
+                const index = ordersList.value.findIndex(o => o.id === order.id);
+                if (index !== -1) {
+                    ordersList.value.splice(index, 1, response.data.order);
+                }
+                showMessage(t('purchase_orders_page.alerts.mark_ordered_success'));
+                return true;
+            } else {
+                showMessage(response.data.message || t('purchase_orders_page.alerts.save_error'), 'error');
+                return false;
+            }
+        } catch (error: any) {
             console.error('Error marking order as ordered:', error);
-            showMessage(t('purchase_orders_page.alerts.save_error'), 'error');
+            const message = error.response?.data?.message || t('purchase_orders_page.alerts.save_error');
+            showMessage(message, 'error');
             return false;
         }
     };
 
-    const receiveOrder = async (order: PurchaseOrder, receivedItems: any[]): Promise<boolean> => {
+    const receiveOrder = async (order: PurchaseOrder): Promise<boolean> => {
         try {
-            await axios.put(`/api/purchase-orders/${order.id}/receive`, { items: receivedItems });
-            await fetchOrders(); // Refresh the list
-            showMessage(t('purchase_orders_page.alerts.receive_success'));
-            return true;
-        } catch (error) {
+            const response = await axios.post(`/api/purchase-orders/${order.id}/receive`);
+            
+            if (response.data.success) {
+                const index = ordersList.value.findIndex(o => o.id === order.id);
+                if (index !== -1) {
+                    ordersList.value.splice(index, 1, response.data.order);
+                }
+                showMessage(t('purchase_orders_page.alerts.receive_success'));
+                return true;
+            } else {
+                showMessage(response.data.message || t('purchase_orders_page.alerts.save_error'), 'error');
+                return false;
+            }
+        } catch (error: any) {
             console.error('Error receiving order:', error);
-            showMessage(t('purchase_orders_page.alerts.save_error'), 'error');
+            const message = error.response?.data?.message || t('purchase_orders_page.alerts.save_error');
+            showMessage(message, 'error');
             return false;
         }
     };
 
+    const cancelOrder = async (order: PurchaseOrder): Promise<boolean> => {
+        const { value: reason } = await Swal.fire({
+            title: t('purchase_orders_page.cancel_confirm.title'),
+            input: 'textarea',
+            inputLabel: t('purchase_orders_page.cancel_confirm.input_label'),
+            inputPlaceholder: t('purchase_orders_page.cancel_confirm.input_placeholder'),
+            showCancelButton: true,
+            confirmButtonText: t('purchase_orders_page.cancel_confirm.confirm'),
+            cancelButtonText: t('purchase_orders_page.cancel_confirm.cancel')
+        });
+
+        if (reason !== undefined) {
+            try {
+                const response = await axios.post(`/api/purchase-orders/${order.id}/cancel`, {
+                    reason: reason || null
+                });
+                
+                if (response.data.success) {
+                    const index = ordersList.value.findIndex(o => o.id === order.id);
+                    if (index !== -1) {
+                        ordersList.value.splice(index, 1, response.data.order);
+                    }
+                    showMessage(t('purchase_orders_page.alerts.cancel_success'));
+                    return true;
+                } else {
+                    showMessage(response.data.message || t('purchase_orders_page.alerts.save_error'), 'error');
+                    return false;
+                }
+            } catch (error: any) {
+                console.error('Error canceling order:', error);
+                const message = error.response?.data?.message || t('purchase_orders_page.alerts.save_error');
+                showMessage(message, 'error');
+                return false;
+            }
+        }
+        return false;
+    };
+
+    const reopenOrder = async (order: PurchaseOrder): Promise<boolean> => {
+        try {
+            const response = await axios.post(`/api/purchase-orders/${order.id}/reopen`);
+            
+            if (response.data.success) {
+                const index = ordersList.value.findIndex(o => o.id === order.id);
+                if (index !== -1) {
+                    ordersList.value.splice(index, 1, response.data.order);
+                }
+                showMessage(t('purchase_orders_page.alerts.reopen_success'));
+                return true;
+            } else {
+                showMessage(response.data.message || t('purchase_orders_page.alerts.save_error'), 'error');
+                return false;
+            }
+        } catch (error: any) {
+            console.error('Error reopening order:', error);
+            const message = error.response?.data?.message || t('purchase_orders_page.alerts.save_error');
+            showMessage(message, 'error');
+            return false;
+        }
+    };
+
+    // Resto de métodos helpers
     const editOrder = (order: PurchaseOrder | null = null) => {
         errors.value = {};
         if (order) {
@@ -235,15 +393,15 @@ export function usePurchaseOrders() {
                 supplier_id: order.supplier_id,
                 expected_delivery_date: order.expected_delivery_date,
                 notes: order.notes || '',
-                tax: parseFloat(order.tax.toString()),
-                shipping: parseFloat(order.shipping.toString()),
-                items: order.items.map(item => ({
+                tax: parseFloat(order.tax?.toString() || '0'),
+                shipping: parseFloat(order.shipping?.toString() || '0'),
+                items: order.items?.map(item => ({
                     id: item.id,
                     product_id: item.product_id,
                     quantity: item.quantity,
-                    unit_price: parseFloat(item.unit_price.toString()),
+                    unit_price: parseFloat(item.unit_price?.toString() || '0'),
                     notes: item.notes || ''
-                }))
+                })) || []
             };
         } else {
             params.value = { ...defaultParams };
@@ -308,7 +466,6 @@ export function usePurchaseOrders() {
             position: 'top',
             showConfirmButton: false,
             timer: 3000,
-            customClass: { container: 'toast' },
         });
         toast.fire({
             icon: type,
@@ -345,8 +502,6 @@ export function usePurchaseOrders() {
         };
     };
 
-    
-
     return {
         // States
         ordersList,
@@ -376,10 +531,13 @@ export function usePurchaseOrders() {
         fetchProducts,
         saveOrder,
         deleteOrder,
+        submitOrder,
         approveOrder,
         rejectOrder,
         markAsOrdered,
         receiveOrder,
+        cancelOrder,
+        reopenOrder,
         editOrder,
         resetParams,
         addItem,

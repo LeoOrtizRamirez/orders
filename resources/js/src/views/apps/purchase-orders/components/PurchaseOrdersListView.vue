@@ -35,8 +35,8 @@
                                 <div class="font-mono font-semibold">{{ order.order_number }}</div>
                             </td>
                             <td>
-                                <div class="font-semibold">{{ order.supplier.name }}</div>
-                                <div class="text-xs text-gray-500">{{ order.supplier.contact_person }}</div>
+                                <div class="font-semibold">{{ order.supplier?.name || 'N/A' }}</div>
+                                <div class="text-xs text-gray-500">{{ order.supplier?.contact_person || '-' }}</div>
                             </td>
                             <td>
                                 <div>{{ formatDate(order.order_date) }}</div>
@@ -55,11 +55,12 @@
                                 </span>
                             </td>
                             <td>
-                                <div class="text-sm">{{ order.creator.name }}</div>
+                                <div class="text-sm">{{ order.creator?.name || 'N/A' }}</div>
                                 <div class="text-xs text-gray-500">{{ formatDate(order.created_at) }}</div>
                             </td>
                             <td>
                                 <div class="flex gap-2 items-center justify-center">
+                                    <!-- Botón Ver -->
                                     <button 
                                         type="button" 
                                         class="btn btn-sm btn-outline-info" 
@@ -68,6 +69,7 @@
                                         {{ $t('purchase_orders_page.actions.view') }}
                                     </button>
 
+                                    <!-- Botón Editar -->
                                     <button 
                                         v-if="authStore.can('edit purchase_orders') && order.can_be_edited"
                                         type="button" 
@@ -77,8 +79,9 @@
                                         {{ $t('purchase_orders_page.actions.edit') }}
                                     </button>
 
+                                    <!-- Botón Eliminar -->
                                     <button 
-                                        v-if="authStore.can('delete purchase_orders') && order.can_be_edited"
+                                        v-if="authStore.can('delete purchase_orders') && order.can_be_deleted"
                                         type="button" 
                                         class="btn btn-sm btn-outline-danger" 
                                         @click="$emit('delete-order', order)"
@@ -86,8 +89,19 @@
                                         {{ $t('purchase_orders_page.actions.delete') }}
                                     </button>
 
+                                    <!-- Botón Enviar a Aprobación -->
                                     <button 
-                                        v-if="authStore.can('approve purchase_orders') && order.status === 'pending'"
+                                        v-if="authStore.can('edit purchase_orders') && order.status === 'draft'"
+                                        type="button" 
+                                        class="btn btn-sm btn-outline-success" 
+                                        @click="$emit('submit-order', order)"
+                                    >
+                                        {{ $t('purchase_orders_page.actions.submit') }}
+                                    </button>
+
+                                    <!-- Botón Aprobar -->
+                                    <button 
+                                        v-if="authStore.can('approve purchase_orders') && order.can_be_approved"
                                         type="button" 
                                         class="btn btn-sm btn-outline-success" 
                                         @click="$emit('approve-order', order)"
@@ -95,8 +109,9 @@
                                         {{ $t('purchase_orders_page.actions.approve') }}
                                     </button>
 
+                                    <!-- Botón Rechazar -->
                                     <button 
-                                        v-if="authStore.can('approve purchase_orders') && order.status === 'pending'"
+                                        v-if="authStore.can('approve purchase_orders') && order.can_be_rejected"
                                         type="button" 
                                         class="btn btn-sm btn-outline-danger" 
                                         @click="$emit('reject-order', order)"
@@ -104,6 +119,17 @@
                                         {{ $t('purchase_orders_page.actions.reject') }}
                                     </button>
 
+                                    <!-- Botón Marcar como Ordenada -->
+                                    <button 
+                                        v-if="authStore.can('edit purchase_orders') && order.can_be_marked_ordered"
+                                        type="button" 
+                                        class="btn btn-sm btn-outline-info" 
+                                        @click="$emit('mark-ordered', order)"
+                                    >
+                                        {{ $t('purchase_orders_page.actions.mark_ordered') }}
+                                    </button>
+
+                                    <!-- Botón Recibir -->
                                     <button 
                                         v-if="authStore.can('receive purchase_orders') && order.can_be_received"
                                         type="button" 
@@ -113,13 +139,24 @@
                                         {{ $t('purchase_orders_page.actions.receive') }}
                                     </button>
 
+                                    <!-- Botón Cancelar -->
                                     <button 
-                                        v-if="authStore.can('edit purchase_orders') && (order.status === 'approved')"
+                                        v-if="authStore.can('edit purchase_orders') && order.can_be_cancelled"
+                                        type="button" 
+                                        class="btn btn-sm btn-outline-warning" 
+                                        @click="$emit('cancel-order', order)"
+                                    >
+                                        {{ $t('purchase_orders_page.actions.cancel') }}
+                                    </button>
+
+                                    <!-- Botón Reabrir -->
+                                    <button 
+                                        v-if="authStore.can('edit purchase_orders') && order.can_be_reopened"
                                         type="button" 
                                         class="btn btn-sm btn-outline-info" 
-                                        @click="$emit('mark-ordered', order)"
+                                        @click="$emit('reopen-order', order)"
                                     >
-                                        {{ $t('purchase_orders_page.actions.mark_ordered') }}
+                                        {{ $t('purchase_orders_page.actions.reopen') }}
                                     </button>
                                 </div>
                             </td>
@@ -144,10 +181,13 @@
         (e: 'view-order', order: PurchaseOrder): void;
         (e: 'edit-order', order: PurchaseOrder): void;
         (e: 'delete-order', order: PurchaseOrder): void;
+        (e: 'submit-order', order: PurchaseOrder): void;
         (e: 'approve-order', order: PurchaseOrder): void;
         (e: 'reject-order', order: PurchaseOrder): void;
         (e: 'mark-ordered', order: PurchaseOrder): void;
         (e: 'receive-order', order: PurchaseOrder): void;
+        (e: 'cancel-order', order: PurchaseOrder): void;
+        (e: 'reopen-order', order: PurchaseOrder): void;
     }
 
     defineProps<Props>();
@@ -169,10 +209,10 @@
     };
 
     const isDeliveryDelayed = (order: PurchaseOrder): boolean => {
-        if (!order.expected_delivery_date) return false;
+        if (!order.expected_delivery_date || order.status === 'received') return false;
         const expected = new Date(order.expected_delivery_date);
         const today = new Date();
-        return expected < today && order.status !== 'received';
+        return expected < today;
     };
 
     const formatDate = (dateString: string | null): string => {

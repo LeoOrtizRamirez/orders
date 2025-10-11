@@ -35,10 +35,13 @@
                 @edit-order="handleEditOrder"
                 @delete-order="handleDeleteOrder"
                 @view-order="handleViewOrder"
+                @submit-order="handleSubmitOrder"
                 @approve-order="handleApproveOrder"
                 @reject-order="handleRejectOrder"
                 @mark-ordered="handleMarkOrdered"
                 @receive-order="handleReceiveOrder"
+                @cancel-order="handleCancelOrder"
+                @reopen-order="handleReopenOrder"
             />
         </div>
 
@@ -67,6 +70,7 @@
 
 <script lang="ts" setup>
     import { ref, onMounted } from 'vue';
+    import Swal from 'sweetalert2';
     import { useMeta } from '@/composables/use-meta';
     import { usePurchaseOrders } from './composables/usePurchaseOrders';
     
@@ -107,10 +111,13 @@
         fetchProducts,
         saveOrder,
         deleteOrder,
+        submitOrder,
         approveOrder,
         rejectOrder,
         markAsOrdered,
         receiveOrder,
+        cancelOrder,
+        reopenOrder,
         editOrder,
         resetParams,
         addItem,
@@ -157,13 +164,43 @@
         await deleteOrder(order);
     };
 
+    const handleSubmitOrder = async (order: any) => {
+        const result = await Swal.fire({
+            title: 'Enviar a Aprobación',
+            text: '¿Estás seguro de que deseas enviar esta orden para aprobación?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, enviar',
+            cancelButtonText: 'Cancelar'
+        });
+
+        if (result.isConfirmed) {
+            await submitOrder(order);
+        }
+    };
+
     const handleApproveOrder = async (order: any) => {
-        await approveOrder(order);
+        const result = await Swal.fire({
+            title: 'Aprobar Orden',
+            text: '¿Estás seguro de que deseas aprobar esta orden?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, aprobar',
+            cancelButtonText: 'Cancelar'
+        });
+
+        if (result.isConfirmed) {
+            await approveOrder(order);
+        }
     };
 
     const handleRejectOrder = async (order: any) => {
         const { value: reason } = await Swal.fire({
-            title: 'Motivo del rechazo',
+            title: 'Rechazar Orden',
             input: 'textarea',
             inputLabel: 'Por favor ingrese el motivo del rechazo:',
             inputPlaceholder: 'Describa el motivo del rechazo...',
@@ -181,17 +218,78 @@
         });
 
         if (reason) {
-            await rejectOrder(order, reason);
+            await rejectOrder(order);
         }
     };
 
     const handleMarkOrdered = async (order: any) => {
-        await markAsOrdered(order);
+        const result = await Swal.fire({
+            title: 'Marcar como Ordenada',
+            text: '¿Estás seguro de que deseas marcar esta orden como enviada al proveedor?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, marcar como ordenada',
+            cancelButtonText: 'Cancelar'
+        });
+
+        if (result.isConfirmed) {
+            await markAsOrdered(order);
+        }
     };
 
     const handleReceiveOrder = async (order: any) => {
-        // Implementar modal de recepción
-        console.log('Receive order:', order);
+        const result = await Swal.fire({
+            title: 'Recibir Orden',
+            text: '¿Estás seguro de que deseas marcar esta orden como recibida?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, recibir',
+            cancelButtonText: 'Cancelar'
+        });
+
+        if (result.isConfirmed) {
+            await receiveOrder(order);
+        }
+    };
+
+    const handleCancelOrder = async (order: any) => {
+        const { value: reason } = await Swal.fire({
+            title: 'Cancelar Orden',
+            input: 'textarea',
+            inputLabel: 'Motivo de cancelación (opcional):',
+            inputPlaceholder: 'Describa el motivo de la cancelación...',
+            inputAttributes: {
+                'aria-label': 'Motivo de cancelación'
+            },
+            showCancelButton: true,
+            confirmButtonText: 'Sí, cancelar',
+            cancelButtonText: 'Cancelar'
+        });
+
+        if (reason !== undefined) {
+            await cancelOrder(order);
+        }
+    };
+
+    const handleReopenOrder = async (order: any) => {
+        const result = await Swal.fire({
+            title: 'Reabrir Orden',
+            text: '¿Estás seguro de que deseas reabrir esta orden?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, reabrir',
+            cancelButtonText: 'Cancelar'
+        });
+
+        if (result.isConfirmed) {
+            await reopenOrder(order);
+        }
     };
 
     const handleFiltersUpdate = (newFilters: any) => {
