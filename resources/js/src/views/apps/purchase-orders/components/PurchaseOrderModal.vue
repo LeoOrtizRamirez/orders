@@ -47,21 +47,21 @@
                                 </svg>
                             </button>
                             <div class="text-lg font-medium bg-[#fbfbfb] dark:bg-[#121c2c] ltr:pl-5 rtl:pr-5 py-3 ltr:pr-[50px] rtl:pl-[50px]">
-                                {{ $t(params.id ? 'purchase_orders_page.modal.edit_title' : 'purchase_orders_page.modal.add_title') }}
+                                {{ $t(params.id ? 'purchase_orders_page.create_modal.edit_title' : 'purchase_orders_page.create_modal.add_title') }}
                             </div>
                             <div class="p-5">
                                 <form @submit.prevent="handleSubmit">
                                     <!-- Información Básica -->
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                                         <div class="mb-5">
-                                            <label for="supplier_id">{{ $t('purchase_orders_page.modal.fields.supplier') }} *</label>
+                                            <label for="supplier_id">{{ $t('purchase_orders_page.create_modal.fields.supplier') }} *</label>
                                             <select 
                                                 id="supplier_id" 
                                                 class="form-select" 
                                                 v-model="params.supplier_id"
                                                 required
                                             >
-                                                <option value="">{{ $t('purchase_orders_page.modal.placeholders.select_supplier') }}</option>
+                                                <option value="">{{ $t('purchase_orders_page.create_modal.placeholders.select_supplier') }}</option>
                                                 <option v-for="supplier in suppliers" :key="supplier.id" :value="supplier.id">
                                                     {{ supplier.name }}
                                                 </option>
@@ -69,7 +69,7 @@
                                             <div v-if="errors.supplier_id" class="text-danger mt-1">{{ errors.supplier_id[0] }}</div>
                                         </div>
                                         <div class="mb-5">
-                                            <label for="expected_delivery_date">{{ $t('purchase_orders_page.modal.fields.expected_delivery_date') }}</label>
+                                            <label for="expected_delivery_date">{{ $t('purchase_orders_page.create_modal.fields.expected_delivery_date') }}</label>
                                             <input 
                                                 id="expected_delivery_date" 
                                                 type="date" 
@@ -83,7 +83,7 @@
                                     <!-- Items de la Orden -->
                                     <div class="mb-6">
                                         <div class="flex justify-between items-center mb-4">
-                                            <label class="text-lg font-semibold">{{ $t('purchase_orders_page.modal.fields.items') }}</label>
+                                            <label class="text-lg font-semibold">{{ $t('purchase_orders_page.create_modal.fields.items') }}</label>
                                             <button 
                                                 type="button" 
                                                 class="btn btn-outline-primary btn-sm"
@@ -92,7 +92,7 @@
                                                 <svg class="w-4 h-4 ltr:mr-1 rtl:ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                                 </svg>
-                                                {{ $t('purchase_orders_page.modal.buttons.add_item') }}
+                                                {{ $t('purchase_orders_page.create_modal.buttons.add_item') }}
                                             </button>
                                         </div>
 
@@ -105,13 +105,13 @@
                                                 <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
                                                     <!-- Producto -->
                                                     <div class="md:col-span-4">
-                                                        <label class="text-sm">{{ $t('purchase_orders_page.modal.fields.product') }} *</label>
+                                                        <label class="text-sm">{{ $t('purchase_orders_page.create_modal.fields.product') }} *</label>
                                                         <select 
                                                             class="form-select" 
                                                             v-model="item.product_id"
                                                             required
                                                         >
-                                                            <option value="">{{ $t('purchase_orders_page.modal.placeholders.select_product') }}</option>
+                                                            <option value="">{{ $t('purchase_orders_page.create_modal.placeholders.select_product') }}</option>
                                                             <option v-for="product in products" :key="product.id" :value="product.id">
                                                                 {{ product.name }} - {{ moneyFormat(product.price) }}
                                                             </option>
@@ -120,7 +120,7 @@
 
                                                     <!-- Cantidad -->
                                                     <div class="md:col-span-2">
-                                                        <label class="text-sm">{{ $t('purchase_orders_page.modal.fields.quantity') }} *</label>
+                                                        <label class="text-sm">{{ $t('purchase_orders_page.create_modal.fields.quantity') }} *</label>
                                                         <input 
                                                             type="number" 
                                                             min="1" 
@@ -133,7 +133,7 @@
 
                                                     <!-- Precio Unitario -->
                                                     <div class="md:col-span-2">
-                                                        <label class="text-sm">{{ $t('purchase_orders_page.modal.fields.unit_price') }} *</label>
+                                                        <label class="text-sm">{{ $t('purchase_orders_page.create_modal.fields.unit_price') }} *</label>
                                                         <input 
                                                             type="number" 
                                                             step="0.01" 
@@ -147,7 +147,7 @@
 
                                                     <!-- Total -->
                                                     <div class="md:col-span-2">
-                                                        <label class="text-sm">{{ $t('purchase_orders_page.modal.fields.total_price') }}</label>
+                                                        <label class="text-sm">{{ $t('purchase_orders_page.create_modal.fields.total_price') }}</label>
                                                         <div class="form-input bg-gray-50 dark:bg-gray-800">
                                                             {{ moneyFormat(calculateItemTotal(item)) }}
                                                         </div>
@@ -161,18 +161,18 @@
                                                             @click="$emit('remove-item', index)"
                                                             :disabled="params.items.length === 1"
                                                         >
-                                                            {{ $t('purchase_orders_page.modal.buttons.remove_item') }}
+                                                            {{ $t('purchase_orders_page.create_modal.buttons.remove_item') }}
                                                         </button>
                                                     </div>
                                                 </div>
 
                                                 <!-- Notas del Item -->
                                                 <div class="mt-3">
-                                                    <label class="text-sm">{{ $t('purchase_orders_page.modal.fields.item_notes') }}</label>
+                                                    <label class="text-sm">{{ $t('purchase_orders_page.create_modal.fields.item_notes') }}</label>
                                                     <input 
                                                         type="text" 
                                                         class="form-input" 
-                                                        :placeholder="$t('purchase_orders_page.modal.placeholders.item_notes')"
+                                                        :placeholder="$t('purchase_orders_page.create_modal.placeholders.item_notes')"
                                                         v-model="item.notes"
                                                     />
                                                 </div>
@@ -184,26 +184,26 @@
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                         <div class="space-y-4">
                                             <div class="mb-5">
-                                                <label for="tax">{{ $t('purchase_orders_page.modal.fields.tax') }}</label>
+                                                <label for="tax">{{ $t('purchase_orders_page.create_modal.fields.tax') }}</label>
                                                 <input 
                                                     id="tax" 
                                                     type="number" 
                                                     step="0.01" 
                                                     min="0" 
-                                                    :placeholder="$t('purchase_orders_page.modal.placeholders.tax')" 
+                                                    :placeholder="$t('purchase_orders_page.create_modal.placeholders.tax')" 
                                                     class="form-input" 
                                                     v-model="params.tax"
                                                 />
                                                 <div v-if="errors.tax" class="text-danger mt-1">{{ errors.tax[0] }}</div>
                                             </div>
                                             <div class="mb-5">
-                                                <label for="shipping">{{ $t('purchase_orders_page.modal.fields.shipping') }}</label>
+                                                <label for="shipping">{{ $t('purchase_orders_page.create_modal.fields.shipping') }}</label>
                                                 <input 
                                                     id="shipping" 
                                                     type="number" 
                                                     step="0.01" 
                                                     min="0" 
-                                                    :placeholder="$t('purchase_orders_page.modal.placeholders.shipping')" 
+                                                    :placeholder="$t('purchase_orders_page.create_modal.placeholders.shipping')" 
                                                     class="form-input" 
                                                     v-model="params.shipping"
                                                 />
@@ -238,10 +238,10 @@
 
                                     <!-- Notas -->
                                     <div class="mb-6">
-                                        <label for="notes">{{ $t('purchase_orders_page.modal.fields.notes') }}</label>
+                                        <label for="notes">{{ $t('purchase_orders_page.create_modal.fields.notes') }}</label>
                                         <textarea 
                                             id="notes" 
-                                            :placeholder="$t('purchase_orders_page.modal.placeholders.notes')" 
+                                            :placeholder="$t('purchase_orders_page.create_modal.placeholders.notes')" 
                                             class="form-textarea min-h-[80px]" 
                                             v-model="params.notes"
                                         ></textarea>
@@ -256,7 +256,7 @@
                                             @click="$emit('close')"
                                             :disabled="saving"
                                         >
-                                            {{ $t('purchase_orders_page.modal.buttons.cancel') }}
+                                            {{ $t('purchase_orders_page.create_modal.buttons.cancel') }}
                                         </button>
                                         <button 
                                             type="submit" 
@@ -268,8 +268,8 @@
                                                 class="animate-spin border-2 border-white border-t-transparent rounded-full w-4 h-4 ltr:mr-2 rtl:ml-2 inline-block"
                                             ></span>
                                             {{ params.id 
-                                                ? $t('purchase_orders_page.modal.buttons.update') 
-                                                : $t('purchase_orders_page.modal.buttons.add') 
+                                                ? $t('purchase_orders_page.create_modal.buttons.update') 
+                                                : $t('purchase_orders_page.create_modal.buttons.add') 
                                             }}
                                         </button>
                                     </div>

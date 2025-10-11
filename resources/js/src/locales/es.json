@@ -684,10 +684,68 @@
             "cannot_delete": "No se puede eliminar la orden de compra en este estado",
             "no_orders": "No se encontraron órdenes de compra"
         },
-        "modal": {
+        "delete_confirm": {
+            "title": "¿Estás seguro?",
+            "text": "¡No podrás revertir esta acción!",
+            "confirm": "Sí, ¡elimínalo!",
+            "cancel": "Cancelar"
+        },
+        "reject_confirm": {
+            "title": "Rechazar Orden",
+            "text": "Por favor ingrese el motivo del rechazo:",
+            "confirm": "Rechazar",
+            "cancel": "Cancelar"
+        },
+        "receive_confirm": {
+            "title": "Recibir Orden",
+            "text": "Confirme las cantidades recibidas:",
+            "confirm": "Confirmar Recepción",
+            "cancel": "Cancelar"
+        },
+        "view_modal": {
+            "title": "Ver Orden de Compra",
+            "sections": {
+                "basic_info": "Información Básica",
+                "dates_totals": "Fechas y Totales",
+                "order_items": "Items de la Orden",
+                "totals_summary": "Resumen de Totales"
+            },
+            "fields": {
+                "supplier": "Proveedor",
+                "status": "Estado",
+                "created_by": "Creado por",
+                "order_date": "Fecha de Orden",
+                "expected_delivery": "Entrega Esperada",
+                "delivery_date": "Fecha de Recepción",
+                "approved_by": "Aprobado por",
+                "product": "Producto",
+                "quantity": "Cantidad",
+                "received": "Recibido",
+                "pending": "Pendiente",
+                "unit_price": "Precio Unitario",
+                "total": "Total",
+                "notes": "Notas",
+                "rejection_reason": "Motivo de Rechazo",
+                "subtotal": "Subtotal",
+                "tax": "Impuestos",
+                "shipping": "Envío",
+                "grand_total": "Total"
+            },
+            "buttons": {
+                "print": "Imprimir",
+                "close": "Cerrar"
+            },
+            "status": {
+                "loading": "Cargando información de la orden..."
+            },
+            "delivery_status": {
+                "on_time": "A tiempo",
+                "delayed": "Retrasado"
+            }
+        },
+        "create_modal": {
             "add_title": "Nueva Orden de Compra",
             "edit_title": "Editar Orden de Compra",
-            "view_title": "Ver Orden de Compra",
             "fields": {
                 "supplier": "Proveedor",
                 "expected_delivery_date": "Fecha de Entrega Esperada",
@@ -720,24 +778,6 @@
                 "add_item": "Agregar Item",
                 "remove_item": "Eliminar"
             }
-        },
-        "delete_confirm": {
-            "title": "¿Estás seguro?",
-            "text": "¡No podrás revertir esta acción!",
-            "confirm": "Sí, ¡elimínalo!",
-            "cancel": "Cancelar"
-        },
-        "reject_confirm": {
-            "title": "Rechazar Orden",
-            "text": "Por favor ingrese el motivo del rechazo:",
-            "confirm": "Rechazar",
-            "cancel": "Cancelar"
-        },
-        "receive_confirm": {
-            "title": "Recibir Orden",
-            "text": "Confirme las cantidades recibidas:",
-            "confirm": "Confirmar Recepción",
-            "cancel": "Cancelar"
         }
     }
 }

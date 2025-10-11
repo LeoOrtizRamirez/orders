@@ -47,9 +47,9 @@
                                 </svg>
                             </button>
                             <div class="text-lg font-medium bg-[#fbfbfb] dark:bg-[#121c2c] ltr:pl-5 rtl:pr-5 py-3 ltr:pr-[50px] rtl:pl-[50px]">
-                                {{ $t('purchase_orders_page.modal.view_title') }} 
+                                {{ $t('purchase_orders_page.view_modal.title') }} 
                                 <span v-if="order">{{ order.order_number }}</span>
-                                <span v-else class="text-gray-500">Cargando...</span>
+                                <span v-else class="text-gray-500">{{ $t('purchase_orders_page.view_modal.status.loading') }}</span>
                             </div>
                             
                             <!-- Contenido del modal -->
@@ -60,21 +60,27 @@
                                         <!-- Información Básica -->
                                         <div class="space-y-4">
                                             <div>
-                                                <label class="font-semibold text-gray-600">Proveedor:</label>
+                                                <label class="font-semibold text-gray-600">
+                                                    {{ $t('purchase_orders_page.view_modal.fields.supplier') }}:
+                                                </label>
                                                 <p class="text-lg">{{ order.supplier?.name }}</p>
                                                 <p class="text-sm text-gray-500">{{ order.supplier?.contact_person }}</p>
                                                 <p class="text-sm text-gray-500">{{ order.supplier?.email }}</p>
                                             </div>
                                             
                                             <div>
-                                                <label class="font-semibold text-gray-600">Estado:</label>
+                                                <label class="font-semibold text-gray-600">
+                                                    {{ $t('purchase_orders_page.view_modal.fields.status') }}:
+                                                </label>
                                                 <span class="badge ml-2" :class="getStatusClass(order.status)">
                                                     {{ $t(`purchase_orders_page.status.${order.status}`) }}
                                                 </span>
                                             </div>
 
                                             <div>
-                                                <label class="font-semibold text-gray-600">Creado por:</label>
+                                                <label class="font-semibold text-gray-600">
+                                                    {{ $t('purchase_orders_page.view_modal.fields.created_by') }}:
+                                                </label>
                                                 <p>{{ order.creator?.name }}</p>
                                                 <p class="text-sm text-gray-500">{{ formatDate(order.created_at) }}</p>
                                             </div>
@@ -83,24 +89,38 @@
                                         <!-- Fechas y Totales -->
                                         <div class="space-y-4">
                                             <div>
-                                                <label class="font-semibold text-gray-600">Fecha de Orden:</label>
+                                                <label class="font-semibold text-gray-600">
+                                                    {{ $t('purchase_orders_page.view_modal.fields.order_date') }}:
+                                                </label>
                                                 <p>{{ formatDate(order.order_date) }}</p>
                                             </div>
 
                                             <div>
-                                                <label class="font-semibold text-gray-600">Entrega Esperada:</label>
+                                                <label class="font-semibold text-gray-600">
+                                                    {{ $t('purchase_orders_page.view_modal.fields.expected_delivery') }}:
+                                                </label>
                                                 <p :class="{'text-warning': isDeliveryDelayed(order)}">
                                                     {{ formatDate(order.expected_delivery_date) }}
+                                                    <span v-if="isDeliveryDelayed(order)" class="text-xs ml-2">
+                                                        ({{ $t('purchase_orders_page.view_modal.delivery_status.delayed') }})
+                                                    </span>
+                                                    <span v-else-if="order.expected_delivery_date" class="text-xs ml-2 text-success">
+                                                        ({{ $t('purchase_orders_page.view_modal.delivery_status.on_time') }})
+                                                    </span>
                                                 </p>
                                             </div>
 
                                             <div v-if="order.delivery_date">
-                                                <label class="font-semibold text-gray-600">Fecha de Recepción:</label>
+                                                <label class="font-semibold text-gray-600">
+                                                    {{ $t('purchase_orders_page.view_modal.fields.delivery_date') }}:
+                                                </label>
                                                 <p>{{ formatDate(order.delivery_date) }}</p>
                                             </div>
 
                                             <div v-if="order.approved_by">
-                                                <label class="font-semibold text-gray-600">Aprobado por:</label>
+                                                <label class="font-semibold text-gray-600">
+                                                    {{ $t('purchase_orders_page.view_modal.fields.approved_by') }}:
+                                                </label>
                                                 <p>{{ order.approver?.name }}</p>
                                                 <p class="text-sm text-gray-500">{{ formatDate(order.approved_at) }}</p>
                                             </div>
@@ -109,17 +129,29 @@
 
                                     <!-- Items de la Orden -->
                                     <div class="mb-6">
-                                        <h3 class="text-lg font-semibold mb-4">Items de la Orden</h3>
+                                        <h3 class="text-lg font-semibold mb-4">
+                                            {{ $t('purchase_orders_page.view_modal.sections.order_items') }}
+                                        </h3>
                                         <div class="table-responsive">
                                             <table class="table-striped table-hover">
                                                 <thead>
                                                     <tr>
-                                                        <th>Producto</th>
-                                                        <th class="text-center">Cantidad</th>
-                                                        <th class="text-center">Recibido</th>
-                                                        <th class="text-center">Pendiente</th>
-                                                        <th class="text-right">Precio Unitario</th>
-                                                        <th class="text-right">Total</th>
+                                                        <th>{{ $t('purchase_orders_page.view_modal.fields.product') }}</th>
+                                                        <th class="text-center">
+                                                            {{ $t('purchase_orders_page.view_modal.fields.quantity') }}
+                                                        </th>
+                                                        <th class="text-center">
+                                                            {{ $t('purchase_orders_page.view_modal.fields.received') }}
+                                                        </th>
+                                                        <th class="text-center">
+                                                            {{ $t('purchase_orders_page.view_modal.fields.pending') }}
+                                                        </th>
+                                                        <th class="text-right">
+                                                            {{ $t('purchase_orders_page.view_modal.fields.unit_price') }}
+                                                        </th>
+                                                        <th class="text-right">
+                                                            {{ $t('purchase_orders_page.view_modal.fields.total') }}
+                                                        </th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -154,34 +186,40 @@
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                         <div class="space-y-2">
                                             <div v-if="order.notes">
-                                                <label class="font-semibold text-gray-600">Notas:</label>
+                                                <label class="font-semibold text-gray-600">
+                                                    {{ $t('purchase_orders_page.view_modal.fields.notes') }}:
+                                                </label>
                                                 <p class="bg-gray-50 dark:bg-gray-800 p-3 rounded">{{ order.notes }}</p>
                                             </div>
 
                                             <div v-if="order.rejection_reason">
-                                                <label class="font-semibold text-danger">Motivo de Rechazo:</label>
+                                                <label class="font-semibold text-danger">
+                                                    {{ $t('purchase_orders_page.view_modal.fields.rejection_reason') }}:
+                                                </label>
                                                 <p class="bg-danger/10 text-danger p-3 rounded">{{ order.rejection_reason }}</p>
                                             </div>
                                         </div>
 
                                         <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-                                            <h4 class="font-semibold mb-3">Resumen de Totales</h4>
+                                            <h4 class="font-semibold mb-3">
+                                                {{ $t('purchase_orders_page.view_modal.sections.totals_summary') }}
+                                            </h4>
                                             <div class="space-y-2">
                                                 <div class="flex justify-between">
-                                                    <span>Subtotal:</span>
+                                                    <span>{{ $t('purchase_orders_page.view_modal.fields.subtotal') }}:</span>
                                                     <span class="font-semibold">{{ moneyFormat(order.subtotal) }}</span>
                                                 </div>
                                                 <div class="flex justify-between">
-                                                    <span>Impuestos:</span>
+                                                    <span>{{ $t('purchase_orders_page.view_modal.fields.tax') }}:</span>
                                                     <span class="font-semibold">{{ moneyFormat(order.tax) }}</span>
                                                 </div>
                                                 <div class="flex justify-between">
-                                                    <span>Envío:</span>
+                                                    <span>{{ $t('purchase_orders_page.view_modal.fields.shipping') }}:</span>
                                                     <span class="font-semibold">{{ moneyFormat(order.shipping) }}</span>
                                                 </div>
                                                 <hr class="my-2">
                                                 <div class="flex justify-between text-lg font-bold">
-                                                    <span>Total:</span>
+                                                    <span>{{ $t('purchase_orders_page.view_modal.fields.grand_total') }}:</span>
                                                     <span class="text-success">{{ moneyFormat(order.total) }}</span>
                                                 </div>
                                             </div>
@@ -198,14 +236,14 @@
                                             <svg class="w-4 h-4 ltr:mr-2 rtl:ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
                                             </svg>
-                                            Imprimir
+                                            {{ $t('purchase_orders_page.view_modal.buttons.print') }}
                                         </button>
                                         <button 
                                             type="button" 
                                             class="btn btn-outline-danger ltr:ml-4 rtl:mr-4" 
                                             @click="$emit('close')"
                                         >
-                                            Cerrar
+                                            {{ $t('purchase_orders_page.view_modal.buttons.close') }}
                                         </button>
                                     </div>
                                 </template>
@@ -214,7 +252,7 @@
                                 <template v-else>
                                     <div class="text-center py-8">
                                         <div class="animate-spin border-2 border-primary border-t-transparent rounded-full w-8 h-8 mx-auto mb-4"></div>
-                                        <p class="text-gray-500">Cargando información de la orden...</p>
+                                        <p class="text-gray-500">{{ $t('purchase_orders_page.view_modal.status.loading') }}</p>
                                     </div>
                                 </template>
                             </div>

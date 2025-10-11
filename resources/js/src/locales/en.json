@@ -684,10 +684,68 @@
             "cannot_delete": "Cannot delete the purchase order in this status",
             "no_orders": "No purchase orders found"
         },
-        "modal": {
+        "delete_confirm": {
+            "title": "Are you sure?",
+            "text": "You won't be able to revert this action!",
+            "confirm": "Yes, delete it!",
+            "cancel": "Cancel"
+        },
+        "reject_confirm": {
+            "title": "Reject Order",
+            "text": "Please enter the rejection reason:",
+            "confirm": "Reject",
+            "cancel": "Cancel"
+        },
+        "receive_confirm": {
+            "title": "Receive Order",
+            "text": "Confirm received quantities:",
+            "confirm": "Confirm Receipt",
+            "cancel": "Cancel"
+        },
+        "view_modal": {
+            "title": "View Purchase Order",
+            "sections": {
+                "basic_info": "Basic Information",
+                "dates_totals": "Dates and Totals",
+                "order_items": "Order Items",
+                "totals_summary": "Totals Summary"
+            },
+            "fields": {
+                "supplier": "Supplier",
+                "status": "Status",
+                "created_by": "Created By",
+                "order_date": "Order Date",
+                "expected_delivery": "Expected Delivery",
+                "delivery_date": "Delivery Date",
+                "approved_by": "Approved By",
+                "product": "Product",
+                "quantity": "Quantity",
+                "received": "Received",
+                "pending": "Pending",
+                "unit_price": "Unit Price",
+                "total": "Total",
+                "notes": "Notes",
+                "rejection_reason": "Rejection Reason",
+                "subtotal": "Subtotal",
+                "tax": "Tax",
+                "shipping": "Shipping",
+                "grand_total": "Total"
+            },
+            "buttons": {
+                "print": "Print",
+                "close": "Close"
+            },
+            "status": {
+                "loading": "Loading order information..."
+            },
+            "delivery_status": {
+                "on_time": "On Time",
+                "delayed": "Delayed"
+            }
+        },
+        "create_modal": {
             "add_title": "New Purchase Order",
             "edit_title": "Edit Purchase Order",
-            "view_title": "View Purchase Order",
             "fields": {
                 "supplier": "Supplier",
                 "expected_delivery_date": "Expected Delivery Date",
@@ -720,24 +778,6 @@
                 "add_item": "Add Item",
                 "remove_item": "Remove"
             }
-        },
-        "delete_confirm": {
-            "title": "Are you sure?",
-            "text": "You won't be able to revert this action!",
-            "confirm": "Yes, delete it!",
-            "cancel": "Cancel"
-        },
-        "reject_confirm": {
-            "title": "Reject Order",
-            "text": "Please enter the rejection reason:",
-            "confirm": "Reject",
-            "cancel": "Cancel"
-        },
-        "receive_confirm": {
-            "title": "Receive Order",
-            "text": "Confirm received quantities:",
-            "confirm": "Confirm Receipt",
-            "cancel": "Cancel"
         }
     }
 }
