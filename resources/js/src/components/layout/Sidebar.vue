@@ -174,7 +174,7 @@
                                 </li>
 
                                 <li class="nav-item">
-                                    <router-link to="/apps/services" class="group" @click="toggleMobileMenu">
+                                    <router-link to="/apps/products" class="group" @click="toggleMobileMenu">
                                         <div class="flex items-center">
                                             <svg
                                                 class="group-hover:!text-primary shrink-0"
@@ -196,7 +196,7 @@
                                             </svg>
 
                                             <span class="ltr:pl-3 rtl:pr-3 text-black dark:text-[#506690] dark:group-hover:text-white-dark">{{
-                                                $t('services')
+                                                $t('products')
                                             }}</span>
                                         </div>
                                     </router-link>
