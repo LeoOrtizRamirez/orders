@@ -165,7 +165,7 @@
                                 </li>
                             </ul>
                         </div>
-                        <p class="dark:text-white">© {{ new Date().getFullYear() }}. Blupage All Rights Reserved.</p>
+                        <p class="dark:text-white">© {{ new Date().getFullYear() }}. DistriFruver All Rights Reserved.</p>
                     </div>
                 </div>
             </div>

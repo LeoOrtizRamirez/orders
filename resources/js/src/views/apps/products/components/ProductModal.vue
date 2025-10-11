@@ -185,26 +185,6 @@
                                             <div v-if="errors.category" class="text-danger mt-1">{{ errors.category[0] }}</div>
                                         </div>
                                         <div class="mb-5">
-                                            <label for="brand">{{ $t('products_page.modal.fields.brand') }}</label>
-                                            <input 
-                                                id="brand" 
-                                                type="text" 
-                                                :placeholder="$t('products_page.modal.placeholders.brand')" 
-                                                class="form-input" 
-                                                v-model="params.brand" 
-                                            />
-                                            <div v-if="errors.brand" class="text-danger mt-1">{{ errors.brand[0] }}</div>
-                                        </div>
-                                    </div>
-
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div class="mb-5">
-                                            <label class="flex items-center cursor-pointer">
-                                                <input type="checkbox" class="form-checkbox" v-model="params.is_active" />
-                                                <span class="text-white-dark ltr:ml-3 rtl:mr-3">{{ $t('products_page.modal.fields.active') }}</span>
-                                            </label>
-                                        </div>
-                                        <div class="mb-5">
                                             <label for="order">{{ $t('products_page.modal.fields.order') }}</label>
                                             <input 
                                                 id="order" 
@@ -215,6 +195,28 @@
                                                 v-model="params.order" 
                                             />
                                             <div v-if="errors.order" class="text-danger mt-1">{{ errors.order[0] }}</div>
+                                        </div>
+                                        <!--
+                                        <div class="mb-5">
+                                            <label for="brand">{{ $t('products_page.modal.fields.brand') }}</label>
+                                            <input 
+                                                id="brand" 
+                                                type="text" 
+                                                :placeholder="$t('products_page.modal.placeholders.brand')" 
+                                                class="form-input" 
+                                                v-model="params.brand" 
+                                            />
+                                            <div v-if="errors.brand" class="text-danger mt-1">{{ errors.brand[0] }}</div>
+                                        </div>
+                                        -->
+                                    </div>
+
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div class="mb-5">
+                                            <label class="flex items-center cursor-pointer">
+                                                <input type="checkbox" class="form-checkbox" v-model="params.is_active" />
+                                                <span class="text-white-dark ltr:ml-3 rtl:mr-3">{{ $t('products_page.modal.fields.active') }}</span>
+                                            </label>
                                         </div>
                                     </div>
 

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'http://blupage.local', // URL de tu backend Laravel
+    baseURL: 'http://distrifruver.local', // URL de tu backend Laravel
     withCredentials: true,
 });
 

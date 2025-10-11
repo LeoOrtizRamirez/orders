@@ -56,7 +56,7 @@ export function useProducts() {
         stock: 0,
         min_stock: 10,
         reorder_point: 5,
-        unit: 'unidad',
+        unit: 'kg',
         category: '',
         brand: '',
         supplier: '',

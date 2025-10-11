@@ -589,8 +589,8 @@
                 "order": "Order"
             },
             "placeholders": {
-                "name": "Ex: Dell XPS 13 Laptop",
-                "sku": "Will be generated automatically",
+                "name": "Ex: strawberry",
+                "sku": "Ex: sku",
                 "description": "Product description...",
                 "price": "0.00",
                 "cost": "0.00",
@@ -598,7 +598,7 @@
                 "min_stock": "10",
                 "reorder_point": "5",
                 "unit": "Ex: unit, kg, liter",
-                "category": "Ex: Electronics, Clothing",
+                "category": "Ex: fruit, vegetable",
                 "brand": "Ex: Dell, Samsung",
                 "order": "0"
             },

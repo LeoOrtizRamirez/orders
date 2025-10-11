@@ -185,7 +185,7 @@
                             </ul>
                         </div>
                     </div>
-                    <p class="absolute bottom-6 w-full text-center dark:text-white">© {{ new Date().getFullYear() }}.Blupage All Rights Reserved.</p>
+                    <p class="absolute bottom-6 w-full text-center dark:text-white">© {{ new Date().getFullYear() }}.DistriFruver All Rights Reserved.</p>
                 </div>
             </div>
         </div>

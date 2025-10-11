@@ -889,7 +889,7 @@
                             <router-link to="/widgets">{{ $t('widgets') }}</router-link>
                         </li>
                         <li>
-                            <a href="https://Blupage.sbthemes.com" target="_blank">{{ $t('documentation') }}</a>
+                            <a href="https://DistriFruver.sbthemes.com" target="_blank">{{ $t('documentation') }}</a>
                         </li>
                     </ul>
                 </li>

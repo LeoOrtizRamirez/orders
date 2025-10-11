@@ -589,8 +589,8 @@
                 "order": "Orden"
             },
             "placeholders": {
-                "name": "Ej: Laptop Dell XPS 13",
-                "sku": "Se generará automáticamente",
+                "name": "Ej: Fresa",
+                "sku": "Ej: sku",
                 "description": "Descripción del producto...",
                 "price": "0.00",
                 "cost": "0.00",
@@ -598,7 +598,7 @@
                 "min_stock": "10",
                 "reorder_point": "5",
                 "unit": "Ej: unidad, kg, litro",
-                "category": "Ej: Electrónicos, Ropa",
+                "category": "Ej: Fruta, verdura",
                 "brand": "Ej: Dell, Samsung",
                 "order": "0"
             },
