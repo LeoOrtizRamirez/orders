@@ -57,7 +57,7 @@ class PurchaseOrderController extends Controller
                 'shipping' => 'sometimes|numeric|min:0',
                 'items' => 'required|array|min:1',
                 'items.*.product_id' => 'required|exists:products,id',
-                'items.*.quantity' => 'required|integer|min:0',//PENDIENTE DESCOMENTAR CAMBIAR A 1
+                'items.*.quantity' => 'required|min:0',//PENDIENTE DESCOMENTAR CAMBIAR A 1
                 'items.*.unit_price' => 'sometimes|numeric|min:0',
                 'items.*.notes' => 'nullable|string',
             ]);
