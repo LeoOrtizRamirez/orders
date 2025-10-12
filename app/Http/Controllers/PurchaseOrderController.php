@@ -62,7 +62,8 @@ class PurchaseOrderController extends Controller
                 'items.*.notes' => 'nullable|string',
             ]);
 
-            foreach ($validated['items'] as $item) {
+            //PENDIENTE DESCOMENTAR
+            /* foreach ($validated['items'] as $item) {
                 $product = Product::find($item['product_id']);
                 if ($product && $item['quantity'] > $product->stock) {
                     return response()->json([
@@ -71,7 +72,7 @@ class PurchaseOrderController extends Controller
                         ]
                     ], 422);
                 }
-            }
+            } */
 
             $purchaseOrder = $this->purchaseOrderService->createPurchaseOrder($validated, $request->user()->id);
 
