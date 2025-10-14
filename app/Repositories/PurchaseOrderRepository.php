@@ -85,7 +85,7 @@ class PurchaseOrderRepository
 
     public function generateOrderNumber(): string
     {
-        $prefix = 'PO-' . date('Ymd');
+        $prefix = 'PO-' . date('YmdHis');
         $lastOrder = $this->model->where('order_number', 'like', $prefix . '%')->latest()->first();
         
         if ($lastOrder) {
