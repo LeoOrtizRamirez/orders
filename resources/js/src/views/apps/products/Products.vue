@@ -10,6 +10,8 @@
             @update:filters="handleFiltersUpdate"
             @update:search-product="searchProduct = $event"
             @add-product="handleAddProduct"
+            @open-import-modal="handleShowImportModal"
+            @download-template="handleDownloadTemplate"
         />
 
         <!-- Alertas -->
@@ -49,7 +51,7 @@
             />
         </div>
 
-        <!-- Modal -->
+        <!-- Modal de Creación/Edición -->
         <ProductModal
             :show="showModal"
             :params="params"
@@ -58,6 +60,14 @@
             :categories="categories"
             @close="handleCloseModal"
             @save="handleSaveProduct"
+        />
+
+        <!-- Modal de Importación de Productos -->
+        <ProductImportModal
+            :show="showImportModal"
+            :loading="importLoading"
+            @close="handleCloseImportModal"
+            @import="handleImportCsv"
         />
     </div>
 </template>
@@ -74,11 +84,14 @@
     import ProductsListView from './components/ProductsListView.vue';
     import ProductsGridView from './components/ProductsGridView.vue';
     import ProductModal from './components/ProductModal.vue';
+    import ProductImportModal from './components/ProductImportModal.vue'; // New component
 
     useMeta({ title: 'Gestión de Productos' });
 
     const displayType = ref<'list' | 'grid'>('list');
     const showModal = ref(false);
+    const showImportModal = ref(false); // New state for import modal
+    const importLoading = ref(false); // New state for import loading
 
     // Use products composable
     const {
@@ -105,10 +118,20 @@
         editProduct,
         resetParams,
         showMessage,
-        moneyFormat
+        moneyFormat,
+        importProductsCsv,
+        downloadProductsCsvTemplate
     } = useProducts();
 
+    // Console logs for debugging
+    console.log('--- Products.vue Setup Debug ---');
+    console.log('categories from useProducts:', categories.value);
+    console.log('showImportModal (ref):', showImportModal.value);
+    console.log('importLoading (ref):', importLoading.value);
+    console.log('--- End Products.vue Setup Debug ---');
+
     onMounted(() => {
+        console.log('Products.vue onMounted hook triggered.'); // Confirm onMounted is running
         fetchProducts();
         fetchCategories();
     });
@@ -129,11 +152,36 @@
         resetParams();
     };
 
-    const handleSaveProduct = async (productParams: any) => {
+    const handleSaveProduct = async () => { // Adjusted signature
         const success = await saveProduct();
         if (success) {
             handleCloseModal();
         }
+    };
+
+    const handleDownloadTemplate = async () => {
+        await downloadProductsCsvTemplate();
+    };
+
+    const handleShowImportModal = () => {
+        showImportModal.value = true;
+    };
+
+    const handleImportCsv = async (file: File) => {
+        importLoading.value = true;
+        try {
+            const success = await importProductsCsv(file);
+            if (success) {
+                showImportModal.value = false;
+                fetchProducts(); // Refresh products list
+            }
+        } finally {
+            importLoading.value = false;
+        }
+    };
+
+    const handleCloseImportModal = () => {
+        showImportModal.value = false;
     };
 
     const handleDeleteProduct = async (product: any) => {

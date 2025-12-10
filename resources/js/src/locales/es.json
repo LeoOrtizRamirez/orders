@@ -618,7 +618,21 @@
         },
         "no_description": "Sin descripción",
         "unit_default": "unid",
-        "no_products": "No se encontraron productos"
+        "no_products": "No se encontraron productos",
+        "import_modal": {
+            "title": "Importar Productos CSV",
+            "file_label": "Archivo CSV de Productos",
+            "supported_formats": "Formatos soportados: CSV",
+            "cancel_btn": "Cancelar",
+            "import_btn": "Importar",
+            "loading_btn": "Importando...",
+            "upload_btn": "Subir CSV",
+            "download_template_btn": "Descargar Plantilla",
+            "import_success": "Importación completada. Importados: {imported}, Actualizados: {updated}, Fallidos: {failed}",
+            "import_failed": "Error al importar productos.",
+            "import_error": "Error durante la importación.",
+            "validation_errors": "Errores de validación en el archivo CSV."
+        }
     },
     "purchase_orders_page": {
         "title": "Gestión de Órdenes de Compra",

@@ -3,8 +3,8 @@
         <h2 class="text-xl">{{ $t('products_page.title') }}</h2>
         <div class="flex sm:flex-row flex-col sm:items-center sm:gap-3 gap-4 w-full sm:w-auto">
             <div class="flex gap-3">
-                <!-- Botón Agregar -->
-                <div>
+                <!-- Botones de Acción -->
+                <div class="flex gap-3">
                     <button 
                         v-if="authStore.can('create products')"
                         type="button" 
@@ -17,6 +17,30 @@
                             <path opacity="0.5" d="M12 16V8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
                         </svg>
                         {{ $t('products_page.add_product_btn') }}
+                    </button>
+
+                    <button 
+                        v-if="authStore.can('create products')"
+                        type="button" 
+                        class="btn btn-outline-primary" 
+                        @click="$emit('open-import-modal')"
+                    >
+                        <svg class="w-5 h-5 ltr:mr-2 rtl:ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                        </svg>
+                        {{ $t('products_page.import_modal.upload_btn') }}
+                    </button>
+
+                    <button 
+                        v-if="authStore.can('create products')"
+                        type="button" 
+                        class="btn btn-outline-primary" 
+                        @click="$emit('download-template')"
+                    >
+                        <svg class="w-5 h-5 ltr:mr-2 rtl:ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                        </svg>
+                        {{ $t('products_page.import_modal.download_template_btn') }}
                     </button>
                 </div>
 
@@ -143,6 +167,8 @@
         (e: 'update:filters', value: Props['filters']): void;
         (e: 'update:search-product', value: string): void;
         (e: 'add-product'): void;
+        (e: 'open-import-modal'): void; // New emit
+        (e: 'download-template'): void; // New emit
     }
 
     const props = defineProps<Props>();

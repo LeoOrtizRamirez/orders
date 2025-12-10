@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Repositories\ProductRepository;
 use Exception;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Http\UploadedFile; // Added
 
 class ProductManagementService
 {
@@ -136,5 +137,75 @@ class ProductManagementService
         $prefix = strtoupper(substr(preg_replace('/[^A-Za-z0-9]/', '', $name), 0, 3));
         $timestamp = time();
         return $prefix . '-' . substr($timestamp, -6);
+    }
+
+    public function importProducts(UploadedFile $file): array
+    {
+        $importedCount = 0;
+        $updatedCount = 0;
+        $failedCount = 0;
+        $errors = [];
+
+        if (($handle = fopen($file->getPathname(), 'r')) !== FALSE) {
+            $header = fgetcsv($handle, 1000, ','); // Read header row
+            $expectedHeaders = ['name', 'sku', 'description', 'stock', 'min_stock', 'reorder_point', 'unit', 'category', 'brand', 'supplier', 'is_active', 'order'];
+
+            // Basic header validation
+            if (array_diff($expectedHeaders, $header)) {
+                throw new Exception('Invalid CSV header. Expected: ' . implode(', ', $expectedHeaders));
+            }
+
+            while (($row = fgetcsv($handle, 1000, ',')) !== FALSE) {
+                // Combine header with row data
+                $data = array_combine($header, $row);
+
+                try {
+                    // Basic validation for required fields
+                    if (empty($data['name']) || empty($data['sku'])) {
+                        throw new Exception('Product name and SKU are required.');
+                    }
+
+                    $productData = [
+                        'name' => $data['name'],
+                        'sku' => $data['sku'],
+                        'description' => $data['description'] ?? null,
+                        'stock' => (int)($data['stock'] ?? 0),
+                        'min_stock' => (int)($data['min_stock'] ?? 0),
+                        'reorder_point' => (int)($data['reorder_point'] ?? 0),
+                        'unit' => $data['unit'] ?? 'unit',
+                        'category' => $data['category'] ?? null,
+                        'brand' => $data['brand'] ?? null,
+                        'supplier' => $data['supplier'] ?? null,
+                        'is_active' => (bool)($data['is_active'] ?? true),
+                        'order' => (int)($data['order'] ?? 0),
+                    ];
+
+                    $existingProduct = $this->productRepository->findBySku($productData['sku']);
+
+                    if ($existingProduct) {
+                        // Update existing product
+                        $this->productRepository->update($existingProduct->id, $productData);
+                        $updatedCount++;
+                    } else {
+                        // Create new product
+                        $this->productRepository->create($productData);
+                        $importedCount++;
+                    }
+                } catch (Exception $e) {
+                    $failedCount++;
+                    $errors[] = ['row' => $data, 'error' => $e->getMessage()];
+                }
+            }
+            fclose($handle);
+        } else {
+            throw new Exception('Could not open CSV file.');
+        }
+
+        return [
+            'imported' => $importedCount,
+            'updated' => $updatedCount,
+            'failed' => $failedCount,
+            'errors' => $errors,
+        ];
     }
 }

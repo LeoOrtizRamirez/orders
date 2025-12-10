@@ -146,6 +146,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/categories', [ProductController::class, 'categories']);
         Route::put('/{id}/toggle-status', [ProductController::class, 'toggleStatus']);
         Route::get('/sku/{sku}', [ProductController::class, 'getProductBySku']);
+        // New routes for CSV import/export
+        Route::post('/import', [ProductController::class, 'importProductsCsv'])->middleware('permission:create products');
+        Route::get('/template', [ProductController::class, 'downloadProductsCsvTemplate'])->middleware('permission:create products');
     });
     Route::apiResource('products', ProductController::class);
 

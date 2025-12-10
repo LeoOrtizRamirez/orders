@@ -267,6 +267,76 @@ export function useProducts() {
         }).format(valor);
     };
 
+    const importProductsCsv = async (file: File): Promise<boolean> => {
+        errorMessage.value = '';
+        successMessage.value = '';
+
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const response = await axios.post('/api/products/import', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            if (response.data.success) {
+                showMessage(t('products_page.import_modal.import_success', {
+                    imported: response.data.imported,
+                    updated: response.data.updated,
+                    failed: response.data.failed
+                }), 'success');
+                return true;
+            } else {
+                showMessage(response.data.message || t('products_page.import_modal.import_failed'), 'error');
+                return false;
+            }
+        } catch (error: any) {
+            console.error('Error importing products:', error);
+            if (error.response && error.response.status === 422) {
+                // Handle validation errors from backend (e.g., CSV format issues)
+                const validationErrors = error.response.data.errors;
+                let errorMsg = t('products_page.import_modal.validation_errors') + '\n';
+                for (const key in validationErrors) {
+                    if (Object.prototype.hasOwnProperty.call(validationErrors, key)) {
+                        errorMsg += `- ${validationErrors[key].join(', ')}\n`;
+                    }
+                }
+                showMessage(errorMsg, 'error');
+            } else {
+                showMessage(error.response?.data?.message || t('products_page.import_modal.import_error'), 'error');
+            }
+            return false;
+        }
+    };
+
+    const downloadProductsCsvTemplate = async (): Promise<boolean> => {
+        errorMessage.value = '';
+        successMessage.value = '';
+        try {
+            const response = await axios.get('/api/products/template', {
+                responseType: 'blob', // Important for file downloads
+            });
+
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', 'products_template.csv');
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+
+            showMessage(t('products_page.import_modal.template_downloaded'), 'success');
+            return true;
+        } catch (error: any) {
+            console.error('Error downloading template:', error);
+            showMessage(error.response?.data?.message || t('products_page.import_modal.template_download_error'), 'error');
+            return false;
+        }
+    };
+
     return {
         // States
         productsList,
@@ -297,5 +367,8 @@ export function useProducts() {
         resetParams,
         getStockClass,
         showMessage,
+        moneyFormat,
+        importProductsCsv,
+        downloadProductsCsvTemplate
     };
 }
