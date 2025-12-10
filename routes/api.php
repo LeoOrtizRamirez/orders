@@ -105,8 +105,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
 
     Route::apiResource('services', ServiceController::class);
-    Route::apiResource('videos', VideoController::class);
-
     // Rutas adicionales para Services
     Route::prefix('services')->group(function () {
         Route::get('/active/list', [ServiceController::class, 'activeServices']);
@@ -114,6 +112,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/slug/{slug}', [ServiceController::class, 'getServiceBySlug']);
     });
 
+    Route::apiResource('videos', VideoController::class);
     // Rutas adicionales para Videos
     Route::prefix('videos')->group(function () {
         Route::get('/service/{serviceId}', [VideoController::class, 'byService']);
@@ -150,30 +149,21 @@ Route::middleware(['auth:sanctum'])->group(function () {
     });
     Route::apiResource('products', ProductController::class);
 
-    // Rutas de órdenes de compra
-    Route::apiResource('purchase-orders', PurchaseOrderController::class);
-    Route::prefix('purchase-orders')->group(function () {
-        Route::get('/pending/list', [PurchaseOrderController::class, 'pending']);
-        Route::put('/{id}/approve', [PurchaseOrderController::class, 'approve']);
-        Route::put('/{id}/reject', [PurchaseOrderController::class, 'reject']);
-        Route::put('/{id}/mark-ordered', [PurchaseOrderController::class, 'markAsOrdered']);
-        Route::put('/{id}/receive', [PurchaseOrderController::class, 'receive']);
-    });
-
     // Rutas de proveedores
     Route::get('/suppliers/active/list', [SupplierController::class, 'activeSuppliers']);
     Route::get('/suppliers/for-select', [SupplierController::class, 'forSelect']);
     Route::put('/suppliers/{id}/toggle-status', [SupplierController::class, 'toggleStatus']);
     Route::apiResource('suppliers', SupplierController::class);
 
-    Route::apiResource('purchase-orders', PurchaseOrderController::class);
-    
+    // Rutas de órdenes de compra (todas unificadas y ordenadas por especificidad)
     Route::prefix('purchase-orders')->group(function () {
-        // Rutas adicionales existentes
+        // Rutas más específicas primero
         Route::get('/pending/list', [PurchaseOrderController::class, 'pending']);
-        
-        // Rutas para cambio de estado
+        Route::get('/kanban', [PurchaseOrderController::class, 'kanbanIndex'])->middleware('permission:view purchase_orders');
+
+        // Rutas con {purchaseOrder} para PurchaseOrderStatusController
         Route::prefix('{purchaseOrder}')->group(function () {
+            Route::put('/status', [PurchaseOrderStatusController::class, 'updateStatus']);
             Route::post('/submit', [PurchaseOrderStatusController::class, 'submit']);
             Route::post('/approve', [PurchaseOrderStatusController::class, 'approve']);
             Route::post('/reject', [PurchaseOrderStatusController::class, 'reject']);
@@ -182,5 +172,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::post('/cancel', [PurchaseOrderStatusController::class, 'cancel']);
             Route::post('/reopen', [PurchaseOrderStatusController::class, 'reopen']);
         });
+
+        // Rutas con {id} para PurchaseOrderController (estas deben ir después de las anteriores si usan {id})
+        Route::put('/{id}/approve', [PurchaseOrderController::class, 'approve']);
+        Route::put('/{id}/reject', [PurchaseOrderController::class, 'reject']);
+        Route::put('/{id}/mark-ordered', [PurchaseOrderController::class, 'markAsOrdered']);
+        Route::put('/{id}/receive', [PurchaseOrderController::class, 'receive']);
     });
+
+    // apiResource debe ir al final para no interceptar las rutas más específicas
+    Route::apiResource('purchase-orders', PurchaseOrderController::class);
 });

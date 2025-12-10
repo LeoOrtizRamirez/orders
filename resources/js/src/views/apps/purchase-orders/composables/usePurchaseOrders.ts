@@ -453,12 +453,12 @@ export function usePurchaseOrders() {
                 id: order.id,
                 supplier_id: order.supplier_id,
                 expected_delivery_date: order.expected_delivery_date,
-                notes: '', // Reset for new note
+                notes: order.notes ? (Array.isArray(order.notes) && order.notes.length > 0 ? order.notes[0].note : '') : '', // Load existing order notes
                 items: order.items?.map(item => ({
                     id: item.id, // Mapear el ID del ítem
                     product_id: item.product_id,
                     quantity: item.quantity,
-                    new_note: '' // Resetear para nueva nota
+                    notes: item.notes ? (Array.isArray(item.notes) && item.notes.length > 0 ? item.notes[0].note : '') : '' // Load existing item notes
                 })) || []
             };
         } else {

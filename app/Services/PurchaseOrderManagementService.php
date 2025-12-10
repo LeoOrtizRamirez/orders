@@ -295,8 +295,22 @@ class PurchaseOrderManagementService
         });
     }
 
-    public function getPendingOrders()
-    {
-        return $this->purchaseOrderRepository->getPendingOrders();
+        public function getPendingOrders()
+
+        {
+
+            return $this->purchaseOrderRepository->getPendingOrders();
+
+        }
+
+    
+
+        public function getKanbanPurchaseOrders()
+
+        {
+
+            return $this->purchaseOrderRepository->getKanbanOrders();
+
+        }
+
     }
-}

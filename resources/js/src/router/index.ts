@@ -110,6 +110,13 @@ const routes: RouteRecordRaw[] = [
         component: () => import(/* webpackChunkName: "apps-services" */ '../views/apps/purchase-orders/PurchaseOrders.vue'),
         meta: { requiresAuth: true }
     },
+    {
+        path: '/apps/purchase-orders/kanban',
+        name: 'purchase-orders-kanban',
+        component: () => import(/* webpackChunkName: "apps-purchase-orders-kanban" */ '../views/apps/purchase-orders/OrderKanbanBoard.vue'),
+        meta: { requiresAuth: true }
+    },
+
 
     // components
     {

@@ -52,7 +52,8 @@ class PurchaseOrder extends Model
         'can_be_marked_ordered',
         'can_be_deleted',
         'can_be_cancelled',
-        'can_be_reopened'
+        'can_be_reopened',
+        'total' // Add total to appends
     ];
 
     public function supplier(): BelongsTo

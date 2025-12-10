@@ -943,5 +943,26 @@
                 "update": "Update"
             }
         }
+    },
+    "ordenes": {
+        "kanban_board": "Kanban Board",
+        "order_kanban_board": "Order Kanban Board",
+        "refresh": "Refresh",
+        "total": "Total",
+        "created_at": "Created",
+        "view_details": "View Details",
+        "error_fetching_orders": "Error fetching orders.",
+        "order_status_updated_successfully": "Order status updated successfully.",
+        "error_updating_order_status": "Error updating order status.",
+        "list_orders": "List Orders",
+        "status": {
+            "draft": "Draft",
+            "pending": "Pending",
+            "approved": "Approved",
+            "ordered": "Ordered",
+            "received": "Received",
+            "rejected": "Rejected",
+            "cancelled": "Cancelled"
+        }
     }
 }

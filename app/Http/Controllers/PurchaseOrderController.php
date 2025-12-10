@@ -226,19 +226,66 @@ class PurchaseOrderController extends Controller
         }
     }
 
-    public function pending(): JsonResponse
-    {
-        try {
-            $purchaseOrders = $this->purchaseOrderService->getPendingOrders();
+        public function pending(): JsonResponse
 
-            return response()->json([
-                'data' => $purchaseOrders
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Failed to load pending purchase orders',
-                'message' => $e->getMessage()
-            ], 500);
+        {
+
+            try {
+
+                $purchaseOrders = $this->purchaseOrderService->getPendingOrders();
+
+    
+
+                return response()->json([
+
+                    'data' => $purchaseOrders
+
+                ]);
+
+            } catch (\Exception $e) {
+
+                return response()->json([
+
+                    'error' => 'Failed to load pending purchase orders',
+
+                    'message' => $e->getMessage()
+
+                ], 500);
+
+            }
+
         }
+
+    
+
+        public function kanbanIndex(): JsonResponse
+
+        {
+
+            try {
+
+                $purchaseOrders = $this->purchaseOrderService->getKanbanPurchaseOrders();
+
+                
+
+                return response()->json([
+
+                    'data' => $purchaseOrders
+
+                ]);
+
+            } catch (\Exception $e) {
+
+                return response()->json([
+
+                    'error' => 'Failed to load purchase orders for Kanban board',
+
+                    'message' => $e->getMessage()
+
+                ], 500);
+
+            }
+
+        }
+
     }
-}

@@ -83,18 +83,40 @@ class PurchaseOrderRepository
         return $this->model->pending()->with(['supplier', 'creator'])->latest()->get();
     }
 
-    public function generateOrderNumber(): string
-    {
-        $prefix = 'PO-' . date('YmdHis');
-        $lastOrder = $this->model->where('order_number', 'like', $prefix . '%')->latest()->first();
-        
-        if ($lastOrder) {
-            $lastNumber = (int) substr($lastOrder->order_number, -4);
-            $newNumber = str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
-        } else {
-            $newNumber = '0001';
+        public function generateOrderNumber(): string
+
+        {
+
+            $prefix = 'PO-' . date('YmdHis');
+
+            $lastOrder = $this->model->where('order_number', 'like', $prefix . '%')->latest()->first();
+
+            
+
+            if ($lastOrder) {
+
+                $lastNumber = (int) substr($lastOrder->order_number, -4);
+
+                $newNumber = str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
+
+            } else {
+
+                $newNumber = '0001';
+
+            }
+
+    
+
+            return $prefix . '-' . $newNumber;
+
         }
 
-        return $prefix . '-' . $newNumber;
+    
+
+                public function getKanbanOrders()
+                {
+                    return $this->model->with(['supplier', 'creator', 'items.product'])->get();
+                }
     }
-}
+
+    
