@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\User;
 use App\Repositories\PurchaseOrderRepository;
 use App\Repositories\ProductRepository;
 use Exception;
@@ -30,62 +31,55 @@ class PurchaseOrderManagementService
         return $purchaseOrder;
     }
 
-    public function createPurchaseOrder(array $data, int $userId)
+    public function createPurchaseOrder(array $data, User $user)
     {
-        return DB::transaction(function () use ($data, $userId) {
-            // Generar número de orden
+        return DB::transaction(function () use ($data, $user) {
             $data['order_number'] = $this->purchaseOrderRepository->generateOrderNumber();
-            $data['created_by'] = $userId;
+            $data['created_by'] = $user->id;
             $data['order_date'] = now();
-            $data['status'] = 'draft'; // Estado inicial
+            $data['status'] = 'draft';
 
-            // Calcular subtotal y total
-            $subtotal = 0;
             $itemsData = [];
-
             foreach ($data['items'] as $itemData) {
-                $product = $this->productRepository->findById($itemData['product_id']);
-                if (!$product) {
-                    throw new Exception("Producto no encontrado: {$itemData['product_id']}", 404);
+                $itemNotes = [];
+                if (!empty($itemData['notes'])) {
+                    $itemNotes[] = [
+                        'user_id' => $user->id,
+                        'user_name' => $user->name,
+                        'note' => $itemData['notes'],
+                        'timestamp' => now()->toDateTimeString(),
+                    ];
                 }
-
-                $unitPrice = $itemData['unit_price'] ?? $product->cost ?? $product->price;
-                $totalPrice = $itemData['quantity'] * $unitPrice;
 
                 $itemsData[] = [
                     'product_id' => $itemData['product_id'],
                     'quantity' => $itemData['quantity'],
-                    'unit_price' => $unitPrice,
-                    'total_price' => $totalPrice,
-                    'notes' => $itemData['notes'] ?? null,
+                    'notes' => !empty($itemNotes) ? $itemNotes : null,
                 ];
-
-                $subtotal += $totalPrice;
             }
 
-            // Calcular totales
-            $tax = $data['tax'] ?? 0;
-            $shipping = $data['shipping'] ?? 0;
-            $total = $subtotal + $tax + $shipping;
+            $orderNotes = [];
+            if (!empty($data['notes'])) {
+                $orderNotes[] = [
+                    'user_id' => $user->id,
+                    'user_name' => $user->name,
+                    'note' => $data['notes'],
+                    'timestamp' => now()->toDateTimeString(),
+                ];
+            }
 
-            // Crear la orden con los totales calculados
             $purchaseOrderData = [
                 'order_number' => $data['order_number'],
                 'supplier_id' => $data['supplier_id'],
                 'order_date' => $data['order_date'],
                 'expected_delivery_date' => $data['expected_delivery_date'] ?? null,
                 'status' => $data['status'],
-                'subtotal' => $subtotal,
-                'tax' => $tax,
-                'shipping' => $shipping,
-                'total' => $total,
-                'notes' => $data['notes'] ?? null,
+                'notes' => !empty($orderNotes) ? $orderNotes : null,
                 'created_by' => $data['created_by'],
             ];
 
             $purchaseOrder = $this->purchaseOrderRepository->create($purchaseOrderData);
 
-            // Crear items
             foreach ($itemsData as $itemData) {
                 $purchaseOrder->items()->create($itemData);
             }
@@ -94,17 +88,11 @@ class PurchaseOrderManagementService
         });
     }
 
-    public function updatePurchaseOrder(int $id, array $data)
+    public function updatePurchaseOrder(int $id, array $data, User $user)
     {
         $purchaseOrder = $this->getPurchaseOrder($id);
-
-        /* if (!$purchaseOrder->canBeEdited()) {
-            throw new Exception('No se puede editar una orden en este estado', 400);
-        }
-        */
         
-        return DB::transaction(function () use ($purchaseOrder, $data) {
-            // Actualizar datos básicos
+        return DB::transaction(function () use ($purchaseOrder, $data, $user) {
             $updateData = [];
 
             if (isset($data['supplier_id'])) {
@@ -115,48 +103,84 @@ class PurchaseOrderManagementService
                 $updateData['expected_delivery_date'] = $data['expected_delivery_date'];
             }
 
-            if (isset($data['notes'])) {
-                $updateData['notes'] = $data['notes'];
+            if (!empty($data['notes'])) {
+                $newNote = [
+                    'user_id' => $user->id,
+                    'user_name' => $user->name,
+                    'note' => $data['notes'],
+                    'timestamp' => now()->toDateTimeString(),
+                ];
+                $existingNotes = $purchaseOrder->notes ?? [];
+                // Asegurarse de que $existingNotes es un array antes de añadir
+                if (!is_array($existingNotes)) {
+                    $existingNotes = [];
+                }
+                $existingNotes[] = $newNote;
+                $updateData['notes'] = $existingNotes;
             }
 
-            if (isset($data['tax'])) {
-                $updateData['tax'] = $data['tax'];
-            }
-
-            if (isset($data['shipping'])) {
-                $updateData['shipping'] = $data['shipping'];
-            }
-
-            // Actualizar items si se proporcionan
+            // --- Lógica para Items ---
             if (isset($data['items'])) {
-                $purchaseOrder->items()->delete();
-                $subtotal = 0;
+                $existingItemIds = $purchaseOrder->items->pluck('id')->toArray();
+                $itemsToKeep = [];
 
                 foreach ($data['items'] as $itemData) {
-                    $product = $this->productRepository->findById($itemData['product_id']);
-                    if (!$product) {
-                        throw new Exception("Producto no encontrado: {$itemData['product_id']}", 404);
+                    // Si el ítem tiene ID y existe en la orden actual
+                    if (isset($itemData['id']) && in_array($itemData['id'], $existingItemIds)) {
+                        $item = $purchaseOrder->items->where('id', $itemData['id'])->first();
+                        if ($item) {
+                            $itemUpdateData = [
+                                'product_id' => $itemData['product_id'],
+                                'quantity' => $itemData['quantity'],
+                            ];
+
+                            // Manejo de notas del ítem
+                            if (!empty($itemData['notes'])) {
+                                $newItemNote = [
+                                    'user_id' => $user->id,
+                                    'user_name' => $user->name,
+                                    'note' => $itemData['notes'],
+                                    'timestamp' => now()->toDateTimeString(),
+                                ];
+                                $existingItemNotes = $item->notes ?? [];
+                                if (!is_array($existingItemNotes)) {
+                                    $existingItemNotes = [];
+                                }
+                                $existingItemNotes[] = $newItemNote;
+                                $itemUpdateData['notes'] = $existingItemNotes;
+                            }
+                            
+                            $item->update($itemUpdateData);
+                            $itemsToKeep[] = $item->id;
+                        }
+                    } else {
+                        // Es un nuevo ítem o un ítem sin ID, crearlo
+                        $itemNotes = [];
+                        if (!empty($itemData['notes'])) {
+                            $itemNotes[] = [
+                                'user_id' => $user->id,
+                                'user_name' => $user->name,
+                                'note' => $itemData['notes'],
+                                'timestamp' => now()->toDateTimeString(),
+                            ];
+                        }
+                        $newItem = $purchaseOrder->items()->create([
+                            'product_id' => $itemData['product_id'],
+                            'quantity' => $itemData['quantity'],
+                            'notes' => !empty($itemNotes) ? $itemNotes : null,
+                        ]);
+                        $itemsToKeep[] = $newItem->id;
                     }
-
-                    $unitPrice = $itemData['unit_price'] ?? $product->cost ?? $product->price;
-                    $totalPrice = $itemData['quantity'] * $unitPrice;
-
-                    $purchaseOrder->items()->create([
-                        'product_id' => $itemData['product_id'],
-                        'quantity' => $itemData['quantity'],
-                        'unit_price' => $unitPrice,
-                        'total_price' => $totalPrice,
-                        'notes' => $itemData['notes'] ?? null,
-                    ]);
-
-                    $subtotal += $totalPrice;
                 }
 
-                $updateData['subtotal'] = $subtotal;
-                $updateData['total'] = $subtotal + ($updateData['tax'] ?? $purchaseOrder->tax) + ($updateData['shipping'] ?? $purchaseOrder->shipping);
+                // Eliminar ítems que ya no están en la solicitud
+                $itemsToDelete = array_diff($existingItemIds, $itemsToKeep);
+                if (!empty($itemsToDelete)) {
+                    $purchaseOrder->items()->whereIn('id', $itemsToDelete)->delete();
+                }
             }
 
-            // Actualizar la orden
+            // Actualizar la orden principal
             if (!empty($updateData)) {
                 $purchaseOrder->update($updateData);
             }
@@ -168,10 +192,6 @@ class PurchaseOrderManagementService
     public function deletePurchaseOrder(int $id)
     {
         $purchaseOrder = $this->getPurchaseOrder($id);
-
-        /* if (!$purchaseOrder->canBeEdited()) {
-            throw new Exception('No se puede eliminar una orden en este estado', 400);
-        } */
 
         $deleted = $this->purchaseOrderRepository->delete($id);
         
@@ -253,7 +273,6 @@ class PurchaseOrderManagementService
                 $item->received_quantity += $receivedQuantity;
                 $item->save();
 
-                // Actualizar stock del producto
                 $this->productRepository->updateStock($item->product_id, $receivedQuantity);
 
                 if ($item->getPendingQuantity() > 0) {
@@ -261,7 +280,6 @@ class PurchaseOrderManagementService
                 }
             }
 
-            // Actualizar estado de la orden
             if ($allReceived) {
                 $purchaseOrder->update([
                     'status' => 'received',

@@ -1,3 +1,10 @@
+export interface Note {
+    user_id: number;
+    user_name: string;
+    note: string;
+    timestamp: string;
+}
+
 export interface PurchaseOrder {
     id: number;
     order_number: string;
@@ -7,7 +14,7 @@ export interface PurchaseOrder {
     expected_delivery_date: string | null;
     delivery_date: string | null;
     status: 'draft' | 'pending' | 'approved' | 'rejected' | 'ordered' | 'received' | 'cancelled';
-    notes: string | null;
+    notes: Note[] | null;
     rejection_reason: string | null;
     created_by: number;
     creator: User;
@@ -29,7 +36,7 @@ export interface PurchaseOrderItem {
     product: Product;
     quantity: number;
     received_quantity: number;
-    notes: string | null;
+    notes: Note[] | null;
 }
 
 export interface PurchaseOrderFilters {
@@ -41,7 +48,7 @@ export interface PurchaseOrderParams {
     id: number | null;
     supplier_id: number | null;
     expected_delivery_date: string | null;
-    notes: string;
+    new_note: string; // Representa la nueva nota a añadir
     items: PurchaseOrderItemParams[];
 }
 
@@ -49,7 +56,7 @@ export interface PurchaseOrderItemParams {
     id?: number;
     product_id: number | null;
     quantity: number;
-    notes: string;
+    new_note: string; // Representa la nueva nota a añadir para el ítem
 }
 
 export interface Supplier {

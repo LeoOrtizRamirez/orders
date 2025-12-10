@@ -153,8 +153,11 @@
                                                         <td>
                                                             <div class="font-semibold">{{ item.product?.name }}</div>
                                                             <div class="text-sm text-gray-500">{{ item.product?.sku }}</div>
-                                                            <div v-if="item.notes" class="text-xs text-gray-400">
-                                                                {{ item.notes }}
+                                                            <div v-if="item.notes && item.notes.length" class="mt-2 space-y-2 text-xs">
+                                                                <div v-for="(note, index) in item.notes" :key="index" class="p-2 rounded bg-gray-100 dark:bg-gray-700">
+                                                                    <p class="font-semibold">{{ note.user_name }} <span class="text-gray-500 text-xs">- {{ formatNoteTimestamp(note.timestamp) }}</span></p>
+                                                                    <p class="text-gray-600 dark:text-gray-300">{{ note.note }}</p>
+                                                                </div>
                                                             </div>
                                                         </td>
                                                         <td class="text-center">{{ item.quantity }}</td>
@@ -181,7 +184,15 @@
                                                 <label class="font-semibold text-gray-600">
                                                     {{ $t('purchase_orders_page.view_modal.fields.notes') }}:
                                                 </label>
-                                                <p class="bg-gray-50 dark:bg-gray-800 p-3 rounded">{{ order.notes }}</p>
+                                                <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded space-y-3">
+                                                    <div v-if="!order.notes || order.notes.length === 0" class="text-gray-500">
+                                                        No hay notas generales.
+                                                    </div>
+                                                    <div v-for="(note, index) in order.notes" :key="index" class="text-sm pb-2 border-b dark:border-gray-700 last:border-b-0">
+                                                        <p class="font-semibold">{{ note.user_name }} <span class="text-gray-500 text-xs">- {{ formatNoteTimestamp(note.timestamp) }}</span></p>
+                                                        <p class="text-gray-600 dark:text-gray-300 whitespace-pre-wrap">{{ note.note }}</p>
+                                                    </div>
+                                                </div>
                                             </div>
 
                                             <div v-if="order.rejection_reason">
@@ -286,6 +297,17 @@
             year: 'numeric',
             month: 'long',
             day: 'numeric'
+        });
+    };
+
+    const formatNoteTimestamp = (timestamp: string): string => {
+        if (!timestamp) return '';
+        return new Date(timestamp).toLocaleString('es-ES', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
         });
     };
 

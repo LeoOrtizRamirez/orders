@@ -31,6 +31,7 @@ class PurchaseOrder extends Model
         'expected_delivery_date' => 'date',
         'delivery_date' => 'date',
         'approved_at' => 'datetime',
+        'notes' => 'array',
     ];
 
     protected $hidden = [

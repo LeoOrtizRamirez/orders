@@ -453,12 +453,12 @@ export function usePurchaseOrders() {
                 id: order.id,
                 supplier_id: order.supplier_id,
                 expected_delivery_date: order.expected_delivery_date,
-                notes: order.notes || '',
+                notes: '', // Reset for new note
                 items: order.items?.map(item => ({
-                    id: item.id,
+                    id: item.id, // Mapear el ID del ítem
                     product_id: item.product_id,
                     quantity: item.quantity,
-                    notes: item.notes || ''
+                    new_note: '' // Resetear para nueva nota
                 })) || []
             };
         } else {
@@ -520,15 +520,6 @@ export function usePurchaseOrders() {
             title: msg,
             padding: '10px 20px',
         });
-    };
-
-    const moneyFormat = (valor = 0): string => {
-        return new Intl.NumberFormat('es-CO', {
-            style: 'currency',
-            currency: 'COP',
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0
-        }).format(valor);
     };
 
     const formatDate = (dateString: string | null): string => {

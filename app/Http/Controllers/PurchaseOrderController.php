@@ -71,7 +71,7 @@ class PurchaseOrderController extends Controller
                 }
             } */
 
-            $purchaseOrder = $this->purchaseOrderService->createPurchaseOrder($validated, $request->user()->id);
+            $purchaseOrder = $this->purchaseOrderService->createPurchaseOrder($validated, $request->user());
 
             return response()->json($purchaseOrder, 201);
         } catch (ValidationException $e) {
@@ -114,7 +114,7 @@ class PurchaseOrderController extends Controller
                 'items.*.notes' => 'nullable|string',
             ]);
 
-            $purchaseOrder = $this->purchaseOrderService->updatePurchaseOrder((int)$id, $validated);
+            $purchaseOrder = $this->purchaseOrderService->updatePurchaseOrder((int)$id, $validated, $request->user());
 
             return response()->json($purchaseOrder);
         } catch (ValidationException $e) {

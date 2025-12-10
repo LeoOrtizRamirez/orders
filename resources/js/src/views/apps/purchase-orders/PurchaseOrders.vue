@@ -74,6 +74,7 @@
     import Swal from 'sweetalert2';
     import { useMeta } from '@/composables/use-meta';
     import { usePurchaseOrders } from './composables/usePurchaseOrders';
+    import type { PurchaseOrder } from '@/types/purchase-orders'; // Importar PurchaseOrder
     
     // Components
     import PurchaseOrdersHeader from './components/PurchaseOrdersHeader.vue';
@@ -86,6 +87,7 @@
     useMeta({ title: 'Gestión de Órdenes de Compra' });
 
     const showModal = ref(false);
+    const editingOrder = ref<PurchaseOrder | null>(null); // Nuevo ref para la orden que se edita
 
     // Use purchase orders composable
     const {
@@ -136,11 +138,13 @@
 
     // Event handlers
     const handleAddOrder = () => {
+        editingOrder.value = null; // Resetear para nueva orden
         editOrder(null);
         showModal.value = true;
     };
 
-    const handleEditOrder = (order: any) => {
+    const handleEditOrder = (order: PurchaseOrder) => { // Tipado de 'order'
+        editingOrder.value = order; // Guardar la orden completa para el modal
         editOrder(order);
         showModal.value = true;
     };
@@ -152,6 +156,7 @@
     const handleCloseModal = () => {
         showModal.value = false;
         resetParams();
+        editingOrder.value = null; // Limpiar al cerrar
     };
 
     const handleSaveOrder = async () => {

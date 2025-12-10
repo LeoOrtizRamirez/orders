@@ -16,7 +16,7 @@ return new class extends Migration
             $table->date('expected_delivery_date')->nullable();
             $table->date('delivery_date')->nullable();
             $table->enum('status', ['draft', 'pending', 'approved', 'rejected', 'ordered', 'received', 'cancelled'])->default('draft');
-            $table->text('notes')->nullable();
+            $table->json('notes')->nullable();
             $table->text('rejection_reason')->nullable();
             $table->foreignId('created_by')->constrained('users');
             $table->foreignId('approved_by')->nullable()->constrained('users');
@@ -34,7 +34,7 @@ return new class extends Migration
             $table->foreignId('product_id')->constrained()->onDelete('cascade');
             $table->integer('quantity');
             $table->integer('received_quantity')->default(0);
-            $table->text('notes')->nullable();
+            $table->json('notes')->nullable();
             $table->timestamps();
 
             $table->index(['purchase_order_id', 'product_id']);

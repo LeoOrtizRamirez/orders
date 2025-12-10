@@ -21,6 +21,7 @@ class PurchaseOrderItem extends Model
     protected $casts = [
         'quantity' => 'integer',
         'received_quantity' => 'integer',
+        'notes' => 'array',
     ];
 
     protected $hidden = [
