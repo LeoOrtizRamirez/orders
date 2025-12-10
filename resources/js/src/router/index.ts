@@ -3,26 +3,12 @@ import { useAppStore } from '@/stores/index';
 import { useAuthStore } from '@/stores/auth';
 import appSetting from '@/app-setting';
 
-import HomeView from '../views/index.vue';
-
 const routes: RouteRecordRaw[] = [
-    // dashboard
-    { 
-        path: '/', 
-        name: 'home', 
-        component: HomeView,
-        meta: { requiresAuth: true }
-    },
+    // Default route points to Kanban Board
     {
-        path: '/finance',
-        name: 'finance',
-        component: () => import(/* webpackChunkName: "finance" */ '../views/finance.vue'),
-        meta: { requiresAuth: true }
-    },
-    {
-        path: '/crypto',
-        name: 'crypto',
-        component: () => import(/* webpackChunkName: "crypto" */ '../views/crypto.vue'),
+        path: '/',
+        name: 'home', // Keeping 'home' name but changing component and path mapping
+        redirect: '/apps/purchase-orders/kanban', // Redirect to the Kanban board
         meta: { requiresAuth: true }
     },
 

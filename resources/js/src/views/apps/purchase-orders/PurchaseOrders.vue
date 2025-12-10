@@ -246,20 +246,7 @@
     };
 
     const handleReceiveOrder = async (order: any) => {
-        const result = await Swal.fire({
-            title: 'Recibir Orden',
-            text: '¿Estás seguro de que deseas marcar esta orden como recibida?',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: 'Sí, recibir',
-            cancelButtonText: 'Cancelar'
-        });
-
-        if (result.isConfirmed) {
-            await receiveOrder(order);
-        }
+        await receiveOrder(order); // Proceed directly without confirmation
     };
 
     const handleCancelOrder = async (order: any) => {

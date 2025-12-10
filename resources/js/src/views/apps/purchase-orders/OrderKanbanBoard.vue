@@ -69,7 +69,7 @@
                     </div>
                     <div v-else class="overflow-x-auto flex items-start flex-nowrap gap-5 px-2 pb-2">
                         <template v-for="statusCol in orderStatuses" :key="statusCol.id">
-                            <div class="panel w-80 flex-none border-2 border-solid rounded-lg" :class="statusCol.borderColorClass" :data-status-id="statusCol.id">
+                            <div class="panel w-80 flex-none border-2 border-solid rounded-lg" :class="statusCol.borderColorClass">
                                 <div class="flex justify-between mb-5">
                                     <h4 class="text-base font-semibold">{{ statusCol.title }}</h4>
                                     <span class="badge" :class="statusCol.badgeClass">{{ statusCol.orders.length }}</span>
@@ -84,6 +84,7 @@
                                     drag-class="sortable-drag"
                                     :animation="200"
                                     @end="onDragEnd"
+                                    :data-status-id="statusCol.id"
                                 >
                                     <div class="sortable-list" v-for="order in statusCol.orders" :key="order.id">
                                         <div class="shadow bg-[#f4f4f4] dark:bg-white-dark/20 p-3 pb-5 rounded-md mb-5 space-y-3 cursor-move">
@@ -234,24 +235,60 @@
     };
 
     const onDragEnd = async (event: any) => {
-        const orderId = event.item._underlying_vm_.id;
-        const newStatusId = event.to.dataset.statusId;
+        // console.log('onDragEnd triggered!', event); // Remove debug log
+        const orderId = event.item._underlying_vm_.id; // The ID of the order
+        const oldStatusId = event.from.dataset.statusId; // ID of the source column
+        const newStatusId = event.to.dataset.statusId;   // ID of the target column
 
-        if (!newStatusId) {
-            console.warn("Target list status ID is undefined. Drag operation might be invalid.");
-            await fetchOrdersKanban(); // Re-fetch to revert changes if the drop was invalid
+        // console.log('oldStatusId:', oldStatusId, 'newStatusId:', newStatusId); // Remove debug log
+
+        if (!newStatusId || !oldStatusId) {
+            console.warn("Source or target status ID is undefined. Drag operation might be invalid. Reverting.");
+            await fetchOrdersKanban(); // Re-fetch to revert changes
             return;
         }
+
+        const oldStatusColumn = orderStatuses.value.find(col => col.id === oldStatusId);
+        const newStatusColumn = orderStatuses.value.find(col => col.id === newStatusId);
+
+        if (!oldStatusColumn || !newStatusColumn) {
+            console.warn("Source or target status column not found. Reverting.");
+            await fetchOrdersKanban();
+            return;
+        }
+
+        // Find the order *in its new position* within the data model (since draggable already moved it)
+        const movedOrder = newStatusColumn.orders.find(order => order.id === orderId);
+
+        if (!movedOrder) {
+            console.warn(`Order with ID ${orderId} not found in new status column ${newStatusId}. Reverting.`);
+            await fetchOrdersKanban(); // Something went wrong with draggable's internal move
+            return;
+        }
+
+        const originalStatusOfDraggedItem = oldStatusId; // Store original status for potential revert
 
         try {
             await axios.put(`/api/purchase-orders/${orderId}/status`, { status: newStatusId });
             showMessage(t('ordenes.order_status_updated_successfully'), 'success');
-            await fetchOrdersKanban(); // Re-fetch all orders to ensure data consistency across all columns
+            // If successful, the frontend state (movedOrder.status and its position) is already correct.
+            // The movedOrder object's status property is also implicitly updated by the draggable's list mutation.
         } catch (error: any) {
             console.error('Error updating order status:', error);
             const msg = error.response?.data?.message || t('ordenes.error_updating_order_status');
             showMessage(msg, 'error');
-            await fetchOrdersKanban(); // Revert the drag-and-drop visually by re-fetching
+
+            // Revert optimistic update on API failure
+            // 1. Manually move the item back in the local data structure (revert array mutation)
+            const indexInNew = newStatusColumn.orders.findIndex(order => order.id === orderId);
+            if (indexInNew !== -1) {
+                const itemToRevert = newStatusColumn.orders.splice(indexInNew, 1)[0]; // Remove from new
+                oldStatusColumn.orders.splice(event.oldIndex, 0, itemToRevert); // Add back to old at original index
+            }
+            // 2. Revert status property of the item
+            movedOrder.status = originalStatusOfDraggedItem;
+
+            await fetchOrdersKanban(); // Re-fetch as a safety net in case manual revert had issues
         }
     };
 

@@ -256,11 +256,13 @@ class PurchaseOrderStatusController extends Controller
 
                         break;
 
-                    case 'received':
+                                    case 'received':
 
-                        // Special case: Receiving requires items. Not directly supported by simple drag-and-drop.
+                                        $success = $purchaseOrder->receive(); // Use the simple receive method on the model
 
-                        throw new \Exception('Para marcar una orden como "recibida", use la acción específica que requiere detalles de los ítems.');
+                                        $message = 'Orden marcada como recibida correctamente.';
+
+                                        break;
 
                     case 'rejected':
 
