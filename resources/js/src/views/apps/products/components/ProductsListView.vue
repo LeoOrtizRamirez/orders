@@ -7,8 +7,6 @@
                         <th>{{ $t('products_page.table.sku') }}</th>
                         <th>{{ $t('products_page.table.product') }}</th>
                         <th>{{ $t('products_page.table.category') }}</th>
-                        <th>{{ $t('products_page.table.price') }}</th>
-                        <th>{{ $t('products_page.table.cost') }}</th>
                         <th>{{ $t('products_page.table.stock') }}</th>
                         <th>{{ $t('products_page.table.min_stock') }}</th>
                         <th>{{ $t('products_page.table.status') }}</th>
@@ -18,14 +16,14 @@
                 <tbody>
                     <template v-if="loading">
                         <tr>
-                            <td colspan="9" class="text-center py-4">
+                            <td colspan="7" class="text-center py-4">
                                 <div class="animate-spin border-2 border-primary border-t-transparent rounded-full w-6 h-6 mx-auto"></div>
                             </td>
                         </tr>
                     </template>
                     <template v-else-if="products.length === 0">
                         <tr>
-                            <td colspan="9" class="text-center py-8 text-gray-500">
+                            <td colspan="7" class="text-center py-8 text-gray-500">
                                 {{ $t('products_page.alerts.no_products') }}
                             </td>
                         </tr>
@@ -48,12 +46,6 @@
                                     {{ product.category }}
                                 </span>
                                 <span v-else class="text-gray-400">-</span>
-                            </td>
-                            <td>
-                                <div class="font-semibold text-success">{{ moneyFormat(product.price) }}</div>
-                            </td>
-                            <td>
-                                <div class="text-gray-600">{{ moneyFormat(product.cost) }}</div>
                             </td>
                             <td>
                                 <div class="flex items-center">
@@ -149,15 +141,6 @@
         if (product.stock === 0) return 'text-danger';
         if (product.stock <= product.reorder_point) return 'text-warning';
         return 'text-success';
-    };
-
-    const moneyFormat = (valor = 0): string => {
-        return new Intl.NumberFormat('es-CO', {
-            style: 'currency',
-            currency: 'COP',
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0
-        }).format(valor);
     };
 </script>
 

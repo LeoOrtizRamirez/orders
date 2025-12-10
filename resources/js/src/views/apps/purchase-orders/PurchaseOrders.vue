@@ -110,7 +110,6 @@
         fetchOrders,
         fetchSuppliers,
         fetchProducts,
-        updateItemUnitPrice,
         saveOrder,
         deleteOrder,
         submitOrder,
@@ -292,10 +291,6 @@
         if (result.isConfirmed) {
             await reopenOrder(order);
         }
-    };
-
-    const handleProductChange = ({ index, productId }: { index: number; productId: number | null }) => {
-        updateItemUnitPrice(index, productId);
     };
 
     const handleFiltersUpdate = (newFilters: any) => {

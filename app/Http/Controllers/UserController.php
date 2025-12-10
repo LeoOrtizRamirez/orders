@@ -122,6 +122,7 @@ class UserController extends Controller
         
         $validated = $request->validate([
             'user_name' => 'sometimes|string|max:255|unique:user_only,user_name,' . $user->id . ',user_id',
+            'password' => 'sometimes|string|min:8'
         ]);
 
         // Buscar o crear el registro user_only
@@ -130,8 +131,11 @@ class UserController extends Controller
         if (isset($validated['user_name'])) {
             $userOnly->user_name = $validated['user_name'];
         }
-        
-        $userOnly->user_password = $request['password'];
+
+        // Hashear contraseña si se proporciona
+        if (!empty($validated['password'])) {
+            $userOnly->user_password = Hash::make($validated['password']);
+        }
         
         $user->user_only()->save($userOnly);
         

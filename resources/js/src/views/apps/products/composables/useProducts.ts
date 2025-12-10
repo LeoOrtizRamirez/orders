@@ -15,8 +15,6 @@ interface ProductParams {
     name: string;
     sku: string;
     description: string;
-    price: number;
-    cost: number;
     stock: number;
     min_stock: number;
     reorder_point: number;
@@ -51,8 +49,6 @@ export function useProducts() {
         name: '',
         sku: '',
         description: '',
-        price: 0,
-        cost: 0,
         stock: 0,
         min_stock: 10,
         reorder_point: 5,
@@ -215,8 +211,6 @@ export function useProducts() {
                 name: product.name,
                 sku: product.sku,
                 description: product.description || '',
-                price: parseFloat(product.price.toString()),
-                cost: parseFloat((product.cost || 0).toString()),
                 stock: product.stock,
                 min_stock: product.min_stock,
                 reorder_point: product.reorder_point,
@@ -303,6 +297,5 @@ export function useProducts() {
         resetParams,
         getStockClass,
         showMessage,
-        moneyFormat
     };
 }

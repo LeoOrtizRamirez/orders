@@ -15,8 +15,6 @@ class Product extends Model
         'name',
         'sku',
         'description',
-        'price',
-        'cost',
         'stock',
         'min_stock',
         'reorder_point',
@@ -30,14 +28,17 @@ class Product extends Model
     ];
 
     protected $casts = [
-        'price' => 'decimal:2',
-        'cost' => 'decimal:2',
         'stock' => 'integer',
         'min_stock' => 'integer',
         'reorder_point' => 'integer',
         'specifications' => 'array',
         'is_active' => 'boolean',
         'order' => 'integer',
+    ];
+
+    protected $hidden = [
+        'price',
+        'cost',
     ];
 
     public function purchaseOrderItems(): HasMany

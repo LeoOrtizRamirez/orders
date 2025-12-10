@@ -8,7 +8,6 @@
                         <th>{{ $t('purchase_orders_page.table.supplier') }}</th>
                         <th>{{ $t('purchase_orders_page.table.order_date') }}</th>
                         <th>{{ $t('purchase_orders_page.table.expected_delivery') }}</th>
-                        <th>{{ $t('purchase_orders_page.table.total') }}</th>
                         <th>{{ $t('purchase_orders_page.table.status') }}</th>
                         <th>{{ $t('purchase_orders_page.table.created_by') }}</th>
                         <th class="!text-center">{{ $t('purchase_orders_page.table.actions') }}</th>
@@ -17,14 +16,14 @@
                 <tbody>
                     <template v-if="loading">
                         <tr>
-                            <td colspan="8" class="text-center py-4">
+                            <td colspan="7" class="text-center py-4">
                                 <div class="animate-spin border-2 border-primary border-t-transparent rounded-full w-6 h-6 mx-auto"></div>
                             </td>
                         </tr>
                     </template>
                     <template v-else-if="orders.length === 0">
                         <tr>
-                            <td colspan="8" class="text-center py-8 text-gray-500">
+                            <td colspan="7" class="text-center py-8 text-gray-500">
                                 {{ $t('purchase_orders_page.alerts.no_orders') }}
                             </td>
                         </tr>
@@ -45,9 +44,6 @@
                                 <div :class="{'text-warning': isDeliveryDelayed(order)}">
                                     {{ formatDate(order.expected_delivery_date) }}
                                 </div>
-                            </td>
-                            <td>
-                                <div class="font-semibold text-success">{{ moneyFormat(order.total) }}</div>
                             </td>
                             <td>
                                 <span class="badge" :class="getStatusClass(order.status)">
@@ -228,15 +224,6 @@
     const formatDate = (dateString: string | null): string => {
         if (!dateString) return '-';
         return new Date(dateString).toLocaleDateString('es-ES');
-    };
-
-    const moneyFormat = (valor = 0): string => {
-        return new Intl.NumberFormat('es-CO', {
-            style: 'currency',
-            currency: 'COP',
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0
-        }).format(valor);
     };
 </script>
 

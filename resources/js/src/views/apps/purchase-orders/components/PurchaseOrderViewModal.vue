@@ -146,12 +146,6 @@
                                                         <th class="text-center">
                                                             {{ $t('purchase_orders_page.view_modal.fields.pending') }}
                                                         </th>
-                                                        <th class="text-right">
-                                                            {{ $t('purchase_orders_page.view_modal.fields.unit_price') }}
-                                                        </th>
-                                                        <th class="text-right">
-                                                            {{ $t('purchase_orders_page.view_modal.fields.total') }}
-                                                        </th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -174,15 +168,13 @@
                                                                 {{ item.quantity - item.received_quantity }}
                                                             </span>
                                                         </td>
-                                                        <td class="text-right">{{ moneyFormat(item.unit_price) }}</td>
-                                                        <td class="text-right font-semibold">{{ moneyFormat(item.total_price) }}</td>
                                                     </tr>
                                                 </tbody>
                                             </table>
                                         </div>
                                     </div>
 
-                                    <!-- Totales -->
+                                    <!-- Notes and Rejection Reason -->
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                         <div class="space-y-2">
                                             <div v-if="order.notes">
@@ -197,31 +189,6 @@
                                                     {{ $t('purchase_orders_page.view_modal.fields.rejection_reason') }}:
                                                 </label>
                                                 <p class="bg-danger/10 text-danger p-3 rounded">{{ order.rejection_reason }}</p>
-                                            </div>
-                                        </div>
-
-                                        <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-                                            <h4 class="font-semibold mb-3">
-                                                {{ $t('purchase_orders_page.view_modal.sections.totals_summary') }}
-                                            </h4>
-                                            <div class="space-y-2">
-                                                <div class="flex justify-between">
-                                                    <span>{{ $t('purchase_orders_page.view_modal.fields.subtotal') }}:</span>
-                                                    <span class="font-semibold">{{ moneyFormat(order.subtotal) }}</span>
-                                                </div>
-                                                <div class="flex justify-between">
-                                                    <span>{{ $t('purchase_orders_page.view_modal.fields.tax') }}:</span>
-                                                    <span class="font-semibold">{{ moneyFormat(order.tax) }}</span>
-                                                </div>
-                                                <div class="flex justify-between">
-                                                    <span>{{ $t('purchase_orders_page.view_modal.fields.shipping') }}:</span>
-                                                    <span class="font-semibold">{{ moneyFormat(order.shipping) }}</span>
-                                                </div>
-                                                <hr class="my-2">
-                                                <div class="flex justify-between text-lg font-bold">
-                                                    <span>{{ $t('purchase_orders_page.view_modal.fields.grand_total') }}:</span>
-                                                    <span class="text-success">{{ moneyFormat(order.total) }}</span>
-                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -320,15 +287,6 @@
             month: 'long',
             day: 'numeric'
         });
-    };
-
-    const moneyFormat = (valor = 0): string => {
-        return new Intl.NumberFormat('es-CO', {
-            style: 'currency',
-            currency: 'COP',
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0
-        }).format(valor);
     };
 
     const printOrder = () => {

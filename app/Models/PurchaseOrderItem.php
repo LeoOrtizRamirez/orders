@@ -14,17 +14,18 @@ class PurchaseOrderItem extends Model
         'purchase_order_id',
         'product_id',
         'quantity',
-        'unit_price',
-        'total_price',
         'received_quantity',
         'notes',
     ];
 
     protected $casts = [
         'quantity' => 'integer',
-        'unit_price' => 'decimal:2',
-        'total_price' => 'decimal:2',
         'received_quantity' => 'integer',
+    ];
+
+    protected $hidden = [
+        'unit_price',
+        'total_price',
     ];
 
     public function purchaseOrder(): BelongsTo
@@ -39,7 +40,7 @@ class PurchaseOrderItem extends Model
 
     public function calculateTotal(): void
     {
-        $this->total_price = $this->quantity * $this->unit_price;
+        // This logic is no longer needed
     }
 
     public function getPendingQuantity(): int

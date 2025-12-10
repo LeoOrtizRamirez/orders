@@ -84,7 +84,7 @@
                                 >
                                     <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
                                         <!-- Producto -->
-                                        <div class="md:col-span-4">
+                                        <div class="md:col-span-6">
                                             <label class="form-label">
                                                 {{ $t('purchase_orders_page.create_modal.fields.product') }} *
                                             </label>
@@ -95,7 +95,6 @@
                                                     'border-danger': errors[`items.${index}.product_id`] || 
                                                     !item.product_id && item.quantity > 0 
                                                 }"
-                                                @change="$emit('product-change', { index, productId: item.product_id })"
                                                 required
                                             >
                                                 <option value="">{{ $t('purchase_orders_page.create_modal.placeholders.select_product') }}</option>
@@ -120,7 +119,7 @@
                                         </div>
 
                                         <!-- Cantidad -->
-                                        <div class="md:col-span-2">
+                                        <div class="md:col-span-4">
                                             <label class="form-label">
                                                 {{ $t('purchase_orders_page.create_modal.fields.quantity') }} *
                                             </label>
@@ -150,37 +149,6 @@
                                             </div>
                                         </div>
 
-                                        <!-- Precio Unitario (Solo lectura) -->
-                                        <div class="md:col-span-2">
-                                            <label class="form-label">
-                                                {{ $t('purchase_orders_page.create_modal.fields.unit_price') }}
-                                            </label>
-                                            <input
-                                                type="text"
-                                                :value="formatCurrency(getPrice(item.product_id))"
-                                                class="form-input bg-gray-100 dark:bg-[#1b2e4b] cursor-not-allowed"
-                                                readonly
-                                                disabled
-                                            />
-                                            <div class="text-xs text-gray-500 mt-1">
-                                                Precio del producto
-                                            </div>
-                                        </div>
-
-                                        <!-- Total -->
-                                        <div class="md:col-span-2">
-                                            <label class="form-label">
-                                                {{ $t('purchase_orders_page.create_modal.fields.total_price') }}
-                                            </label>
-                                            <input
-                                                type="text"
-                                                :value="formatCurrency(calculateItemTotal(item))"
-                                                class="form-input bg-gray-100 dark:bg-[#1b2e4b] font-semibold cursor-not-allowed"
-                                                readonly
-                                                disabled
-                                            />
-                                        </div>
-
                                         <!-- Eliminar -->
                                         <div class="md:col-span-2">
                                             <button
@@ -206,59 +174,6 @@
                                             rows="2"
                                         ></textarea>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Totales -->
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
-                            <!-- Impuestos -->
-                            <div>
-                                <label for="tax" class="form-label">
-                                    {{ $t('purchase_orders_page.create_modal.fields.tax') }}
-                                </label>
-                                <input
-                                    id="tax"
-                                    type="number"
-                                    v-model.number="params.tax"
-                                    min="0"
-                                    step="0.01"
-                                    class="form-input"
-                                    :class="{ 'border-danger': errors.tax }"
-                                    :placeholder="$t('purchase_orders_page.create_modal.placeholders.tax')"
-                                />
-                                <div v-if="errors.tax" class="text-danger mt-1 text-xs">
-                                    {{ errors.tax[0] }}
-                                </div>
-                            </div>
-
-                            <!-- Envío -->
-                            <div>
-                                <label for="shipping" class="form-label">
-                                    {{ $t('purchase_orders_page.create_modal.fields.shipping') }}
-                                </label>
-                                <input
-                                    id="shipping"
-                                    type="number"
-                                    v-model.number="params.shipping"
-                                    min="0"
-                                    step="0.01"
-                                    class="form-input"
-                                    :class="{ 'border-danger': errors.shipping }"
-                                    :placeholder="$t('purchase_orders_page.create_modal.placeholders.shipping')"
-                                />
-                                <div v-if="errors.shipping" class="text-danger mt-1 text-xs">
-                                    {{ errors.shipping[0] }}
-                                </div>
-                            </div>
-
-                            <!-- Total General -->
-                            <div>
-                                <label class="form-label text-lg font-bold">
-                                    Total General
-                                </label>
-                                <div class="form-input bg-success/10 text-success dark:bg-success/20 font-bold text-lg text-center">
-                                    {{ formatCurrency(calculateOrderTotal()) }}
                                 </div>
                             </div>
                         </div>
@@ -331,7 +246,6 @@
         (e: 'save', params: any): void;
         (e: 'add-item'): void;
         (e: 'remove-item', index: number): void;
-        (e: 'product-change', data: { index: number; productId: number | null }): void;
     }
 
     const props = defineProps<Props>();
@@ -374,12 +288,6 @@
         return product?.stock || 0;
     };
 
-    const getPrice = (productId: number | null): number => {
-        if (!productId) return 0;
-        const product = props.products.find(p => p.id === productId);
-        return product?.price || 0;
-    };
-
     const getQuantityValidation = (productId: number | null, quantity: number) => {
         if (!productId) return { hasError: false, message: '' };
         
@@ -391,25 +299,5 @@
             };
         }
         return { hasError: false, message: '' };
-    };
-
-    const calculateItemTotal = (item: any): number => {
-        return (item.quantity || 0) * (getPrice(item.product_id) || 0);
-    };
-
-    const calculateOrderTotal = (): number => {
-        const itemsTotal = props.params.items.reduce((total: number, item: any) => {
-            return total + calculateItemTotal(item);
-        }, 0);
-        return itemsTotal + (props.params.tax || 0) + (props.params.shipping || 0);
-    };
-
-    const formatCurrency = (value: number): string => {
-        return new Intl.NumberFormat('es-CO', {
-            style: 'currency',
-            currency: 'COP',
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0
-        }).format(value);
     };
 </script>

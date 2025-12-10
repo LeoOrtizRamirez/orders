@@ -16,10 +16,6 @@ return new class extends Migration
             $table->date('expected_delivery_date')->nullable();
             $table->date('delivery_date')->nullable();
             $table->enum('status', ['draft', 'pending', 'approved', 'rejected', 'ordered', 'received', 'cancelled'])->default('draft');
-            $table->decimal('subtotal', 12, 2);
-            $table->decimal('tax', 12, 2)->default(0);
-            $table->decimal('shipping', 12, 2)->default(0);
-            $table->decimal('total', 12, 2);
             $table->text('notes')->nullable();
             $table->text('rejection_reason')->nullable();
             $table->foreignId('created_by')->constrained('users');
@@ -37,8 +33,6 @@ return new class extends Migration
             $table->foreignId('purchase_order_id')->constrained()->onDelete('cascade');
             $table->foreignId('product_id')->constrained()->onDelete('cascade');
             $table->integer('quantity');
-            $table->decimal('unit_price', 10, 2);
-            $table->decimal('total_price', 10, 2);
             $table->integer('received_quantity')->default(0);
             $table->text('notes')->nullable();
             $table->timestamps();

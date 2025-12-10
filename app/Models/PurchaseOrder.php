@@ -19,10 +19,6 @@ class PurchaseOrder extends Model
         'expected_delivery_date',
         'delivery_date',
         'status',
-        'subtotal',
-        'tax',
-        'shipping',
-        'total',
         'notes',
         'rejection_reason',
         'created_by',
@@ -34,11 +30,14 @@ class PurchaseOrder extends Model
         'order_date' => 'date',
         'expected_delivery_date' => 'date',
         'delivery_date' => 'date',
-        'subtotal' => 'decimal:2',
-        'tax' => 'decimal:2',
-        'shipping' => 'decimal:2',
-        'total' => 'decimal:2',
         'approved_at' => 'datetime',
+    ];
+
+    protected $hidden = [
+        'subtotal',
+        'tax',
+        'shipping',
+        'total',
     ];
 
     /**
@@ -278,9 +277,7 @@ class PurchaseOrder extends Model
 
     public function calculateTotals(): void
     {
-        $subtotal = $this->items->sum('total_price');
-        $this->subtotal = $subtotal;
-        $this->total = $subtotal + $this->tax + $this->shipping;
+        // This logic is no longer needed
     }
 
     /**

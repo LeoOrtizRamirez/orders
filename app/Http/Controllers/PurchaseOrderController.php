@@ -53,12 +53,9 @@ class PurchaseOrderController extends Controller
                 'supplier_id' => 'required|exists:suppliers,id',
                 'expected_delivery_date' => 'nullable|date',
                 'notes' => 'nullable|string',
-                'tax' => 'sometimes|numeric|min:0',
-                'shipping' => 'sometimes|numeric|min:0',
                 'items' => 'required|array|min:1',
                 'items.*.product_id' => 'required|exists:products,id',
                 'items.*.quantity' => 'required|min:0',//PENDIENTE DESCOMENTAR CAMBIAR A 1
-                'items.*.unit_price' => 'sometimes|numeric|min:0',
                 'items.*.notes' => 'nullable|string',
             ]);
 
@@ -111,12 +108,9 @@ class PurchaseOrderController extends Controller
                 'supplier_id' => 'sometimes|exists:suppliers,id',
                 'expected_delivery_date' => 'nullable|date',
                 'notes' => 'nullable|string',
-                'tax' => 'sometimes|numeric|min:0',
-                'shipping' => 'sometimes|numeric|min:0',
                 'items' => 'sometimes|array|min:1',
                 'items.*.product_id' => 'required|exists:products,id',
                 'items.*.quantity' => 'required|integer|min:1',
-                'items.*.unit_price' => 'sometimes|numeric|min:0',
                 'items.*.notes' => 'nullable|string',
             ]);
 

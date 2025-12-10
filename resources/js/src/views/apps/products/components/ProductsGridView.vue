@@ -65,10 +65,6 @@
                                 <span class="font-mono text-sm">{{ product.sku }}</span>
                             </div>
                             <div class="flex justify-between items-center">
-                                <span class="text-gray-600">{{ $t('products_page.table.price') }}:</span>
-                                <span class="font-semibold text-success">{{ moneyFormat(product.price) }}</span>
-                            </div>
-                            <div class="flex justify-between items-center">
                                 <span class="text-gray-600">{{ $t('products_page.table.stock') }}:</span>
                                 <span class="font-semibold" :class="getStockClass(product)">
                                     {{ product.stock }} {{ product.unit || $t('products_page.unit_default') }}
@@ -151,15 +147,6 @@
         if (product.stock === 0) return 'text-danger';
         if (product.stock <= product.reorder_point) return 'text-warning';
         return 'text-success';
-    };
-
-    const moneyFormat = (valor = 0): string => {
-        return new Intl.NumberFormat('es-CO', {
-            style: 'currency',
-            currency: 'COP',
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0
-        }).format(valor);
     };
 </script>
 

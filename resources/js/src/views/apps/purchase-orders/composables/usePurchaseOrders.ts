@@ -38,8 +38,6 @@ export function usePurchaseOrders() {
         supplier_id: null,
         expected_delivery_date: null,
         notes: '',
-        tax: 0,
-        shipping: 0,
         items: []
     };
 
@@ -143,21 +141,6 @@ export function usePurchaseOrders() {
     const getProductInfo = (productId: number | null) => {
         if (!productId) return null;
         return products.value.find(product => product.id === productId) || null;
-    };
-
-    // Función para actualizar precio unitario cuando se selecciona un producto
-    const updateItemUnitPrice = (index: number, productId: number | null) => {
-        if (!productId) {
-            params.value.items[index].unit_price = 0;
-            return;
-        }
-        
-        const product = getProductInfo(productId);
-        if (product && product.price) {
-            params.value.items[index].unit_price = parseFloat(product.price);
-        } else {
-            params.value.items[index].unit_price = 0;
-        }
     };
 
     // Función para validar cantidad contra stock
@@ -471,13 +454,10 @@ export function usePurchaseOrders() {
                 supplier_id: order.supplier_id,
                 expected_delivery_date: order.expected_delivery_date,
                 notes: order.notes || '',
-                tax: parseFloat(order.tax?.toString() || '0'),
-                shipping: parseFloat(order.shipping?.toString() || '0'),
                 items: order.items?.map(item => ({
                     id: item.id,
                     product_id: item.product_id,
                     quantity: item.quantity,
-                    unit_price: parseFloat(item.unit_price?.toString() || '0'),
                     notes: item.notes || ''
                 })) || []
             };
@@ -495,7 +475,6 @@ export function usePurchaseOrders() {
     const createEmptyItem = (): PurchaseOrderItemParams => ({
         product_id: null,
         quantity: 1,
-        unit_price: 0,
         notes: ''
     });
 
@@ -508,15 +487,6 @@ export function usePurchaseOrders() {
         if (params.value.items.length === 0) {
             addItem();
         }
-    };
-
-    const calculateItemTotal = (item: PurchaseOrderItemParams): number => {
-        return (item.quantity || 0) * (item.unit_price || 0);
-    };
-
-    const calculateOrderTotal = (): number => {
-        const itemsTotal = params.value.items.reduce((total, item) => total + calculateItemTotal(item), 0);
-        return itemsTotal + (params.value.tax || 0) + (params.value.shipping || 0);
     };
 
     const getStatusClass = (status: string): string => {
@@ -608,7 +578,6 @@ export function usePurchaseOrders() {
         fetchSuppliers,
         fetchProducts,
         getProductInfo,
-        updateItemUnitPrice,
         validateQuantity,
         saveOrder,
         deleteOrder,
@@ -623,11 +592,8 @@ export function usePurchaseOrders() {
         resetParams,
         addItem,
         removeItem,
-        calculateItemTotal,
-        calculateOrderTotal,
         getStatusClass,
         showMessage,
-        moneyFormat,
         formatDate,
         viewOrder,
         closeViewModal

@@ -90,33 +90,6 @@
 
                                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                         <div class="mb-5">
-                                            <label for="price">{{ $t('products_page.modal.fields.price') }} *</label>
-                                            <input 
-                                                id="price" 
-                                                type="number" 
-                                                step="0.01" 
-                                                min="0" 
-                                                :placeholder="$t('products_page.modal.placeholders.price')" 
-                                                class="form-input" 
-                                                v-model="params.price" 
-                                                required 
-                                            />
-                                            <div v-if="errors.price" class="text-danger mt-1">{{ errors.price[0] }}</div>
-                                        </div>
-                                        <div class="mb-5">
-                                            <label for="cost">{{ $t('products_page.modal.fields.cost') }}</label>
-                                            <input 
-                                                id="cost" 
-                                                type="number" 
-                                                step="0.01" 
-                                                min="0" 
-                                                :placeholder="$t('products_page.modal.placeholders.cost')" 
-                                                class="form-input" 
-                                                v-model="params.cost" 
-                                            />
-                                            <div v-if="errors.cost" class="text-danger mt-1">{{ errors.cost[0] }}</div>
-                                        </div>
-                                        <div class="mb-5">
                                             <label for="stock">{{ $t('products_page.modal.fields.stock') }}</label>
                                             <input 
                                                 id="stock" 
@@ -128,9 +101,6 @@
                                             />
                                             <div v-if="errors.stock" class="text-danger mt-1">{{ errors.stock[0] }}</div>
                                         </div>
-                                    </div>
-
-                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                         <div class="mb-5">
                                             <label for="min_stock">{{ $t('products_page.modal.fields.min_stock') }}</label>
                                             <input 
@@ -155,6 +125,9 @@
                                             />
                                             <div v-if="errors.reorder_point" class="text-danger mt-1">{{ errors.reorder_point[0] }}</div>
                                         </div>
+                                    </div>
+
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                         <div class="mb-5">
                                             <label for="unit">{{ $t('products_page.modal.fields.unit') }}</label>
                                             <input 
@@ -166,9 +139,6 @@
                                             />
                                             <div v-if="errors.unit" class="text-danger mt-1">{{ errors.unit[0] }}</div>
                                         </div>
-                                    </div>
-
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div class="mb-5">
                                             <label for="category">{{ $t('products_page.modal.fields.category') }}</label>
                                             <input 
@@ -196,6 +166,9 @@
                                             />
                                             <div v-if="errors.order" class="text-danger mt-1">{{ errors.order[0] }}</div>
                                         </div>
+                                    </div>
+                                    
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <!--
                                         <div class="mb-5">
                                             <label for="brand">{{ $t('products_page.modal.fields.brand') }}</label>

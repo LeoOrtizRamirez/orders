@@ -7,10 +7,6 @@ export interface PurchaseOrder {
     expected_delivery_date: string | null;
     delivery_date: string | null;
     status: 'draft' | 'pending' | 'approved' | 'rejected' | 'ordered' | 'received' | 'cancelled';
-    subtotal: number;
-    tax: number;
-    shipping: number;
-    total: number;
     notes: string | null;
     rejection_reason: string | null;
     created_by: number;
@@ -32,8 +28,6 @@ export interface PurchaseOrderItem {
     product_id: number;
     product: Product;
     quantity: number;
-    unit_price: number;
-    total_price: number;
     received_quantity: number;
     notes: string | null;
 }
@@ -48,8 +42,6 @@ export interface PurchaseOrderParams {
     supplier_id: number | null;
     expected_delivery_date: string | null;
     notes: string;
-    tax: number;
-    shipping: number;
     items: PurchaseOrderItemParams[];
 }
 
@@ -57,7 +49,6 @@ export interface PurchaseOrderItemParams {
     id?: number;
     product_id: number | null;
     quantity: number;
-    unit_price: number;
     notes: string;
 }
 
