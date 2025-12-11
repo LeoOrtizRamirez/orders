@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Models\User;
 use App\Repositories\PurchaseOrderRepository;
+use App\Models\PurchaseOrder; // Add this import
+use App\Models\PurchaseOrderItem; // Add this import
 use App\Repositories\ProductRepository;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -306,11 +308,78 @@ class PurchaseOrderManagementService
     
 
         public function getKanbanPurchaseOrders()
-
         {
-
             return $this->purchaseOrderRepository->getKanbanOrders();
-
         }
 
+    public function splitPurchaseOrder(
+        PurchaseOrder $parentOrder,
+        array $itemsToSplit,
+        ?string $expectedDeliveryDate,
+        ?string $notes,
+        User $user
+    ): PurchaseOrder
+    {
+        return DB::transaction(function () use ($parentOrder, $itemsToSplit, $expectedDeliveryDate, $notes, $user) {
+            if ($parentOrder->parent_id !== null) {
+                throw new Exception('Cannot split a sub-order. Only main orders can be split.', 400);
+            }
+
+            // Create new sub-order
+            $subOrder = $this->purchaseOrderRepository->create([
+                'order_number' => $this->purchaseOrderRepository->generateOrderNumber(),
+                'supplier_id' => $parentOrder->supplier_id, // Same supplier as parent
+                'order_date' => now(),
+                'expected_delivery_date' => $expectedDeliveryDate,
+                'status' => 'draft', // Sub-order starts as draft
+                'notes' => $notes ? [['user_id' => $user->id, 'user_name' => $user->name, 'note' => $notes, 'timestamp' => now()->toDateTimeString()]] : null,
+                'created_by' => $user->id,
+                'parent_id' => $parentOrder->id, // Link to parent
+            ]);
+
+            // Process items to split
+            foreach ($itemsToSplit as $splitItemData) {
+                $originalItem = $parentOrder->items()->find($splitItemData['item_id']);
+
+                if (!$originalItem) {
+                    throw new Exception("Original item not found: {$splitItemData['item_id']}", 404);
+                }
+
+                $quantityToSplit = $splitItemData['quantity'];
+
+                if ($quantityToSplit <= 0 || $quantityToSplit > $originalItem->quantity) {
+                    throw new Exception("Invalid quantity to split for item {$originalItem->product->name}. Max available: {$originalItem->quantity}", 400);
+                }
+
+                // Create new item for sub-order
+                $subOrder->items()->create([
+                    'product_id' => $originalItem->product_id,
+                    'quantity' => $quantityToSplit,
+                    'notes' => $originalItem->notes, // Inherit notes or make independent? User said independent, but for items, maybe inherit initially. Clarify. For now, inherit.
+                ]);
+
+                // Update original item quantity or delete if fully moved
+                if ($quantityToSplit === $originalItem->quantity) {
+                    $originalItem->delete();
+                } else {
+                    $originalItem->quantity -= $quantityToSplit;
+                    $originalItem->save();
+                }
+            }
+
+            // Update parent order totals (this should be done automatically if a relationship is setup for totals)
+            // For now, re-fetch parent order to ensure relationships are loaded for recalculation
+            // $parentOrder->refresh(); // Or recalculate explicitly if needed.
+            // $parentOrder->calculateTotals(); // If a calculateTotals method exists and updates order's total fields directly.
+
+            // Reload parent order items to correctly check if it's empty
+            $parentOrder->load('items');
+
+            $parentOrder->status = 'draft'; // New status for parent
+            
+            $parentOrder->save();
+
+            return $this->getPurchaseOrder($subOrder->id);
+        });
     }
+}

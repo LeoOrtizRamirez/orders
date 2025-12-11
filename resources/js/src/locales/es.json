@@ -682,6 +682,7 @@
 
         "actions": {
             "view": "Ver",
+            "split": "Dividir",
             "edit": "Editar",
             "delete": "Eliminar",
             "submit": "Enviar a Aprobación",
@@ -705,6 +706,8 @@
             "mark_ordered_success": "Orden de compra marcada como ordenada satisfactoriamente!",
             "cancel_success": "Orden de compra cancelada satisfactoriamente!",
             "reopen_success": "Orden de compra reabierta satisfactoriamente!",
+            "split_success": "Orden dividida exitosamente!",
+            "split_error": "Error al dividir la orden. Por favor, intente de nuevo.",
             "validation_errors": "Por favor corrija los errores de validación.",
             "save_error": "No se pudo guardar la orden de compra. Inténtalo de nuevo.",
             "delete_error": "Error al eliminar la orden de compra.",
@@ -769,6 +772,29 @@
             "text": "¿Estás seguro de que deseas reabrir esta orden?",
             "confirm": "Sí, reabrir",
             "cancel": "Cancelar"
+        },
+        "split_modal": {
+            "title": "Dividir Orden de Compra",
+            "fields": {
+                "expected_delivery_date": "Fecha de Entrega Esperada para Sub-orden",
+                "notes": "Notas para Sub-orden",
+                "items_to_split": "Items a Dividir"
+            },
+            "placeholders": {
+                "expected_delivery_date": "Seleccione fecha",
+                "notes": "Notas de la sub-orden...",
+                "quantity_to_split": "Cantidad a dividir"
+            },
+            "available": "disponible",
+            "no_items": "No hay ítems para dividir en esta orden.",
+            "buttons": {
+                "cancel": "Cancelar",
+                "split": "Dividir Orden",
+                "splitting": "Dividiendo..."
+            },
+            "alerts": {
+                "no_items_selected": "Por favor, seleccione al menos un ítem con cantidad mayor a 0 para dividir."
+            }
         },
 
         "view_modal": {

@@ -24,6 +24,7 @@ class PurchaseOrder extends Model
         'created_by',
         'approved_by',
         'approved_at',
+        'parent_id', // Add parent_id to fillable
     ];
 
     protected $casts = [
@@ -74,6 +75,22 @@ class PurchaseOrder extends Model
     public function items(): HasMany
     {
         return $this->hasMany(PurchaseOrderItem::class);
+    }
+
+    /**
+     * Get the parent order that owns the PurchaseOrder.
+     */
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(PurchaseOrder::class, 'parent_id');
+    }
+
+    /**
+     * Get the sub-orders for the PurchaseOrder.
+     */
+    public function subOrders(): HasMany
+    {
+        return $this->hasMany(PurchaseOrder::class, 'parent_id');
     }
 
     public function scopePending($query)
@@ -294,7 +311,7 @@ class PurchaseOrder extends Model
             'rejected' => 'Rechazada',
             'ordered' => 'Ordenada',
             'received' => 'Recibida',
-            'cancelled' => 'Cancelada',
+            'cancelled' => 'Cancelada'
         ];
     }
 }

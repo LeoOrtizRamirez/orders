@@ -60,7 +60,7 @@
                                     <button 
                                         type="button" 
                                         class="btn btn-sm btn-outline-info" 
-                                        @click="$emit('view-order', order)"
+                                        @click="$emit('view-order', order.id)"
                                         :title="$t('purchase_orders_page.actions.view')"
                                     >
                                         {{ $t('purchase_orders_page.actions.view') }}
@@ -143,6 +143,17 @@
                                         {{ $t('purchase_orders_page.actions.receive') }}
                                     </button>
 
+                                    <!-- Botón Dividir Orden -->
+                                    <button 
+                                        v-if="authStore.can('create purchase_orders') && order.can_be_edited"
+                                        type="button" 
+                                        class="btn btn-sm btn-outline-warning" 
+                                        @click="$emit('split-order', order)"
+                                        :title="$t('purchase_orders_page.actions.split')"
+                                    >
+                                        {{ $t('purchase_orders_page.actions.split') }}
+                                    </button>
+
                                     <!-- Botón Cancelar -->
                                     <button 
                                         v-if="authStore.can('edit purchase_orders') && order.can_be_cancelled"
@@ -184,7 +195,7 @@
     }
 
     interface Emits {
-        (e: 'view-order', order: PurchaseOrder): void;
+        (e: 'view-order', orderId: number): void;
         (e: 'edit-order', order: PurchaseOrder): void;
         (e: 'delete-order', order: PurchaseOrder): void;
         (e: 'submit-order', order: PurchaseOrder): void;
@@ -194,6 +205,7 @@
         (e: 'receive-order', order: PurchaseOrder): void;
         (e: 'cancel-order', order: PurchaseOrder): void;
         (e: 'reopen-order', order: PurchaseOrder): void;
+        (e: 'split-order', order: PurchaseOrder): void; // New emit for splitting orders
     }
 
     defineProps<Props>();

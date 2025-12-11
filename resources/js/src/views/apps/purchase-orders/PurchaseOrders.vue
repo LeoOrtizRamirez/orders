@@ -42,6 +42,7 @@
                 @receive-order="handleReceiveOrder"
                 @cancel-order="handleCancelOrder"
                 @reopen-order="handleReopenOrder"
+                @split-order="handleShowSplitModal"
             />
         </div>
 
@@ -65,6 +66,17 @@
             :show="viewModal.show"
             :order="viewModal.data"
             @close="closeViewModal"
+            @view-order-id="handleViewOrder"
+        />
+
+        <!-- Modal de División de Orden -->
+        <PurchaseOrderSplitModal
+            :show="showSplitModal"
+            :order="orderToSplit"
+            :errors="errors"
+            :saving="saving"
+            @close="handleCloseSplitModal"
+            @split="handleSplitOrder"
         />
     </div>
 </template>
@@ -83,11 +95,14 @@
     import PurchaseOrdersListView from './components/PurchaseOrdersListView.vue';
     import PurchaseOrderModal from './components/PurchaseOrderModal.vue';
     import PurchaseOrderViewModal from './components/PurchaseOrderViewModal.vue';
+    import PurchaseOrderSplitModal from './components/PurchaseOrderSplitModal.vue'; // New component
 
     useMeta({ title: 'Gestión de Órdenes de Compra' });
 
     const showModal = ref(false);
     const editingOrder = ref<PurchaseOrder | null>(null); // Nuevo ref para la orden que se edita
+    const showSplitModal = ref(false); // New ref for split modal
+    const orderToSplit = ref<PurchaseOrder | null>(null); // Order to be split
 
     // Use purchase orders composable
     const {
@@ -127,7 +142,8 @@
         removeItem,
         viewOrder,
         closeViewModal,
-        showMessage
+        showMessage,
+        splitOrder // Add splitOrder method
     } = usePurchaseOrders();
 
     onMounted(() => {
@@ -149,8 +165,8 @@
         showModal.value = true;
     };
 
-    const handleViewOrder = (order: any) => {
-        viewOrder(order);
+    const handleViewOrder = (orderId: number) => { // Now accepts ID
+        viewOrder(orderId);
     };
 
     const handleCloseModal = () => {
@@ -282,6 +298,29 @@
 
         if (result.isConfirmed) {
             await reopenOrder(order);
+        }
+    };
+
+    const handleShowSplitModal = (order: PurchaseOrder) => {
+        orderToSplit.value = order;
+        showSplitModal.value = true;
+    };
+
+    const handleCloseSplitModal = () => {
+        showSplitModal.value = false;
+        orderToSplit.value = null;
+        errors.value = {}; // Clear errors when closing
+    };
+
+    const handleSplitOrder = async (splitData: { items: { item_id: number; quantity: number }[], expected_delivery_date: string | null, notes: string | null }) => {
+        if (!orderToSplit.value?.id) {
+            showMessage('Error: No order selected for splitting.', 'error');
+            return;
+        }
+
+        const success = await splitOrder(orderToSplit.value.id, splitData);
+        if (success) {
+            handleCloseSplitModal();
         }
     };
 

@@ -84,6 +84,32 @@
                                                 <p>{{ order.creator?.name }}</p>
                                                 <p class="text-sm text-gray-500">{{ formatDate(order.created_at) }}</p>
                                             </div>
+
+                                            <!-- Información de la Orden Padre (si es una sub-orden) -->
+                                            <div v-if="order.parent">
+                                                <label class="font-semibold text-gray-600">
+                                                    {{ $t('purchase_orders_page.view_modal.fields.parent_order') }}:
+                                                </label>
+                                                <p class="text-lg">
+                                                    <a href="#" @click.prevent="$emit('view-order-id', order.parent.id)">
+                                                        {{ order.parent.order_number }}
+                                                    </a>
+                                                </p>
+                                            </div>
+
+                                            <!-- Información de Sub-órdenes (si tiene) -->
+                                            <div v-if="order.sub_orders && order.sub_orders.length > 0">
+                                                <label class="font-semibold text-gray-600">
+                                                    {{ $t('purchase_orders_page.view_modal.fields.sub_orders') }}:
+                                                </label>
+                                                <ul class="list-disc list-inside">
+                                                    <li v-for="subOrder in order.sub_orders" :key="subOrder.id">
+                                                        <a href="#" @click.prevent="$emit('view-order-id', subOrder.id)">
+                                                            {{ subOrder.order_number }}
+                                                        </a>
+                                                    </li>
+                                                </ul>
+                                            </div>
                                         </div>
 
                                         <!-- Fechas y Totales -->
@@ -253,6 +279,7 @@
 
     interface Emits {
         (e: 'close'): void;
+        (e: 'view-order-id', orderId: number): void; // New emit for navigating to parent/sub-orders
     }
 
     const props = defineProps<Props>();

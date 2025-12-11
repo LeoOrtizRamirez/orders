@@ -445,6 +445,40 @@ export function usePurchaseOrders() {
         }
     };
 
+    const splitOrder = async (orderId: number, splitData: { items: { item_id: number; quantity: number }[], expected_delivery_date: string | null, notes: string | null }): Promise<boolean> => {
+        saving.value = true;
+        errors.value = {};
+        errorMessage.value = '';
+        successMessage.value = '';
+
+        try {
+            const response = await axios.post(`/api/purchase-orders/${orderId}/split`, splitData);
+            
+            if (response.data) {
+                // Assuming the backend returns the updated parent order and the new sub-order
+                // We need to refresh the entire list to reflect changes in both.
+                await fetchOrders(); 
+                showMessage(t('purchase_orders_page.alerts.split_success'));
+                return true;
+            } else {
+                showMessage(response.data.message || t('purchase_orders_page.alerts.split_error'), 'error');
+                return false;
+            }
+        } catch (error: any) {
+            if (error.response && error.response.status === 422) {
+                errors.value = error.response.data.errors;
+                errorMessage.value = t('purchase_orders_page.alerts.validation_errors');
+            } else {
+                console.error('Error splitting order:', error);
+                errorMessage.value = t('purchase_orders_page.alerts.split_error');
+                showMessage(t('purchase_orders_page.alerts.split_error'), 'error');
+            }
+            return false;
+        } finally {
+            saving.value = false;
+        }
+    };
+
     // Métodos helpers
     const editOrder = (order: PurchaseOrder | null = null) => {
         errors.value = {};
@@ -527,11 +561,22 @@ export function usePurchaseOrders() {
         return new Date(dateString).toLocaleDateString('es-ES');
     };
 
-    const viewOrder = (order: PurchaseOrder) => {
+    const viewOrder = async (orderId: number) => { // Accept ID
+        loading.value = true;
         viewModal.value = {
             show: true,
-            data: order
+            data: null // Clear previous data while loading
         };
+        try {
+            const response = await axios.get(`/api/purchase-orders/${orderId}`);
+            viewModal.value.data = response.data;
+        } catch (error) {
+            console.error('Error fetching order for view:', error);
+            showMessage(t('purchase_orders_page.alerts.loading_error'), 'error');
+            viewModal.value.show = false; // Close modal on error
+        } finally {
+            loading.value = false;
+        }
     };
 
     const closeViewModal = () => {
@@ -587,6 +632,7 @@ export function usePurchaseOrders() {
         showMessage,
         formatDate,
         viewOrder,
-        closeViewModal
+        closeViewModal,
+        splitOrder // Add new splitOrder method
     };
 }

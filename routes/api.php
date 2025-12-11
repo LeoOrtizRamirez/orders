@@ -166,6 +166,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
         // Rutas con {purchaseOrder} para PurchaseOrderStatusController
         Route::prefix('{purchaseOrder}')->group(function () {
+            Route::post('/split', [PurchaseOrderController::class, 'split'])->middleware('permission:create purchase_orders'); // New route for splitting orders
             Route::put('/status', [PurchaseOrderStatusController::class, 'updateStatus']);
             Route::post('/submit', [PurchaseOrderStatusController::class, 'submit']);
             Route::post('/approve', [PurchaseOrderStatusController::class, 'approve']);

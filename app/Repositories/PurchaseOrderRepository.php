@@ -11,7 +11,7 @@ class PurchaseOrderRepository
 
     public function getAll(array $filters = []): LengthAwarePaginator
     {
-        $query = $this->model->with(['supplier', 'creator', 'items.product']);
+        $query = $this->model->with(['supplier', 'creator', 'items.product', 'parent', 'subOrders']);
 
         if (isset($filters['status'])) {
             $query->where('status', $filters['status']);
@@ -43,7 +43,7 @@ class PurchaseOrderRepository
 
     public function findById(int $id): ?PurchaseOrder
     {
-        return $this->model->with(['supplier', 'creator', 'approver', 'items.product'])->find($id);
+        return $this->model->with(['supplier', 'creator', 'approver', 'items.product', 'parent', 'subOrders'])->find($id);
     }
 
     public function findByOrderNumber(string $orderNumber): ?PurchaseOrder
@@ -115,7 +115,7 @@ class PurchaseOrderRepository
 
                 public function getKanbanOrders()
                 {
-                    return $this->model->with(['supplier', 'creator', 'items.product'])->get();
+                    return $this->model->with(['supplier', 'creator', 'items.product', 'parent', 'subOrders'])->get();
                 }
     }
 

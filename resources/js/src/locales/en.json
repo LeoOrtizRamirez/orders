@@ -681,6 +681,7 @@
 
         "actions": {
             "view": "View",
+            "split": "Split",
             "edit": "Edit",
             "delete": "Delete",
             "submit": "Submit for Approval",
@@ -704,6 +705,8 @@
             "mark_ordered_success": "Purchase order marked as ordered successfully!",
             "cancel_success": "Purchase order cancelled successfully!",
             "reopen_success": "Purchase order reopened successfully!",
+            "split_success": "Order split successfully!",
+            "split_error": "Error splitting order. Please try again.",
             "validation_errors": "Please correct the validation errors.",
             "save_error": "Could not save the purchase order. Please try again.",
             "delete_error": "Error deleting purchase order.",
@@ -768,6 +771,29 @@
             "text": "Are you sure you want to reopen this order?",
             "confirm": "Yes, reopen",
             "cancel": "Cancel"
+        },
+        "split_modal": {
+            "title": "Split Purchase Order",
+            "fields": {
+                "expected_delivery_date": "Expected Delivery Date for Sub-order",
+                "notes": "Notes for Sub-order",
+                "items_to_split": "Items to Split"
+            },
+            "placeholders": {
+                "expected_delivery_date": "Select date",
+                "notes": "Sub-order notes...",
+                "quantity_to_split": "Quantity to split"
+            },
+            "available": "available",
+            "no_items": "No items to split in this order.",
+            "buttons": {
+                "cancel": "Cancel",
+                "split": "Split Order",
+                "splitting": "Splitting..."
+            },
+            "alerts": {
+                "no_items_selected": "Please select at least one item with quantity greater than 0 to split."
+            }
         },
 
         "view_modal": {

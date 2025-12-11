@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Services\PurchaseOrderManagementService;
 use Illuminate\Http\JsonResponse;
+use App\Http\Requests\SplitPurchaseOrderRequest;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
+use App\Models\PurchaseOrder; // Import PurchaseOrder model
 
 class PurchaseOrderController extends Controller
 {
@@ -18,6 +20,7 @@ class PurchaseOrderController extends Controller
         $this->middleware('permission:delete purchase_orders')->only(['destroy']);
         $this->middleware('permission:approve purchase_orders')->only(['approve', 'reject']);
         $this->middleware('permission:receive purchase_orders')->only(['receive']);
+        $this->middleware('permission:create purchase_orders')->only(['split']); // Add middleware for split
     }
 
     public function index(Request $request): JsonResponse
@@ -288,4 +291,27 @@ class PurchaseOrderController extends Controller
 
         }
 
+    public function split(SplitPurchaseOrderRequest $request, PurchaseOrder $purchaseOrder): JsonResponse
+    {
+        try {
+            // The request is already validated by SplitPurchaseOrderRequest
+            $subOrder = $this->purchaseOrderService->splitPurchaseOrder(
+                $purchaseOrder,
+                $request->validated('items'),
+                $request->validated('expected_delivery_date'),
+                $request->validated('notes'),
+                $request->user()
+            );
+
+            return response()->json($subOrder, 201);
+        } catch (\Exception $e) {
+            $exceptionCode = $e->getCode();
+            // Ensure status code is a valid HTTP status code (100-599)
+            $statusCode = ($exceptionCode >= 100 && $exceptionCode < 600) ? $exceptionCode : 500;
+            return response()->json([
+                'error' => 'Failed to split purchase order',
+                'message' => $e->getMessage()
+            ], $statusCode);
+        }
     }
+}
