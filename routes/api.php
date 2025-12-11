@@ -14,6 +14,7 @@ use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VideoController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\NotificationController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -34,6 +35,11 @@ Route::post('/login', [AuthController::class, 'login']);
 
 // Rutas protegidas con Sanctum
 Route::middleware(['auth:sanctum'])->group(function () {
+
+    // Notifications
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::post('/notifications/mark-all-as-read', [NotificationController::class, 'markAllAsRead']);
+    Route::post('/notifications/{id}/mark-as-read', [NotificationController::class, 'markAsRead']);
 
     // Reports
     Route::get('/reports/sales', [ReportController::class, 'salesReport']);
@@ -64,11 +70,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/{user}', [UserController::class, 'show']);
         Route::post('/{user}', [UserController::class, 'update'])->middleware('permission:edit users');
         Route::delete('/{user}', [UserController::class, 'destroy'])->middleware('permission:delete users');
-    });
-
-    // Rutas de usuario only
-    Route::prefix('user-only')->group(function () {
-        Route::put('/{user}', [UserController::class, 'updateUserOnly'])->middleware('permission:edit users');
     });
 
     // Rutas de administración (solo para usuarios con permisos de administración)

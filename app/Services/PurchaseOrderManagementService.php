@@ -3,12 +3,15 @@
 namespace App\Services;
 
 use App\Models\User;
-use App\Repositories\PurchaseOrderRepository;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderItem;
+use App\Notifications\OrderStatusChanged;
 use App\Repositories\ProductRepository;
+use App\Repositories\PurchaseOrderRepository;
 use Exception;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Notification;
+use Spatie\Permission\Models\Role;
 
 class PurchaseOrderManagementService
 {
@@ -21,8 +24,6 @@ class PurchaseOrderManagementService
     {
         return $this->purchaseOrderRepository->getAll($filters);
     }
-
-
 
     public function getPurchaseOrder(int $id)
     {
@@ -41,7 +42,7 @@ class PurchaseOrderManagementService
             $data['order_number'] = $this->purchaseOrderRepository->generateOrderNumber();
             $data['created_by'] = $user->id;
             $data['order_date'] = now();
-            $data['status'] = 'nuevo pedido'; // Set default status to 'nuevo pedido'
+            $data['status'] = 'nuevo pedido';
 
             $itemsData = [];
             foreach ($data['items'] as $itemData) {
@@ -72,6 +73,8 @@ class PurchaseOrderManagementService
             foreach ($itemsData as $itemData) {
                 $purchaseOrder->items()->create($itemData);
             }
+
+            $this->notifyUsersOnStatusChange($purchaseOrder, null);
 
             return $this->getPurchaseOrder($purchaseOrder->id);
         });
@@ -136,10 +139,6 @@ class PurchaseOrderManagementService
         return true;
     }
 
-    /**
-     * Update the status of a purchase order.
-     * Special logic for 'preparar pedido' to check and deduct stock.
-     */
     public function updateStatus(int $id, string $newStatus, int $userId)
     {
         if ($newStatus === 'preparar pedido') {
@@ -148,12 +147,12 @@ class PurchaseOrderManagementService
 
         $purchaseOrder = $this->getPurchaseOrder($id);
         $purchaseOrder->update(['status' => $newStatus]);
+        
+        $this->notifyUsersOnStatusChange($purchaseOrder, null);
+
         return $this->getPurchaseOrder($id);
     }
 
-    /**
-     * Handles the specific logic for moving an order to 'preparar pedido'.
-     */
     private function prepareOrder(int $id, int $userId)
     {
         return DB::transaction(function () use ($id, $userId) {
@@ -172,12 +171,49 @@ class PurchaseOrderManagementService
 
             $purchaseOrder->update([
                 'status' => 'preparar pedido',
-                'approved_by' => $userId, // Using approved_by for tracking who prepared it
-                'approved_at' => now(),   // Using approved_at for tracking when it was prepared
+                'approved_by' => $userId,
+                'approved_at' => now(),
             ]);
+
+            $this->notifyUsersOnStatusChange($purchaseOrder, null);
 
             return $this->getPurchaseOrder($id);
         });
+    }
+
+    private function notifyUsersOnStatusChange(PurchaseOrder $order, ?string $customMessage = null)
+    {
+        $statusRoleMap = [
+            'nuevo pedido' => ['Comercial'],
+            'disponibilidad' => ['Comercial'],
+            'preparar pedido' => ['Despachos'],
+            'en preparación' => ['Despachos'],
+            'facturación' => ['Contabilidad'],
+            'en despacho' => ['Comercial', 'Despachos'],
+            'en ruta' => ['Comercial'],
+            'entregado' => ['Comercial'],
+        ];
+
+        $rolesToNotify = $statusRoleMap[$order->status] ?? [];
+
+        // If it's a custom message, notify all roles that could ever be involved, plus admins.
+        if ($customMessage) {
+            $rolesToNotify = ['Comercial', 'Despachos', 'Contabilidad'];
+        }
+
+        if (empty($rolesToNotify)) {
+            return;
+        }
+
+        $adminRole = 'Administrador';
+        
+        $users = User::whereHas('roles', function ($query) use ($rolesToNotify, $adminRole) {
+            $query->whereIn('name', $rolesToNotify)->orWhere('name', $adminRole);
+        })->get();
+
+        if ($users->isNotEmpty()) {
+            Notification::send($users, new OrderStatusChanged($order, $customMessage));
+        }
     }
 
     public function splitPurchaseOrder(
@@ -192,19 +228,17 @@ class PurchaseOrderManagementService
                 throw new Exception('Cannot split a sub-order. Only main orders can be split.', 400);
             }
 
-            // Create new sub-order
             $subOrder = $this->purchaseOrderRepository->create([
                 'order_number' => $this->purchaseOrderRepository->generateOrderNumber(),
                 'supplier_id' => $parentOrder->supplier_id,
                 'order_date' => now(),
                 'expected_delivery_date' => $expectedDeliveryDate,
-                'status' => 'nuevo pedido', // Set status to 'nuevo pedido'
+                'status' => 'nuevo pedido',
                 'notes' => $notes ? [['user_id' => $user->id, 'user_name' => $user->name, 'note' => $notes, 'timestamp' => now()->toDateTimeString()]] : null,
                 'created_by' => $user->id,
                 'parent_id' => $parentOrder->id,
             ]);
 
-            // Process items to split
             foreach ($itemsToSplit as $splitItemData) {
                 $originalItem = $parentOrder->items()->find($splitItemData['item_id']);
 
@@ -218,14 +252,12 @@ class PurchaseOrderManagementService
                     throw new Exception("Invalid quantity to split for item {$originalItem->product->name}. Max available: {$originalItem->quantity}", 400);
                 }
 
-                // Create new item for sub-order
                 $subOrder->items()->create([
                     'product_id' => $originalItem->product_id,
                     'quantity' => $quantityToSplit,
                     'notes' => $originalItem->notes,
                 ]);
 
-                // Update original item quantity or delete if fully moved
                 if ($quantityToSplit === $originalItem->quantity) {
                     $originalItem->delete();
                 } else {
@@ -233,6 +265,14 @@ class PurchaseOrderManagementService
                     $originalItem->save();
                 }
             }
+
+            $this->notifyUsersOnStatusChange($subOrder);
+
+            // Notify that the parent order has been modified.
+            $parentOrder->refresh();
+            $customMessage = "La orden #{$parentOrder->order_number} ha sido modificada para crear la orden secundaria #{$subOrder->order_number}.";
+            $this->notifyUsersOnStatusChange($parentOrder, $customMessage);
+
 
             return $this->getPurchaseOrder($subOrder->id);
         });
