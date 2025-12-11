@@ -24,7 +24,7 @@ class PurchaseOrder extends Model
         'created_by',
         'approved_by',
         'approved_at',
-        'parent_id', // Add parent_id to fillable
+        'parent_id',
     ];
 
     protected $casts = [
@@ -35,16 +35,8 @@ class PurchaseOrder extends Model
         'notes' => 'array',
     ];
 
-    protected $hidden = [
-        'subtotal',
-        'tax',
-        'shipping',
-        'total',
-    ];
+    protected $hidden = [];
 
-    /**
-     * Los accessors que deben ser incluidos en el JSON
-     */
     protected $appends = [
         'can_be_edited', 
         'can_be_approved', 
@@ -54,7 +46,6 @@ class PurchaseOrder extends Model
         'can_be_deleted',
         'can_be_cancelled',
         'can_be_reopened',
-        'total' // Add total to appends
     ];
 
     public function supplier(): BelongsTo
@@ -77,241 +68,67 @@ class PurchaseOrder extends Model
         return $this->hasMany(PurchaseOrderItem::class);
     }
 
-    /**
-     * Get the parent order that owns the PurchaseOrder.
-     */
     public function parent(): BelongsTo
     {
         return $this->belongsTo(PurchaseOrder::class, 'parent_id');
     }
 
-    /**
-     * Get the sub-orders for the PurchaseOrder.
-     */
     public function subOrders(): HasMany
     {
         return $this->hasMany(PurchaseOrder::class, 'parent_id');
     }
 
-    public function scopePending($query)
-    {
-        return $query->where('status', 'pending');
-    }
-
-    public function scopeApproved($query)
-    {
-        return $query->where('status', 'approved');
-    }
-
-    public function scopeOrdered($query)
-    {
-        return $query->where('status', 'ordered');
-    }
-
-    /**
-     * Accessor para determinar si la orden puede ser editada
-     */
     public function getCanBeEditedAttribute(): bool
     {
-        return in_array($this->status, ['draft', 'pending']);
+        return true;
     }
 
-    /**
-     * Accessor para determinar si la orden puede ser aprobada
-     */
     public function getCanBeApprovedAttribute(): bool
     {
-        return $this->status === 'pending';
+        return true;
     }
 
-    /**
-     * Accessor para determinar si la orden puede ser rechazada
-     */
     public function getCanBeRejectedAttribute(): bool
     {
-        return $this->status === 'pending';
+        return true;
     }
 
-    /**
-     * Accessor para determinar si la orden puede ser recibida
-     */
     public function getCanBeReceivedAttribute(): bool
     {
-        return in_array($this->status, ['ordered', 'approved']);
+        return true;
     }
 
-    /**
-     * Accessor para determinar si la orden puede ser marcada como ordenada
-     */
     public function getCanBeMarkedOrderedAttribute(): bool
     {
-        return $this->status === 'approved';
+        return true;
     }
 
-    /**
-     * Accessor para determinar si la orden puede ser eliminada
-     */
     public function getCanBeDeletedAttribute(): bool
     {
-        return in_array($this->status, ['draft', 'pending']);
+        return true;
     }
 
-    /**
-     * Accessor para determinar si la orden puede ser cancelada
-     */
     public function getCanBeCancelledAttribute(): bool
     {
-        return in_array($this->status, ['draft', 'pending', 'approved']);
+        return true;
     }
 
-    /**
-     * Accessor para determinar si la orden puede ser reabierta
-     */
     public function getCanBeReopenedAttribute(): bool
     {
-        return in_array($this->status, ['rejected', 'cancelled']);
-    }
-
-    /**
-     * Aprobar la orden de compra
-     */
-    public function approve(int $approvedBy): bool
-    {
-        if (!$this->can_be_approved) {
-            return false;
-        }
-
-        $this->update([
-            'status' => 'approved',
-            'approved_by' => $approvedBy,
-            'approved_at' => now(),
-        ]);
-
         return true;
     }
 
-    /**
-     * Rechazar la orden de compra
-     */
-    public function reject(string $reason, int $rejectedBy): bool
-    {
-        if (!$this->can_be_rejected) {
-            return false;
-        }
-
-        $this->update([
-            'status' => 'rejected',
-            'rejection_reason' => $reason,
-            'approved_by' => $rejectedBy,
-            'approved_at' => now(),
-        ]);
-
-        return true;
-    }
-
-    /**
-     * Marcar como ordenada (enviada al proveedor)
-     */
-    public function markAsOrdered(): bool
-    {
-        if (!$this->can_be_marked_ordered) {
-            return false;
-        }
-
-        $this->update([
-            'status' => 'ordered',
-        ]);
-
-        return true;
-    }
-
-    /**
-     * Recibir la orden (completar recepción)
-     */
-    public function receive(): bool
-    {
-        if (!$this->can_be_received) {
-            return false;
-        }
-
-        $this->update([
-            'status' => 'received',
-            'delivery_date' => now(),
-        ]);
-
-        return true;
-    }
-
-    /**
-     * Cancelar la orden
-     */
-    public function cancel(string $reason = null): bool
-    {
-        if (!$this->can_be_cancelled) {
-            return false;
-        }
-
-        $this->update([
-            'status' => 'cancelled',
-            'rejection_reason' => $reason,
-        ]);
-
-        return true;
-    }
-
-    /**
-     * Reabrir una orden rechazada o cancelada
-     */
-    public function reopen(): bool
-    {
-        if (!$this->can_be_reopened) {
-            return false;
-        }
-
-        $this->update([
-            'status' => 'pending',
-            'rejection_reason' => null,
-            'approved_by' => null,
-            'approved_at' => null,
-        ]);
-
-        return true;
-    }
-
-    /**
-     * Enviar borrador a aprobación
-     */
-    public function submit(): bool
-    {
-        if ($this->status !== 'draft') {
-            return false;
-        }
-
-        $this->update([
-            'status' => 'pending',
-        ]);
-
-        return true;
-    }
-
-    public function calculateTotals(): void
-    {
-        // This logic is no longer needed
-    }
-
-    /**
-     * Método helper para obtener todos los estados válidos
-     */
     public static function getStatuses(): array
     {
         return [
-            'draft' => 'Borrador',
-            'pending' => 'Pendiente',
-            'approved' => 'Aprobada',
-            'rejected' => 'Rechazada',
-            'ordered' => 'Ordenada',
-            'received' => 'Recibida',
-            'cancelled' => 'Cancelada'
+            'nuevo pedido' => 'Nuevo Pedido',
+            'disponibilidad' => 'Disponibilidad',
+            'preparar pedido' => 'Preparar Pedido',
+            'en preparación' => 'En Preparación',
+            'facturación' => 'Facturación',
+            'en despacho' => 'En Despacho',
+            'en ruta' => 'En Ruta',
+            'entregado' => 'Entregado',
         ];
     }
 }

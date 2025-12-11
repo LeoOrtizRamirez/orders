@@ -53,8 +53,9 @@
     "edit": "Editar",
     "calendar": "Calendario",
     "orders": "Pedidos",
-    "suppliers": "Proveedores",
+    "suppliers": "Clientes",
     "products": "Productos",
+    "reports": "Reportes",
     "tabs": "pestañas",
     "accordions": "acordeón",
     "modals": "modal",
@@ -641,7 +642,7 @@
 
         "filters": {
             "all_status": "Todos los estados",
-            "all_suppliers": "Todos los proveedores",
+            "all_suppliers": "Todos los clientes",
             "draft": "Borrador",
             "pending": "Pendiente",
             "approved": "Aprobado",
@@ -661,7 +662,7 @@
 
         "table": {
             "order_number": "N° Orden",
-            "supplier": "Proveedor",
+            "supplier": "Cliente",
             "order_date": "Fecha",
             "expected_delivery": "Entrega Esperada",
             "total": "Total",
@@ -671,13 +672,14 @@
         },
 
         "status": {
-            "draft": "Borrador",
-            "pending": "Pendiente",
-            "approved": "Aprobado",
-            "rejected": "Rechazado",
-            "ordered": "Ordenado",
-            "received": "Recibido",
-            "cancelled": "Cancelado"
+            "nuevo_pedido": "Nuevo Pedido",
+            "disponibilidad": "Disponibilidad",
+            "preparar_pedido": "Preparar Pedido",
+            "en_preparacion": "En Preparación",
+            "facturacion": "Facturación",
+            "en_despacho": "En Despacho",
+            "en_ruta": "En Ruta",
+            "entregado": "Entregado"
         },
 
         "actions": {
@@ -747,7 +749,7 @@
 
         "mark_ordered_confirm": {
             "title": "Marcar como Ordenada",
-            "text": "¿Estás seguro de que deseas marcar esta orden como enviada al proveedor?",
+            "text": "¿Estás seguro de que deseas marcar esta orden como enviada al cliente?",
             "confirm": "Sí, marcar como ordenada",
             "cancel": "Cancelar"
         },
@@ -806,7 +808,7 @@
                 "totals_summary": "Resumen de Totales"
             },
             "fields": {
-                "supplier": "Proveedor",
+                "supplier": "Cliente",
                 "status": "Estado",
                 "created_by": "Creado por",
                 "order_date": "Fecha de Orden",
@@ -814,6 +816,8 @@
                 "delivery_date": "Fecha de Recepción",
                 "approved_by": "Aprobado por",
                 "approved_at": "Fecha de Aprobación",
+                "parent_order": "Orden Principal",
+                "sub_orders": "Sub-Órdenes",
                 "product": "Producto",
                 "quantity": "Cantidad",
                 "received": "Recibido",
@@ -844,7 +848,7 @@
             "add_title": "Nueva Orden de Compra",
             "edit_title": "Editar Orden de Compra",
             "fields": {
-                "supplier": "Proveedor",
+                "supplier": "Cliente",
                 "expected_delivery_date": "Fecha de Entrega Esperada",
                 "notes": "Notas",
                 "tax": "Impuestos",
@@ -857,7 +861,7 @@
                 "item_notes": "Notas del Item"
             },
             "placeholders": {
-                "select_supplier": "Seleccione un proveedor",
+                "select_supplier": "Seleccione un cliente",
                 "expected_delivery_date": "Seleccione fecha",
                 "notes": "Notas adicionales...",
                 "tax": "0.00",
@@ -876,7 +880,7 @@
                 "remove_item": "Eliminar"
             },
             "validation": {
-                "supplier_required": "El proveedor es requerido",
+                "supplier_required": "El cliente es requerido",
                 "delivery_date_required": "La fecha de entrega esperada es requerida",
                 "items_required": "Debe agregar al menos un item",
                 "product_required": "El producto es requerido",
@@ -895,24 +899,24 @@
         }
     },
     "suppliers_page": {
-        "title": "Gestión de Proveedores",
-        "add_supplier_btn": "Agregar Proveedor",
-        "search_placeholder": "Buscar proveedores...",
+        "title": "Gestión de Clientes",
+        "add_supplier_btn": "Agregar Cliente",
+        "search_placeholder": "Buscar clientes...",
         "alerts": {
-            "loading_error": "Error al cargar los proveedores",
-            "save_success": "Proveedor guardado exitosamente",
-            "update_success": "Proveedor actualizado exitosamente",
-            "delete_success": "Proveedor eliminado exitosamente",
+            "loading_error": "Error al cargar los clientes",
+            "save_success": "Cliente guardado exitosamente",
+            "update_success": "Cliente actualizado exitosamente",
+            "delete_success": "Cliente eliminado exitosamente",
             "validation_errors": "Errores de validación",
-            "save_error": "Error al guardar el proveedor",
-            "delete_error": "Error al eliminar el proveedor",
-            "cannot_delete": "No se puede eliminar el proveedor porque tiene órdenes de compra asociadas",
-            "status_toggle_success": "Proveedor {status} exitosamente",
-            "status_error": "Error al cambiar el estado del proveedor",
-            "no_suppliers": "No se encontraron proveedores"
+            "save_error": "Error al guardar el cliente",
+            "delete_error": "Error al eliminar el cliente",
+            "cannot_delete": "No se puede eliminar el cliente porque tiene órdenes de compra asociadas",
+            "status_toggle_success": "Cliente {status} exitosamente",
+            "status_error": "Error al cambiar el estado del cliente",
+            "no_suppliers": "No se encontraron clientes"
         },
         "delete_confirm": {
-            "title": "¿Eliminar proveedor?",
+            "title": "¿Eliminar cliente?",
             "text": "Esta acción no se puede deshacer",
             "confirm": "Sí, eliminar",
             "cancel": "Cancelar"
@@ -923,9 +927,9 @@
             "inactive": "Inactivos"
         },
         "stats": {
-            "total_suppliers": "Total Proveedores",
-            "active_suppliers": "Proveedores Activos",
-            "inactive_suppliers": "Proveedores Inactivos",
+            "total_suppliers": "Total Clientes",
+            "active_suppliers": "Clientes Activos",
+            "inactive_suppliers": "Clientes Inactivos",
             "with_purchase_orders": "Con Órdenes de Compra"
         },
         "table": {
@@ -951,8 +955,8 @@
             "deactivate": "Desactivar"
         },
         "modal": {
-            "add_title": "Agregar Proveedor",
-            "edit_title": "Editar Proveedor",
+            "add_title": "Agregar Cliente",
+            "edit_title": "Editar Cliente",
             "fields": {
                 "name": "Nombre",
                 "contact_person": "Persona de Contacto",
@@ -964,12 +968,12 @@
                 "tax_id": "NIT/RUT",
                 "payment_terms": "Términos de Pago",
                 "notes": "Notas",
-                "active": "Proveedor Activo"
+                "active": "Cliente Activo"
             },
             "placeholders": {
-                "name": "Ingrese el nombre del proveedor",
+                "name": "Ingrese el nombre del cliente",
                 "contact_person": "Ingrese el nombre de la persona de contacto",
-                "email": "Ingrese el correo del proveedor",
+                "email": "Ingrese el correo del cliente",
                 "phone": "Ingrese el teléfono",
                 "address": "Ingrese la dirección",
                 "city": "Ingrese la ciudad",
@@ -986,8 +990,8 @@
         }
     },
     "ordenes": {
-        "kanban_board": "Tablero Kanban",
-        "order_kanban_board": "Tablero Kanban de Órdenes",
+        "kanban_board": "Órdenes",
+        "order_kanban_board": "Órdenes",
         "refresh": "Actualizar",
         "total": "Total",
         "created_at": "Creada",
@@ -996,14 +1000,16 @@
         "order_status_updated_successfully": "Estado de la orden actualizado correctamente.",
         "error_updating_order_status": "Error al actualizar el estado de la orden.",
         "list_orders": "Listar Órdenes",
+        "sub_order": "Sub-orden",
         "status": {
-            "draft": "Borrador",
-            "pending": "Pendiente",
-            "approved": "Aprobada",
-            "ordered": "Ordenada",
-            "received": "Recibida",
-            "rejected": "Rechazada",
-            "cancelled": "Cancelada"
+            "nuevo_pedido": "Nuevo Pedido",
+            "disponibilidad": "Disponibilidad",
+            "preparar_pedido": "Preparar Pedido",
+            "en_preparacion": "En Preparación",
+            "facturacion": "Facturación",
+            "en_despacho": "En Despacho",
+            "en_ruta": "En Ruta",
+            "entregado": "Entregado"
         }
     }
 }

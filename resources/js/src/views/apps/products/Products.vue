@@ -34,7 +34,7 @@
         <div class="mt-5">
             <ProductsListView
                 v-if="displayType === 'list'"
-                :products="filteredProductsList"
+                :products="productsList"
                 :loading="loading"
                 @edit-product="handleEditProduct"
                 @delete-product="handleDeleteProduct"
@@ -43,12 +43,50 @@
             
             <ProductsGridView
                 v-else
-                :products="filteredProductsList"
+                :products="productsList"
                 :loading="loading"
                 @edit-product="handleEditProduct"
                 @delete-product="handleDeleteProduct"
                 @toggle-status="handleToggleStatus"
             />
+        </div>
+
+        <!-- Paginación -->
+        <div class="mt-6 flex justify-center">
+            <ul class="inline-flex items-center space-x-1 rtl:space-x-reverse m-auto mb-4">
+                <li>
+                    <button
+                        type="button"
+                        class="flex justify-center font-semibold px-3.5 py-2 rounded transition text-dark hover:text-primary border-2 border-[#e0e6ed] dark:border-[#191e3a] hover:border-primary dark:hover:border-primary dark:text-white-light"
+                        :disabled="pagination.current_page === 1"
+                        @click="changePage(pagination.current_page - 1)"
+                    >
+                        Prev
+                    </button>
+                </li>
+                <li v-for="(page, index) in displayedPages" :key="index">
+                    <button
+                        v-if="page !== '...'"
+                        type="button"
+                        class="flex justify-center font-semibold px-3.5 py-2 rounded transition"
+                        :class="{'text-primary border-2 border-primary dark:border-primary dark:text-white-light': pagination.current_page === page, 'text-dark hover:text-primary border-2 border-[#e0e6ed] dark:border-[#191e3a] hover:border-primary dark:hover:border-primary dark:text-white-light': pagination.current_page !== page}"
+                        @click="changePage(page as number)"
+                    >
+                        {{ page }}
+                    </button>
+                    <span v-else class="px-3.5 py-2">...</span>
+                </li>
+                <li>
+                    <button
+                        type="button"
+                        class="flex justify-center font-semibold px-3.5 py-2 rounded transition text-dark hover:text-primary border-2 border-[#e0e6ed] dark:border-[#191e3a] hover:border-primary dark:hover:border-primary dark:text-white-light"
+                        :disabled="pagination.current_page === pagination.last_page"
+                        @click="changePage(pagination.current_page + 1)"
+                    >
+                        Next
+                    </button>
+                </li>
+            </ul>
         </div>
 
         <!-- Modal de Creación/Edición -->
@@ -73,7 +111,7 @@
 </template>
 
 <script lang="ts" setup>
-    import { ref, onMounted } from 'vue';
+    import { ref, onMounted, computed } from 'vue';
     import { useMeta } from '@/composables/use-meta';
     import { useProducts } from './composables/useProducts';
     
@@ -84,16 +122,15 @@
     import ProductsListView from './components/ProductsListView.vue';
     import ProductsGridView from './components/ProductsGridView.vue';
     import ProductModal from './components/ProductModal.vue';
-    import ProductImportModal from './components/ProductImportModal.vue'; // New component
+    import ProductImportModal from './components/ProductImportModal.vue';
 
     useMeta({ title: 'Gestión de Productos' });
 
     const displayType = ref<'list' | 'grid'>('list');
     const showModal = ref(false);
-    const showImportModal = ref(false); // New state for import modal
-    const importLoading = ref(false); // New state for import loading
+    const showImportModal = ref(false);
+    const importLoading = ref(false);
 
-    // Use products composable
     const {
         productsList,
         categories,
@@ -105,7 +142,7 @@
         searchProduct,
         filters,
         params,
-        filteredProductsList,
+        pagination,
         totalProducts,
         activeProducts,
         lowStockProducts,
@@ -123,20 +160,51 @@
         downloadProductsCsvTemplate
     } = useProducts();
 
-    // Console logs for debugging
-    console.log('--- Products.vue Setup Debug ---');
-    console.log('categories from useProducts:', categories.value);
-    console.log('showImportModal (ref):', showImportModal.value);
-    console.log('importLoading (ref):', importLoading.value);
-    console.log('--- End Products.vue Setup Debug ---');
-
     onMounted(() => {
-        console.log('Products.vue onMounted hook triggered.'); // Confirm onMounted is running
-        fetchProducts();
+        fetchProducts(1);
         fetchCategories();
     });
 
-    // Event handlers
+    const changePage = (page: number) => {
+        if (page > 0 && page <= pagination.value.last_page && page !== pagination.value.current_page) {
+            fetchProducts(page);
+        }
+    };
+
+    const displayedPages = computed(() => {
+        const currentPage = pagination.value.current_page;
+        const lastPage = pagination.value.last_page;
+        const delta = 2;
+        const pages: (number | string)[] = [];
+
+        if (lastPage <= 7) {
+            for (let i = 1; i <= lastPage; i++) {
+                pages.push(i);
+            }
+            return pages;
+        }
+
+        pages.push(1);
+        if (currentPage > delta + 2) {
+            pages.push('...');
+        }
+
+        const start = Math.max(2, currentPage - delta);
+        const end = Math.min(lastPage - 1, currentPage + delta);
+
+        for (let i = start; i <= end; i++) {
+            pages.push(i);
+        }
+
+        if (currentPage < lastPage - delta - 1) {
+            pages.push('...');
+        }
+        
+        pages.push(lastPage);
+
+        return pages;
+    });
+
     const handleAddProduct = () => {
         editProduct(null);
         showModal.value = true;
@@ -152,7 +220,7 @@
         resetParams();
     };
 
-    const handleSaveProduct = async () => { // Adjusted signature
+    const handleSaveProduct = async () => {
         const success = await saveProduct();
         if (success) {
             handleCloseModal();
@@ -173,7 +241,7 @@
             const success = await importProductsCsv(file);
             if (success) {
                 showImportModal.value = false;
-                fetchProducts(); // Refresh products list
+                fetchProducts(1);
             }
         } finally {
             importLoading.value = false;
@@ -194,6 +262,6 @@
 
     const handleFiltersUpdate = (newFilters: any) => {
         Object.assign(filters, newFilters);
-        fetchProducts();
+        fetchProducts(1);
     };
 </script>

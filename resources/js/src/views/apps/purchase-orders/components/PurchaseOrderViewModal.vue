@@ -73,7 +73,7 @@
                                                     {{ $t('purchase_orders_page.view_modal.fields.status') }}:
                                                 </label>
                                                 <span class="badge ml-2" :class="getStatusClass(order.status)">
-                                                    {{ $t(`purchase_orders_page.status.${order.status}`) }}
+                                                    {{ $t(`purchase_orders_page.status.${order.status.replace(/ /g, '_')}`) }}
                                                 </span>
                                             </div>
 
@@ -91,8 +91,8 @@
                                                     {{ $t('purchase_orders_page.view_modal.fields.parent_order') }}:
                                                 </label>
                                                 <p class="text-lg">
-                                                    <a href="#" @click.prevent="$emit('view-order-id', order.parent.id)">
-                                                        {{ order.parent.order_number }}
+                                                    <a href="#" @click.prevent="$emit('view-order-id', order.parent.id)" class="btn btn-outline-info btn-sm">
+                                                        #{{ order.parent.order_number }}
                                                     </a>
                                                 </p>
                                             </div>
@@ -102,13 +102,11 @@
                                                 <label class="font-semibold text-gray-600">
                                                     {{ $t('purchase_orders_page.view_modal.fields.sub_orders') }}:
                                                 </label>
-                                                <ul class="list-disc list-inside">
-                                                    <li v-for="subOrder in order.sub_orders" :key="subOrder.id">
-                                                        <a href="#" @click.prevent="$emit('view-order-id', subOrder.id)">
-                                                            {{ subOrder.order_number }}
-                                                        </a>
-                                                    </li>
-                                                </ul>
+                                                <div class="flex flex-wrap gap-2">
+                                                    <a v-for="subOrder in order.sub_orders" :key="subOrder.id" href="#" @click.prevent="$emit('view-order-id', subOrder.id)" class="btn btn-outline-info btn-sm">
+                                                        #{{ subOrder.order_number }}
+                                                    </a>
+                                                </div>
                                             </div>
                                         </div>
 
@@ -287,13 +285,14 @@
 
     const getStatusClass = (status: string): string => {
         const classes: Record<string, string> = {
-            draft: 'bg-gray-100 text-gray-800',
-            pending: 'bg-warning/10 text-warning',
-            approved: 'bg-success/10 text-success',
-            rejected: 'bg-danger/10 text-danger',
-            ordered: 'bg-info/10 text-info',
-            received: 'bg-secondary/10 text-secondary',
-            cancelled: 'bg-danger/10 text-danger'
+            'nuevo pedido': 'bg-gray-100 text-gray-800',
+            'disponibilidad': 'bg-secondary/10 text-secondary',
+            'preparar pedido': 'bg-success/10 text-success',
+            'en preparación': 'bg-info/10 text-info',
+            'facturación': 'bg-primary/10 text-primary',
+            'en despacho': 'bg-warning/10 text-warning',
+            'en ruta': 'bg-danger/10 text-danger',
+            'entregado': 'bg-success/10 text-success'
         };
         return classes[status] || 'bg-gray-100 text-gray-800';
     };

@@ -4,8 +4,8 @@ namespace App\Services;
 
 use App\Models\User;
 use App\Repositories\PurchaseOrderRepository;
-use App\Models\PurchaseOrder; // Add this import
-use App\Models\PurchaseOrderItem; // Add this import
+use App\Models\PurchaseOrder;
+use App\Models\PurchaseOrderItem;
 use App\Repositories\ProductRepository;
 use Exception;
 use Illuminate\Support\Facades\DB;
@@ -21,6 +21,8 @@ class PurchaseOrderManagementService
     {
         return $this->purchaseOrderRepository->getAll($filters);
     }
+
+
 
     public function getPurchaseOrder(int $id)
     {
@@ -39,35 +41,20 @@ class PurchaseOrderManagementService
             $data['order_number'] = $this->purchaseOrderRepository->generateOrderNumber();
             $data['created_by'] = $user->id;
             $data['order_date'] = now();
-            $data['status'] = 'draft';
+            $data['status'] = 'nuevo pedido'; // Set default status to 'nuevo pedido'
 
             $itemsData = [];
             foreach ($data['items'] as $itemData) {
                 $itemNotes = [];
                 if (!empty($itemData['notes'])) {
-                    $itemNotes[] = [
-                        'user_id' => $user->id,
-                        'user_name' => $user->name,
-                        'note' => $itemData['notes'],
-                        'timestamp' => now()->toDateTimeString(),
-                    ];
+                    $itemNotes[] = ['user_id' => $user->id, 'user_name' => $user->name, 'note' => $itemData['notes'], 'timestamp' => now()->toDateTimeString()];
                 }
-
-                $itemsData[] = [
-                    'product_id' => $itemData['product_id'],
-                    'quantity' => $itemData['quantity'],
-                    'notes' => !empty($itemNotes) ? $itemNotes : null,
-                ];
+                $itemsData[] = ['product_id' => $itemData['product_id'], 'quantity' => $itemData['quantity'], 'notes' => !empty($itemNotes) ? $itemNotes : null];
             }
 
             $orderNotes = [];
             if (!empty($data['notes'])) {
-                $orderNotes[] = [
-                    'user_id' => $user->id,
-                    'user_name' => $user->name,
-                    'note' => $data['notes'],
-                    'timestamp' => now()->toDateTimeString(),
-                ];
+                $orderNotes[] = ['user_id' => $user->id, 'user_name' => $user->name, 'note' => $data['notes'], 'timestamp' => now()->toDateTimeString()];
             }
 
             $purchaseOrderData = [
@@ -97,92 +84,40 @@ class PurchaseOrderManagementService
         return DB::transaction(function () use ($purchaseOrder, $data, $user) {
             $updateData = [];
 
-            if (isset($data['supplier_id'])) {
-                $updateData['supplier_id'] = $data['supplier_id'];
-            }
-
-            if (isset($data['expected_delivery_date'])) {
-                $updateData['expected_delivery_date'] = $data['expected_delivery_date'];
-            }
+            if (isset($data['supplier_id'])) $updateData['supplier_id'] = $data['supplier_id'];
+            if (isset($data['expected_delivery_date'])) $updateData['expected_delivery_date'] = $data['expected_delivery_date'];
 
             if (!empty($data['notes'])) {
-                $newNote = [
-                    'user_id' => $user->id,
-                    'user_name' => $user->name,
-                    'note' => $data['notes'],
-                    'timestamp' => now()->toDateTimeString(),
-                ];
+                $newNote = ['user_id' => $user->id, 'user_name' => $user->name, 'note' => $data['notes'], 'timestamp' => now()->toDateTimeString()];
                 $existingNotes = $purchaseOrder->notes ?? [];
-                // Asegurarse de que $existingNotes es un array antes de añadir
-                if (!is_array($existingNotes)) {
-                    $existingNotes = [];
-                }
+                if (!is_array($existingNotes)) $existingNotes = [];
                 $existingNotes[] = $newNote;
                 $updateData['notes'] = $existingNotes;
             }
 
-            // --- Lógica para Items ---
             if (isset($data['items'])) {
                 $existingItemIds = $purchaseOrder->items->pluck('id')->toArray();
                 $itemsToKeep = [];
 
                 foreach ($data['items'] as $itemData) {
-                    // Si el ítem tiene ID y existe en la orden actual
                     if (isset($itemData['id']) && in_array($itemData['id'], $existingItemIds)) {
                         $item = $purchaseOrder->items->where('id', $itemData['id'])->first();
                         if ($item) {
-                            $itemUpdateData = [
-                                'product_id' => $itemData['product_id'],
-                                'quantity' => $itemData['quantity'],
-                            ];
-
-                            // Manejo de notas del ítem
-                            if (!empty($itemData['notes'])) {
-                                $newItemNote = [
-                                    'user_id' => $user->id,
-                                    'user_name' => $user->name,
-                                    'note' => $itemData['notes'],
-                                    'timestamp' => now()->toDateTimeString(),
-                                ];
-                                $existingItemNotes = $item->notes ?? [];
-                                if (!is_array($existingItemNotes)) {
-                                    $existingItemNotes = [];
-                                }
-                                $existingItemNotes[] = $newItemNote;
-                                $itemUpdateData['notes'] = $existingItemNotes;
-                            }
-                            
-                            $item->update($itemUpdateData);
+                            $item->update(['product_id' => $itemData['product_id'], 'quantity' => $itemData['quantity']]);
                             $itemsToKeep[] = $item->id;
                         }
                     } else {
-                        // Es un nuevo ítem o un ítem sin ID, crearlo
-                        $itemNotes = [];
-                        if (!empty($itemData['notes'])) {
-                            $itemNotes[] = [
-                                'user_id' => $user->id,
-                                'user_name' => $user->name,
-                                'note' => $itemData['notes'],
-                                'timestamp' => now()->toDateTimeString(),
-                            ];
-                        }
-                        $newItem = $purchaseOrder->items()->create([
-                            'product_id' => $itemData['product_id'],
-                            'quantity' => $itemData['quantity'],
-                            'notes' => !empty($itemNotes) ? $itemNotes : null,
-                        ]);
+                        $newItem = $purchaseOrder->items()->create(['product_id' => $itemData['product_id'], 'quantity' => $itemData['quantity']]);
                         $itemsToKeep[] = $newItem->id;
                     }
                 }
 
-                // Eliminar ítems que ya no están en la solicitud
                 $itemsToDelete = array_diff($existingItemIds, $itemsToKeep);
                 if (!empty($itemsToDelete)) {
                     $purchaseOrder->items()->whereIn('id', $itemsToDelete)->delete();
                 }
             }
 
-            // Actualizar la orden principal
             if (!empty($updateData)) {
                 $purchaseOrder->update($updateData);
             }
@@ -193,124 +128,57 @@ class PurchaseOrderManagementService
 
     public function deletePurchaseOrder(int $id)
     {
-        $purchaseOrder = $this->getPurchaseOrder($id);
-
+        $this->getPurchaseOrder($id); // Check existence
         $deleted = $this->purchaseOrderRepository->delete($id);
-        
         if (!$deleted) {
             throw new Exception('Error al eliminar la orden de compra', 500);
         }
-
         return true;
     }
 
-    public function approvePurchaseOrder(int $id, int $userId)
+    /**
+     * Update the status of a purchase order.
+     * Special logic for 'preparar pedido' to check and deduct stock.
+     */
+    public function updateStatus(int $id, string $newStatus, int $userId)
     {
-        $purchaseOrder = $this->getPurchaseOrder($id);
-
-        if (!$purchaseOrder->canBeApproved()) {
-            throw new Exception('No se puede aprobar esta orden de compra', 400);
+        if ($newStatus === 'preparar pedido') {
+            return $this->prepareOrder($id, $userId);
         }
 
-        $purchaseOrder->update([
-            'status' => 'approved',
-            'approved_by' => $userId,
-            'approved_at' => now(),
-        ]);
-
+        $purchaseOrder = $this->getPurchaseOrder($id);
+        $purchaseOrder->update(['status' => $newStatus]);
         return $this->getPurchaseOrder($id);
     }
 
-    public function rejectPurchaseOrder(int $id, string $reason, int $userId)
+    /**
+     * Handles the specific logic for moving an order to 'preparar pedido'.
+     */
+    private function prepareOrder(int $id, int $userId)
     {
-        $purchaseOrder = $this->getPurchaseOrder($id);
+        return DB::transaction(function () use ($id, $userId) {
+            $purchaseOrder = $this->getPurchaseOrder($id);
+            $purchaseOrder->load('items.product');
 
-        if (!$purchaseOrder->canBeApproved()) {
-            throw new Exception('No se puede rechazar esta orden de compra', 400);
-        }
-
-        $purchaseOrder->update([
-            'status' => 'rejected',
-            'rejection_reason' => $reason,
-            'approved_by' => $userId,
-            'approved_at' => now(),
-        ]);
-
-        return $this->getPurchaseOrder($id);
-    }
-
-    public function markAsOrdered(int $id)
-    {
-        $purchaseOrder = $this->getPurchaseOrder($id);
-
-        if ($purchaseOrder->status !== 'approved') {
-            throw new Exception('Solo se pueden marcar como ordenadas las órdenes aprobadas', 400);
-        }
-
-        $purchaseOrder->update([
-            'status' => 'ordered',
-        ]);
-
-        return $this->getPurchaseOrder($id);
-    }
-
-    public function receivePurchaseOrder(int $id, array $receivedItems)
-    {
-        $purchaseOrder = $this->getPurchaseOrder($id);
-
-        if (!$purchaseOrder->canBeReceived()) {
-            throw new Exception('No se puede recibir esta orden de compra', 400);
-        }
-
-        return DB::transaction(function () use ($purchaseOrder, $receivedItems) {
-            $allReceived = true;
-
-            foreach ($receivedItems as $receivedItem) {
-                $item = $purchaseOrder->items()->find($receivedItem['item_id']);
-                if (!$item) {
-                    throw new Exception("Item no encontrado: {$receivedItem['item_id']}", 404);
-                }
-
-                $receivedQuantity = $receivedItem['received_quantity'];
-                $item->received_quantity += $receivedQuantity;
-                $item->save();
-
-                $this->productRepository->updateStock($item->product_id, $receivedQuantity);
-
-                if ($item->getPendingQuantity() > 0) {
-                    $allReceived = false;
+            foreach ($purchaseOrder->items as $item) {
+                if ($item->product->stock < $item->quantity) {
+                    throw new Exception("Stock insuficiente para 'preparar pedido': {$item->product->name}. Disponible: {$item->product->stock}, Solicitado: {$item->quantity}", 400);
                 }
             }
 
-            if ($allReceived) {
-                $purchaseOrder->update([
-                    'status' => 'received',
-                    'delivery_date' => now(),
-                ]);
-            } else {
-                $purchaseOrder->update([
-                    'status' => 'partially_received',
-                ]);
+            foreach ($purchaseOrder->items as $item) {
+                $item->product->updateStock(-$item->quantity);
             }
 
-            return $this->getPurchaseOrder($purchaseOrder->id);
+            $purchaseOrder->update([
+                'status' => 'preparar pedido',
+                'approved_by' => $userId, // Using approved_by for tracking who prepared it
+                'approved_at' => now(),   // Using approved_at for tracking when it was prepared
+            ]);
+
+            return $this->getPurchaseOrder($id);
         });
     }
-
-        public function getPendingOrders()
-
-        {
-
-            return $this->purchaseOrderRepository->getPendingOrders();
-
-        }
-
-    
-
-        public function getKanbanPurchaseOrders()
-        {
-            return $this->purchaseOrderRepository->getKanbanOrders();
-        }
 
     public function splitPurchaseOrder(
         PurchaseOrder $parentOrder,
@@ -318,8 +186,7 @@ class PurchaseOrderManagementService
         ?string $expectedDeliveryDate,
         ?string $notes,
         User $user
-    ): PurchaseOrder
-    {
+    ): PurchaseOrder {
         return DB::transaction(function () use ($parentOrder, $itemsToSplit, $expectedDeliveryDate, $notes, $user) {
             if ($parentOrder->parent_id !== null) {
                 throw new Exception('Cannot split a sub-order. Only main orders can be split.', 400);
@@ -328,13 +195,13 @@ class PurchaseOrderManagementService
             // Create new sub-order
             $subOrder = $this->purchaseOrderRepository->create([
                 'order_number' => $this->purchaseOrderRepository->generateOrderNumber(),
-                'supplier_id' => $parentOrder->supplier_id, // Same supplier as parent
+                'supplier_id' => $parentOrder->supplier_id,
                 'order_date' => now(),
                 'expected_delivery_date' => $expectedDeliveryDate,
-                'status' => 'draft', // Sub-order starts as draft
+                'status' => 'nuevo pedido', // Set status to 'nuevo pedido'
                 'notes' => $notes ? [['user_id' => $user->id, 'user_name' => $user->name, 'note' => $notes, 'timestamp' => now()->toDateTimeString()]] : null,
                 'created_by' => $user->id,
-                'parent_id' => $parentOrder->id, // Link to parent
+                'parent_id' => $parentOrder->id,
             ]);
 
             // Process items to split
@@ -355,7 +222,7 @@ class PurchaseOrderManagementService
                 $subOrder->items()->create([
                     'product_id' => $originalItem->product_id,
                     'quantity' => $quantityToSplit,
-                    'notes' => $originalItem->notes, // Inherit notes or make independent? User said independent, but for items, maybe inherit initially. Clarify. For now, inherit.
+                    'notes' => $originalItem->notes,
                 ]);
 
                 // Update original item quantity or delete if fully moved
@@ -366,18 +233,6 @@ class PurchaseOrderManagementService
                     $originalItem->save();
                 }
             }
-
-            // Update parent order totals (this should be done automatically if a relationship is setup for totals)
-            // For now, re-fetch parent order to ensure relationships are loaded for recalculation
-            // $parentOrder->refresh(); // Or recalculate explicitly if needed.
-            // $parentOrder->calculateTotals(); // If a calculateTotals method exists and updates order's total fields directly.
-
-            // Reload parent order items to correctly check if it's empty
-            $parentOrder->load('items');
-
-            $parentOrder->status = 'draft'; // New status for parent
-            
-            $parentOrder->save();
 
             return $this->getPurchaseOrder($subOrder->id);
         });

@@ -88,13 +88,18 @@
                                 >
                                     <div class="sortable-list" v-for="order in statusCol.orders" :key="order.id">
                                         <div class="shadow bg-[#f4f4f4] dark:bg-white-dark/20 p-3 pb-5 rounded-md mb-5 space-y-3 cursor-move">
-                                                                                    <div class="text-base font-medium">{{ order.order_number }} - {{ order.creator?.name || 'N/A' }}</div>
-                                                                                    <p class="break-all text-sm text-gray-700 dark:text-gray-400">{{ order.notes ? (Array.isArray(order.notes) && order.notes.length > 0 ? order.notes[0].note : '') : 'No description' }}</p>                                            <div class="flex items-center justify-between text-xs text-gray-500 mt-2">
-                                                <span>{{ $t('ordenes.total') }}: ${{ order.total?.toLocaleString() }}</span>
-                                                <span>{{ $t('ordenes.created_at') }}: {{ formatDate(order.created_at) }}</span>
+                                            <div v-if="order.parent_id" class="flex items-center text-xs text-info font-semibold">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 mr-1"><polyline points="15 10 20 15 15 20"></polyline><path d="M4 4v7a4 4 0 0 0 4 4h12"></path></svg>
+                                                <span>{{ $t('ordenes.sub_order') }}</span>
                                             </div>
-                                            <div class="flex gap-2 items-center flex-wrap mt-2">
-                                                <div class="badge" :class="getOrderStatusBadge(order.status)">{{ $t(`ordenes.status.${order.status}`) }}</div>
+                                            <div v-if="order.sub_orders_count > 0 && !order.parent_id" class="flex items-center text-xs text-primary font-semibold">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 mr-1"><path d="M17 2.1l4 4-4 4"></path><path d="M3 12.6v-2.1c0-4.4 3.6-8 8-8h7"></path><path d="M7 21.9l-4-4 4-4"></path><path d="M21 11.4v2.1c0 4.4-3.6 8-8 8H6"></path></svg>
+                                                <span>Orden Principal</span>
+                                            </div>
+                                            <div class="text-base font-medium">{{ order.order_number }} - {{ order.creator?.name || 'N/A' }}</div>
+                                            <p class="break-all text-sm text-gray-700 dark:text-gray-400">{{ order.notes ? (Array.isArray(order.notes) && order.notes.length > 0 ? order.notes[0].note : '') : 'No description' }}</p>
+                                            <div class="flex items-center justify-between text-xs text-gray-500 mt-2">
+                                                <span>{{ $t('ordenes.created_at') }}: {{ formatDate(order.created_at) }}</span>
                                             </div>
                                             <div class="flex justify-end mt-4 gap-2">
                                                 <button type="button" class="btn btn-outline-info btn-sm" @click="handleViewOrder(order)">
@@ -102,6 +107,9 @@
                                                 </button>
                                                 <button type="button" class="btn btn-outline-secondary btn-sm" @click="handleEditOrder(order)">
                                                     {{ $t('edit') }}
+                                                </button>
+                                                <button v-if="!order.parent_id" type="button" class="btn btn-outline-warning btn-sm" @click="handleShowSplitModal(order)">
+                                                    {{ $t('purchase_orders_page.actions.split') }}
                                                 </button>
                                                 <button type="button" class="btn btn-outline-danger btn-sm" @click="handleDeleteOrder(order)">
                                                     {{ $t('delete') }}
@@ -136,6 +144,17 @@
             :show="viewModal.show"
             :order="viewModal.data"
             @close="closeViewModal"
+            @view-order-id="handleViewOrder"
+        />
+
+        <!-- Modal de División de Orden -->
+        <PurchaseOrderSplitModal
+            :show="showSplitModal"
+            :order="orderToSplit"
+            :errors="errors"
+            :saving="saving"
+            @close="handleCloseSplitModal"
+            @split="handleSplitOrder"
         />
     </div>
 </template>
@@ -146,25 +165,25 @@
     import { useMeta } from '@/composables/use-meta';
     import axios from 'axios';
     import { useI18n } from 'vue-i18n';
-    import Swal from 'sweetalert2'; // Keep Swal for local confirmation dialogs if needed
+    import Swal from 'sweetalert2'; 
 
     // Import the composable and components
     import { usePurchaseOrders } from './composables/usePurchaseOrders';
     import PurchaseOrderModal from './components/PurchaseOrderModal.vue';
     import PurchaseOrderViewModal from './components/PurchaseOrderViewModal.vue';
+    import PurchaseOrderSplitModal from './components/PurchaseOrderSplitModal.vue'; 
     import AlertMessages from '../../components/shared/AlertMessages.vue';
     import { useRouter } from 'vue-router';
     import type { PurchaseOrder } from '@/types/purchase-orders';
 
     const { t } = useI18n();
-    const router = useRouter(); // Initialize router
+    const router = useRouter(); 
     useMeta({ title: t('ordenes.order_kanban_board') });
 
-    // Use the composable
+
     const {
-        ordersList, // Not directly used in kanban board, but part of composable
-        fetchSuppliers, // Added for fetching suppliers
-        fetchProducts,  // Added for fetching products
+        fetchSuppliers, 
+        fetchProducts,  
         suppliers,
         products,
         loading,
@@ -174,60 +193,63 @@
         errors,
         params,
         viewModal,
-        fetchOrders,
+        fetchOrders, // This is the generic fetchOrders that calls /api/purchase-orders
         saveOrder,
-        deleteOrder: deleteOrderComposable, // Alias to avoid conflict with local deleteOrder
+        deleteOrder: deleteOrderComposable, 
         editOrder,
         resetParams,
         viewOrder,
         closeViewModal,
         addItem,
         removeItem,
-        handleProductChange, // From composable
-        showMessage // From composable
+        handleProductChange, 
+        showMessage, 
+        splitOrder 
     } = usePurchaseOrders();
 
     const showModal = ref(false);
+    const showSplitModal = ref(false); 
+    const orderToSplit = ref<PurchaseOrder | null>(null); 
 
-    // Initial status columns, now populated by fetchOrders
     const orderStatuses = ref([
-        { id: 'draft', title: t('ordenes.status.draft'), badgeClass: 'badge-outline-dark', borderColorClass: 'border-gray-500', orders: [] as any[] },
-        { id: 'pending', title: t('ordenes.status.pending'), badgeClass: 'badge-outline-secondary', borderColorClass: 'border-secondary', orders: [] as any[] },
-        { id: 'approved', title: t('ordenes.status.approved'), badgeClass: 'badge-outline-success', borderColorClass: 'border-success', orders: [] as any[] },
-        { id: 'ordered', title: t('ordenes.status.ordered'), badgeClass: 'badge-outline-info', borderColorClass: 'border-info', orders: [] as any[] },
-        { id: 'received', title: t('ordenes.status.received'), badgeClass: 'badge-outline-primary', borderColorClass: 'border-primary', orders: [] as any[] },
-        { id: 'rejected', title: t('ordenes.status.rejected'), badgeClass: 'badge-outline-danger', borderColorClass: 'border-danger', orders: [] as any[] },
-        { id: 'cancelled', title: t('ordenes.status.cancelled'), badgeClass: 'badge-outline-warning', borderColorClass: 'border-warning', orders: [] as any[] },
+        { id: 'nuevo pedido', title: t('ordenes.status.nuevo_pedido'), badgeClass: 'badge-outline-dark', borderColorClass: 'border-gray-500', orders: [] as any[] },
+        { id: 'disponibilidad', title: t('ordenes.status.disponibilidad'), badgeClass: 'badge-outline-secondary', borderColorClass: 'border-secondary', orders: [] as any[] },
+        { id: 'preparar pedido', title: t('ordenes.status.preparar_pedido'), badgeClass: 'badge-outline-success', borderColorClass: 'border-success', orders: [] as any[] },
+        { id: 'en preparación', title: t('ordenes.status.en_preparacion'), badgeClass: 'badge-outline-info', borderColorClass: 'border-info', orders: [] as any[] },
+        { id: 'facturación', title: t('ordenes.status.facturacion'), badgeClass: 'badge-outline-primary', borderColorClass: 'border-primary', orders: [] as any[] },
+        { id: 'en despacho', title: t('ordenes.status.en_despacho'), badgeClass: 'badge-outline-warning', borderColorClass: 'border-warning', orders: [] as any[] },
+        { id: 'en ruta', title: t('ordenes.status.en_ruta'), badgeClass: 'badge-outline-danger', borderColorClass: 'border-danger', orders: [] as any[] },
+        { id: 'entregado', title: t('ordenes.status.entregado'), badgeClass: 'badge-outline-success', borderColorClass: 'border-success', orders: [] as any[] },
     ]);
 
-    // Override fetchOrders to distribute into kanban columns
     const fetchOrdersKanban = async () => {
         loading.value = true;
         try {
-            const response = await axios.get('/api/purchase-orders/kanban');
-            const orders = response.data.data;
+            const response = await axios.get('/api/purchase-orders');
+            const fetchedOrders = response.data.data;
 
-            // Clear existing orders in columns
             orderStatuses.value.forEach(statusCol => {
                 statusCol.orders = [];
             });
 
-            // Distribute orders into their respective status columns
-            orders.forEach((order: any) => {
+            fetchedOrders.forEach((order: any) => {
                 const statusCol = orderStatuses.value.find(col => col.id === order.status);
                 if (statusCol) {
                     statusCol.orders.push(order);
                 } else {
-                    console.warn(`Order ${order.id} has unknown status: ${order.status}. Defaulting to 'pending'.`);
-                    const pendingCol = orderStatuses.value.find(col => col.id === 'pending');
-                    if (pendingCol) {
-                        pendingCol.orders.push(order);
+                    console.warn(`Order ${order.id} has unknown status: ${order.status}. Defaulting to 'nuevo pedido'.`);
+                    const defaultCol = orderStatuses.value.find(col => col.id === 'nuevo pedido');
+                    if (defaultCol) {
+                        defaultCol.orders.push(order);
                     }
                 }
             });
-        } catch (error: any) {
-            console.error('Error fetching orders:', error);
-            const msg = error.response?.data?.message || t('ordenes.error_fetching_orders');
+
+            
+
+        } catch (err: any) {
+            console.error('Error fetching orders for Kanban:', err);
+            const msg = err.response?.data?.message || t('ordenes.error_fetching_orders');
             showMessage(msg, 'error');
         } finally {
             loading.value = false;
@@ -235,16 +257,13 @@
     };
 
     const onDragEnd = async (event: any) => {
-        // console.log('onDragEnd triggered!', event); // Remove debug log
-        const orderId = event.item._underlying_vm_.id; // The ID of the order
-        const oldStatusId = event.from.dataset.statusId; // ID of the source column
-        const newStatusId = event.to.dataset.statusId;   // ID of the target column
-
-        // console.log('oldStatusId:', oldStatusId, 'newStatusId:', newStatusId); // Remove debug log
+        const orderId = event.item._underlying_vm_.id; 
+        const oldStatusId = event.from.dataset.statusId; 
+        const newStatusId = event.to.dataset.statusId;   
 
         if (!newStatusId || !oldStatusId) {
             console.warn("Source or target status ID is undefined. Drag operation might be invalid. Reverting.");
-            await fetchOrdersKanban(); // Re-fetch to revert changes
+            await fetchOrdersKanban(); 
             return;
         }
 
@@ -257,53 +276,49 @@
             return;
         }
 
-        // Find the order *in its new position* within the data model (since draggable already moved it)
         const movedOrder = newStatusColumn.orders.find(order => order.id === orderId);
 
         if (!movedOrder) {
             console.warn(`Order with ID ${orderId} not found in new status column ${newStatusId}. Reverting.`);
-            await fetchOrdersKanban(); // Something went wrong with draggable's internal move
+            await fetchOrdersKanban(); 
             return;
         }
 
-        const originalStatusOfDraggedItem = oldStatusId; // Store original status for potential revert
+        const originalStatusOfDraggedItem = oldStatusId; 
 
         try {
             await axios.put(`/api/purchase-orders/${orderId}/status`, { status: newStatusId });
             showMessage(t('ordenes.order_status_updated_successfully'), 'success');
-            // If successful, the frontend state (movedOrder.status and its position) is already correct.
-            // The movedOrder object's status property is also implicitly updated by the draggable's list mutation.
-        } catch (error: any) {
-            console.error('Error updating order status:', error);
-            const msg = error.response?.data?.message || t('ordenes.error_updating_order_status');
+        } catch (err: any) {
+            console.error('Error updating order status:', err);
+            const msg = err.response?.data?.message || t('ordenes.error_updating_order_status');
             showMessage(msg, 'error');
 
-            // Revert optimistic update on API failure
-            // 1. Manually move the item back in the local data structure (revert array mutation)
             const indexInNew = newStatusColumn.orders.findIndex(order => order.id === orderId);
             if (indexInNew !== -1) {
-                const itemToRevert = newStatusColumn.orders.splice(indexInNew, 1)[0]; // Remove from new
-                oldStatusColumn.orders.splice(event.oldIndex, 0, itemToRevert); // Add back to old at original index
+                const itemToRevert = newStatusColumn.orders.splice(indexInNew, 1)[0]; 
+                oldStatusColumn.orders.splice(event.oldIndex, 0, itemToRevert); 
             }
-            // 2. Revert status property of the item
-            movedOrder.status = originalStatusOfDraggedItem;
-
-            await fetchOrdersKanban(); // Re-fetch as a safety net in case manual revert had issues
+            if (movedOrder) {
+                movedOrder.status = originalStatusOfDraggedItem;
+            }
+            await fetchOrdersKanban(); 
         }
     };
 
     const handleAddOrder = () => {
-        editOrder(null); // Resets params in composable
+        editOrder(null); 
         showModal.value = true;
     };
 
     const handleEditOrder = (order: PurchaseOrder) => {
-        editOrder(order); // Populates params in composable
+        editOrder(order); 
         showModal.value = true;
     };
 
-    const handleViewOrder = (order: PurchaseOrder) => {
-        viewOrder(order); // Sets viewModal.data in composable
+    const handleViewOrder = (orderOrId: PurchaseOrder | number) => {
+        const orderId = typeof orderOrId === 'number' ? orderOrId : orderOrId.id;
+        viewOrder(orderId);
     };
 
     const handleDeleteOrder = async (order: PurchaseOrder) => {
@@ -319,21 +334,45 @@
         });
 
         if (result.isConfirmed) {
-            await deleteOrderComposable(order); // Call the aliased composable function
-            await fetchOrdersKanban(); // Re-fetch after delete
+            await deleteOrderComposable(order); 
+            await fetchOrdersKanban(); 
         }
     };
 
     const handleCloseModal = () => {
         showModal.value = false;
-        resetParams(); // Resets params in composable
-        fetchOrdersKanban(); // Refresh orders after modal closes (in case of add/edit)
+        resetParams(); 
+        fetchOrdersKanban(); 
     };
 
     const handleSaveOrder = async () => {
         const success = await saveOrder();
         if (success) {
             handleCloseModal();
+        }
+    };
+
+    const handleShowSplitModal = (order: PurchaseOrder) => {
+        orderToSplit.value = order;
+        showSplitModal.value = true;
+    };
+
+    const handleCloseSplitModal = () => {
+        showSplitModal.value = false;
+        orderToSplit.value = null;
+        errors.value = {}; 
+    };
+
+    const handleSplitOrder = async (splitData: { items: { item_id: number; quantity: number }[], expected_delivery_date: string | null, notes: string | null }) => {
+        if (!orderToSplit.value?.id) {
+            showMessage(t('purchase_orders_page.split_modal.alerts.no_order_selected'), 'error'); 
+            return;
+        }
+
+        const success = await splitOrder(orderToSplit.value.id, splitData);
+        if (success) {
+            handleCloseSplitModal();
+            await fetchOrdersKanban(); 
         }
     };
 
@@ -345,20 +384,21 @@
 
     const getOrderStatusBadge = (status: string) => {
         const statusMap: { [key: string]: string } = {
-            draft: 'badge-outline-dark',
-            pending: 'badge-outline-secondary',
-            approved: 'badge-outline-success',
-            ordered: 'badge-outline-info',
-            received: 'badge-outline-primary',
-            rejected: 'badge-outline-danger',
-            cancelled: 'badge-outline-warning',
+            'nuevo pedido': 'badge-outline-dark',
+            'disponibilidad': 'badge-outline-secondary',
+            'preparar pedido': 'badge-outline-success',
+            'en preparación': 'badge-outline-info',
+            'facturación': 'badge-outline-primary',
+            'en despacho': 'badge-outline-warning',
+            'en ruta': 'badge-outline-danger',
+            'entregado': 'badge-outline-success',
         };
         return statusMap[status.toLowerCase()] || 'badge-outline-light';
     };
 
     onMounted(() => {
         fetchOrdersKanban();
-        fetchSuppliers(); // Fetch suppliers for modals
-        fetchProducts();  // Fetch products for modals
+        fetchSuppliers(); 
+        fetchProducts();  
     });
 </script>

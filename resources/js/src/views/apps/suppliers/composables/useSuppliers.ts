@@ -35,6 +35,13 @@ export function useSuppliers() {
     const errors = ref<Record<string, string[]>>({});
     const searchSupplier = ref('');
     
+    const pagination = ref({
+        current_page: 1,
+        last_page: 1,
+        per_page: 15,
+        total: 0,
+    });
+    
     const filters = ref<SupplierFilters>({
         active: ''
     });
@@ -57,37 +64,25 @@ export function useSuppliers() {
     const params = ref<SupplierParams>({ ...defaultParams });
 
     // Computed
-    const filteredSuppliersList = computed(() => {
-        let filtered = suppliersList.value;
-
-        if (searchSupplier.value) {
-            const search = searchSupplier.value.toLowerCase();
-            filtered = filtered.filter((supplier) => 
-                supplier.name.toLowerCase().includes(search) ||
-                supplier.contact_person?.toLowerCase().includes(search) ||
-                supplier.email?.toLowerCase().includes(search) ||
-                supplier.phone?.toLowerCase().includes(search)
-            );
-        }
-
-        return filtered;
-    });
-
-    const totalSuppliers = computed(() => suppliersList.value.length);
-    const activeSuppliers = computed(() => suppliersList.value.filter(s => s.is_active).length);
-    const inactiveSuppliers = computed(() => suppliersList.value.filter(s => !s.is_active).length);
-    const suppliersWithPurchaseOrders = computed(() => suppliersList.value.filter(s => s.purchase_orders_count > 0).length);
+    const totalSuppliers = computed(() => pagination.value.total);
+    const activeSuppliers = computed(() => suppliersList.value.filter(s => s.is_active).length); // This only reflects the current page
+    const inactiveSuppliers = computed(() => suppliersList.value.filter(s => !s.is_active).length); // This only reflects the current page
+    const suppliersWithPurchaseOrders = computed(() => suppliersList.value.filter(s => s.purchase_orders_count > 0).length); // This only reflects the current page
 
     // Methods
-    const fetchSuppliers = async () => {
+    const fetchSuppliers = async (page: number = 1) => {
         loading.value = true;
         errorMessage.value = '';
         try {
             const queryParams = new URLSearchParams();
+            queryParams.append('page', page.toString());
+            queryParams.append('per_page', pagination.value.per_page.toString());
+            if (searchSupplier.value) queryParams.append('search', searchSupplier.value);
             if (filters.value.active) queryParams.append('active', filters.value.active);
 
             const response = await axios.get(`/api/suppliers?${queryParams}`);
             suppliersList.value = response.data.data;
+            pagination.value = response.data.meta;
         } catch (error) {
             console.error('Error fetching suppliers:', error);
             errorMessage.value = t('suppliers_page.alerts.loading_error');
@@ -105,18 +100,13 @@ export function useSuppliers() {
 
         try {
             if (params.value.id) {
-                const { data } = await axios.put(`/api/suppliers/${params.value.id}`, params.value);
-                const index = suppliersList.value.findIndex(supplier => supplier.id === params.value.id);
-                if (index !== -1) {
-                    suppliersList.value.splice(index, 1, data);
-                }
+                await axios.put(`/api/suppliers/${params.value.id}`, params.value);
                 showMessage(t('suppliers_page.alerts.update_success'));
             } else {
-                const { data } = await axios.post('/api/suppliers', params.value);
-                suppliersList.value.unshift(data);
+                await axios.post('/api/suppliers', params.value);
                 showMessage(t('suppliers_page.alerts.save_success'));
             }
-            
+            await fetchSuppliers(pagination.value.current_page);
             return true;
         } catch (error: any) {
             if (error.response && error.response.status === 422) {
@@ -153,7 +143,7 @@ export function useSuppliers() {
         if (result.isConfirmed) {
             try {
                 await axios.delete(`/api/suppliers/${supplier.id}`);
-                suppliersList.value = suppliersList.value.filter(s => s.id !== supplier.id);
+                await fetchSuppliers(pagination.value.current_page);
                 showMessage(t('suppliers_page.alerts.delete_success'));
                 return true;
             } catch (error: any) {
@@ -171,13 +161,10 @@ export function useSuppliers() {
 
     const toggleSupplierStatus = async (supplier: Supplier): Promise<boolean> => {
         try {
-            const { data } = await axios.put(`/api/suppliers/${supplier.id}/toggle-status`);
-            const index = suppliersList.value.findIndex(s => s.id === supplier.id);
-            if (index !== -1) {
-                suppliersList.value[index].is_active = data.is_active;
-            }
+            await axios.put(`/api/suppliers/${supplier.id}/toggle-status`);
+            await fetchSuppliers(pagination.value.current_page);
             
-            const status = data.is_active ? 'activado' : 'desactivado';
+            const status = !supplier.is_active ? 'activado' : 'desactivado';
             showMessage(t('suppliers_page.alerts.status_toggle_success', { status }));
             return true;
         } catch (error) {
@@ -246,9 +233,9 @@ export function useSuppliers() {
         searchSupplier,
         filters,
         params,
+        pagination,
         
         // Computed
-        filteredSuppliersList,
         totalSuppliers,
         activeSuppliers,
         inactiveSuppliers,

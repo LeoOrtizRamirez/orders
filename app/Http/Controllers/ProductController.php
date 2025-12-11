@@ -269,4 +269,35 @@ class ProductController extends Controller
 
         return response()->download($tempFilePath, 'products_template.csv', $headers)->deleteFileAfterSend(true);
     }
+
+    public function importStock(Request $request): JsonResponse
+    {
+        try {
+            $request->validate([
+                'file' => 'required|file|mimes:csv,txt',
+            ]);
+
+            $result = $this->productService->importStock($request->file('file'));
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Importación de stock completada.',
+                'updated' => $result['updated'],
+                'failed' => $result['failed'],
+                'errors' => $result['errors'] ?? [],
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Failed to import stock',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

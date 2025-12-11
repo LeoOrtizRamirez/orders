@@ -135,13 +135,10 @@ class RolePermissionSeeder extends Seeder
     private function createRoles(): void
     {
         $roles = [
-            ['name' => 'admin', 'description' => 'Administrador del sistema con todos los permisos', 'is_system' => true],
-            ['name' => 'user', 'description' => 'Usuario regular del sistema', 'is_system' => false],
-            ['name' => 'manager', 'description' => 'Gerente con permisos de gestión', 'is_system' => false],
-            ['name' => 'purchaser', 'description' => 'Comprador con permisos de órdenes de compra', 'is_system' => false],
-            ['name' => 'viewer', 'description' => 'Usuario con permisos de solo lectura', 'is_system' => false],
-            ['name' => 'order_operator', 'description' => 'Operador con permisos específicos para gestión de órdenes', 'is_system' => false],
-            ['name' => 'supplier_manager', 'description' => 'Gestor especializado en proveedores', 'is_system' => false]
+            ['name' => 'Administrador', 'description' => 'Administrador del sistema con todos los permisos', 'is_system' => true],
+            ['name' => 'Comercial', 'description' => '', 'is_system' => false],
+            ['name' => 'Despachos', 'description' => '', 'is_system' => false],
+            ['name' => 'Contabilidad', 'description' => '', 'is_system' => false]
         ];
 
         foreach ($roles as $roleData) {
@@ -164,16 +161,13 @@ class RolePermissionSeeder extends Seeder
         $this->command->info('Available permissions: ' . implode(', ', $allPermissions));
 
         // Rol Admin - Todos los permisos
-        $adminRole = Role::where('name', 'admin')->first();
+        $adminRole = Role::where('name', 'Administrador')->first();
         $adminRole->givePermissionTo($allPermissions);
 
         // Asignar permisos a otros roles
-        $this->assignPermissionsSafely('manager', $this->getManagerPermissions());
-        $this->assignPermissionsSafely('purchaser', $this->getPurchaserPermissions());
-        $this->assignPermissionsSafely('supplier_manager', $this->getSupplierManagerPermissions());
-        $this->assignPermissionsSafely('order_operator', $this->getOrderOperatorPermissions());
-        $this->assignPermissionsSafely('user', $this->getUserPermissions());
-        $this->assignPermissionsSafely('viewer', $this->getViewerPermissions());
+        $this->assignPermissionsSafely('Comercial', $this->getManagerPermissions());
+        $this->assignPermissionsSafely('Despachos', []);
+        $this->assignPermissionsSafely('Contabilidad',[]);
 
         $this->command->info('Permissions assigned to roles successfully.');
     }
@@ -251,111 +245,6 @@ class RolePermissionSeeder extends Seeder
         ];
     }
 
-    private function getPurchaserPermissions(): array
-    {
-        return [
-            'view dashboard',
-            'view products',
-            'view purchase_orders',
-            'view suppliers',
-            'view inventory',
-            'create purchase_orders',
-            'edit purchase_orders',
-            'manage purchase_orders',
-            'change_order_status',
-            'view_order_history',
-            'export_orders',
-            'view_order_reports',
-            'bulk_order_actions',
-            'create suppliers',
-            'edit suppliers',
-            'toggle_supplier_status',
-            'view_supplier_details',
-            'export_suppliers',
-            'view_supplier_purchase_orders',
-            'view_supplier_performance',
-            'bulk_supplier_actions',
-            'create products',
-            'edit products',
-            'manage inventory'
-        ];
-    }
-
-    private function getSupplierManagerPermissions(): array
-    {
-        return [
-            'view dashboard',
-            'view suppliers',
-            'view products',
-            'view purchase_orders',
-            'view inventory',
-            'create suppliers',
-            'edit suppliers',
-            'delete suppliers',
-            'manage suppliers',
-            'toggle_supplier_status',
-            'view_supplier_details',
-            'export_suppliers',
-            'import_suppliers',
-            'view_supplier_reports',
-            'manage_supplier_categories',
-            'view_supplier_purchase_orders',
-            'manage_supplier_contacts',
-            'view_supplier_performance',
-            'manage_supplier_evaluations',
-            'bulk_supplier_actions',
-            'override_supplier_restrictions',
-            'view_order_history',
-            'view_order_reports'
-        ];
-    }
-
-    private function getOrderOperatorPermissions(): array
-    {
-        return [
-            'view dashboard',
-            'view purchase_orders',
-            'view products',
-            'view suppliers',
-            'view inventory',
-            'create purchase_orders',
-            'edit purchase_orders',
-            'change_order_status',
-            'assign_order_driver',
-            'view_order_history',
-            'export_orders',
-            'view_order_reports',
-            'bulk_order_actions',
-            'view_supplier_details',
-            'view_supplier_purchase_orders'
-        ];
-    }
-
-    private function getUserPermissions(): array
-    {
-        return [
-            'view dashboard',
-            'view products'
-        ];
-    }
-
-    private function getViewerPermissions(): array
-    {
-        return [
-            'view dashboard',
-            'view products',
-            'view purchase_orders',
-            'view suppliers',
-            'view reports',
-            'view inventory',
-            'view_order_history',
-            'view_order_reports',
-            'view_supplier_details',
-            'view_supplier_purchase_orders',
-            'view_supplier_performance'
-        ];
-    }
-
     private function createAdminUser(): void
     {
         $adminEmail = 'leoordev@gmail.com';
@@ -377,7 +266,7 @@ class RolePermissionSeeder extends Seeder
             $this->command->info("Admin user already exists: {$adminEmail}");
         }
 
-        $adminRole = Role::where('name', 'admin')->first();
+        $adminRole = Role::where('name', 'Administrador')->first();
         
         if ($adminRole) {
             $user->syncRoles([$adminRole]);

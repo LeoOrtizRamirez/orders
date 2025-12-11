@@ -84,6 +84,13 @@ const routes: RouteRecordRaw[] = [
     },
 
     {
+        path: '/apps/products/import-stock',
+        name: 'products-import-stock',
+        component: () => import(/* webpackChunkName: "apps-products-import-stock" */ '../views/apps/products/StockImport.vue'),
+        meta: { requiresAuth: true }
+    },
+
+    {
         path: '/apps/suppliers/',
         name: 'suppliers',
         component: () => import(/* webpackChunkName: "apps-services" */ '../views/apps/suppliers/SuppliersPage.vue'),
@@ -91,15 +98,16 @@ const routes: RouteRecordRaw[] = [
     },
 
     {
-        path: '/apps/purchase-orders/',
-        name: 'purchase-orders',
-        component: () => import(/* webpackChunkName: "apps-services" */ '../views/apps/purchase-orders/PurchaseOrders.vue'),
-        meta: { requiresAuth: true }
-    },
-    {
         path: '/apps/purchase-orders/kanban',
         name: 'purchase-orders-kanban',
         component: () => import(/* webpackChunkName: "apps-purchase-orders-kanban" */ '../views/apps/purchase-orders/OrderKanbanBoard.vue'),
+        meta: { requiresAuth: true }
+    },
+
+    {
+        path: '/apps/reports/sales',
+        name: 'sales-dashboard',
+        component: () => import(/* webpackChunkName: "apps-reports-sales" */ '../views/apps/reports/SalesDashboard.vue'),
         meta: { requiresAuth: true }
     },
 

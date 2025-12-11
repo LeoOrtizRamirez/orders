@@ -38,6 +38,7 @@
     "documentation": "Documentation",
     "ui_kit": "UI Kit",
     "more": "More",
+    "reports": "Reports",
     "finance": "Finance",
     "crypto": "Crypto",
     "chat": "Chat",
@@ -53,6 +54,7 @@
     "edit": "Edit",
     "calendar": "Calendar",
     "orders": "Orders",
+    "suppliers": "Customers",
     "products": "Products",
     "tabs": "Tabs",
     "accordions": "Accordions",
@@ -640,7 +642,7 @@
 
         "filters": {
             "all_status": "All statuses",
-            "all_suppliers": "All suppliers",
+            "all_suppliers": "All Customer",
             "draft": "Draft",
             "pending": "Pending",
             "approved": "Approved",
@@ -660,7 +662,7 @@
 
         "table": {
             "order_number": "Order No.",
-            "supplier": "Supplier",
+            "supplier": "Customer",
             "order_date": "Date",
             "expected_delivery": "Expected Delivery",
             "total": "Total",
@@ -670,13 +672,14 @@
         },
 
         "status": {
-            "draft": "Draft",
-            "pending": "Pending",
-            "approved": "Approved",
-            "rejected": "Rejected",
-            "ordered": "Ordered",
-            "received": "Received",
-            "cancelled": "Cancelled"
+            "nuevo_pedido": "New Order",
+            "disponibilidad": "Availability",
+            "preparar_pedido": "Prepare Order",
+            "en_preparacion": "In Preparation",
+            "facturacion": "Billing",
+            "en_despacho": "Dispatching",
+            "en_ruta": "In Transit",
+            "entregado": "Delivered"
         },
 
         "actions": {
@@ -746,7 +749,7 @@
 
         "mark_ordered_confirm": {
             "title": "Mark as Ordered",
-            "text": "Are you sure you want to mark this order as sent to supplier?",
+            "text": "Are you sure you want to mark this order as sent to Customer?",
             "confirm": "Yes, mark as ordered",
             "cancel": "Cancel"
         },
@@ -805,7 +808,7 @@
                 "totals_summary": "Totals Summary"
             },
             "fields": {
-                "supplier": "Supplier",
+                "supplier": "Customer",
                 "status": "Status",
                 "created_by": "Created by",
                 "order_date": "Order Date",
@@ -813,6 +816,8 @@
                 "delivery_date": "Delivery Date",
                 "approved_by": "Approved by",
                 "approved_at": "Approval Date",
+                "parent_order": "Parent Order",
+                "sub_orders": "Sub-Orders",
                 "product": "Product",
                 "quantity": "Quantity",
                 "received": "Received",
@@ -843,7 +848,7 @@
             "add_title": "New Purchase Order",
             "edit_title": "Edit Purchase Order",
             "fields": {
-                "supplier": "Supplier",
+                "supplier": "Customer",
                 "expected_delivery_date": "Expected Delivery Date",
                 "notes": "Notes",
                 "tax": "Tax",
@@ -856,7 +861,7 @@
                 "item_notes": "Item Notes"
             },
             "placeholders": {
-                "select_supplier": "Select a supplier",
+                "select_supplier": "Select a Customer",
                 "expected_delivery_date": "Select date",
                 "notes": "Additional notes...",
                 "tax": "0.00",
@@ -875,7 +880,7 @@
                 "remove_item": "Remove"
             },
             "validation": {
-                "supplier_required": "Supplier is required",
+                "supplier_required": "Customer is required",
                 "delivery_date_required": "Expected delivery date is required",
                 "items_required": "Must add at least one item",
                 "product_required": "Product is required",
@@ -894,24 +899,24 @@
         }
     },
     "suppliers_page": {
-        "title": "Suppliers Management",
-        "add_supplier_btn": "Add Supplier",
-        "search_placeholder": "Search suppliers...",
+        "title": "Customer Management",
+        "add_supplier_btn": "Add Customer",
+        "search_placeholder": "Search customers...",
         "alerts": {
             "loading_error": "Error loading suppliers",
-            "save_success": "Supplier saved successfully",
-            "update_success": "Supplier updated successfully",
-            "delete_success": "Supplier deleted successfully",
+            "save_success": "Customer saved successfully",
+            "update_success": "Customer updated successfully",
+            "delete_success": "Customer deleted successfully",
             "validation_errors": "Validation errors",
-            "save_error": "Error saving supplier",
-            "delete_error": "Error deleting supplier",
-            "cannot_delete": "Cannot delete supplier because it has associated purchase orders",
-            "status_toggle_success": "Supplier {status} successfully",
-            "status_error": "Error changing supplier status",
-            "no_suppliers": "No suppliers found"
+            "save_error": "Error saving Customer",
+            "delete_error": "Error deleting Customer",
+            "cannot_delete": "Cannot delete Customer because it has associated purchase orders",
+            "status_toggle_success": "Customer {status} successfully",
+            "status_error": "Error changing Customer status",
+            "no_suppliers": "No Customer found"
         },
         "delete_confirm": {
-            "title": "Delete supplier?",
+            "title": "Delete Customer?",
             "text": "This action cannot be undone",
             "confirm": "Yes, delete",
             "cancel": "Cancel"
@@ -922,9 +927,9 @@
             "inactive": "Inactive"
         },
         "stats": {
-            "total_suppliers": "Total Suppliers",
-            "active_suppliers": "Active Suppliers",
-            "inactive_suppliers": "Inactive Suppliers",
+            "total_suppliers": "Total Customers",
+            "active_suppliers": "Active Customers",
+            "inactive_suppliers": "Inactive Customers",
             "with_purchase_orders": "With Purchase Orders"
         },
         "table": {
@@ -950,8 +955,8 @@
             "deactivate": "Deactivate"
         },
         "modal": {
-            "add_title": "Add Supplier",
-            "edit_title": "Edit Supplier",
+            "add_title": "Add Customer",
+            "edit_title": "Edit Customer",
             "fields": {
                 "name": "Name",
                 "contact_person": "Contact Person",
@@ -963,10 +968,10 @@
                 "tax_id": "Tax ID",
                 "payment_terms": "Payment Terms",
                 "notes": "Notes",
-                "active": "Active Supplier"
+                "active": "Active Customer"
             },
             "placeholders": {
-                "name": "Enter supplier name",
+                "name": "Enter customer name",
                 "contact_person": "Enter Contact person name",
                 "email": "Enter email",
                 "phone": "Enter phone",
@@ -985,8 +990,8 @@
         }
     },
     "ordenes": {
-        "kanban_board": "Kanban Board",
-        "order_kanban_board": "Order Kanban Board",
+        "kanban_board": "Order",
+        "order_kanban_board": "Order",
         "refresh": "Refresh",
         "total": "Total",
         "created_at": "Created",
@@ -995,14 +1000,16 @@
         "order_status_updated_successfully": "Order status updated successfully.",
         "error_updating_order_status": "Error updating order status.",
         "list_orders": "List Orders",
+        "sub_order": "Sub-order",
         "status": {
-            "draft": "Draft",
-            "pending": "Pending",
-            "approved": "Approved",
-            "ordered": "Ordered",
-            "received": "Received",
-            "rejected": "Rejected",
-            "cancelled": "Cancelled"
+            "nuevo_pedido": "New Order",
+            "disponibilidad": "Availability",
+            "preparar_pedido": "Prepare Order",
+            "en_preparacion": "In Preparation",
+            "facturacion": "Billing",
+            "en_despacho": "Dispatching",
+            "en_ruta": "In Transit",
+            "entregado": "Delivered"
         }
     }
 }

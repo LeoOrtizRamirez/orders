@@ -32,6 +32,11 @@ class PurchaseOrderController extends Controller
 
             $purchaseOrders = $this->purchaseOrderService->getAllPurchaseOrders($filters);
             
+            // Load sub-order count for each order in the current page
+            $purchaseOrders->getCollection()->each(function ($order) {
+                $order->loadCount('subOrders');
+            });
+
             return response()->json([
                 'data' => $purchaseOrders->items(),
                 'meta' => [
@@ -94,6 +99,7 @@ class PurchaseOrderController extends Controller
     {
         try {
             $purchaseOrder = $this->purchaseOrderService->getPurchaseOrder((int)$id);
+            $purchaseOrder->load('parent', 'subOrders'); // Eager load relationships
             
             return response()->json($purchaseOrder);
         } catch (\Exception $e) {
@@ -134,7 +140,7 @@ class PurchaseOrderController extends Controller
         }
     }
 
-    public function destroy($id): JsonResponse
+        public function destroy($id): JsonResponse
     {
         try {
             $this->purchaseOrderService->deletePurchaseOrder((int)$id);
@@ -148,148 +154,6 @@ class PurchaseOrderController extends Controller
             ], $statusCode);
         }
     }
-
-    public function approve($id, Request $request): JsonResponse
-    {
-        try {
-            $purchaseOrder = $this->purchaseOrderService->approvePurchaseOrder($id, $request->user()->id);
-
-            return response()->json($purchaseOrder);
-        } catch (\Exception $e) {
-            $statusCode = $e->getCode() ?: 500;
-            return response()->json([
-                'error' => 'Failed to approve purchase order',
-                'message' => $e->getMessage()
-            ], $statusCode);
-        }
-    }
-
-    public function reject($id, Request $request): JsonResponse
-    {
-        try {
-            $validated = $request->validate([
-                'reason' => 'required|string|min:10',
-            ]);
-
-            $purchaseOrder = $this->purchaseOrderService->rejectPurchaseOrder($id, $validated['reason'], $request->user()->id);
-
-            return response()->json($purchaseOrder);
-        } catch (ValidationException $e) {
-            return response()->json([
-                'error' => 'Validation failed',
-                'errors' => $e->errors()
-            ], 422);
-        } catch (\Exception $e) {
-            $statusCode = $e->getCode() ?: 500;
-            return response()->json([
-                'error' => 'Failed to reject purchase order',
-                'message' => $e->getMessage()
-            ], $statusCode);
-        }
-    }
-
-    public function markAsOrdered($id): JsonResponse
-    {
-        try {
-            $purchaseOrder = $this->purchaseOrderService->markAsOrdered($id);
-
-            return response()->json($purchaseOrder);
-        } catch (\Exception $e) {
-            $statusCode = $e->getCode() ?: 500;
-            return response()->json([
-                'error' => 'Failed to mark purchase order as ordered',
-                'message' => $e->getMessage()
-            ], $statusCode);
-        }
-    }
-
-    public function receive($id, Request $request): JsonResponse
-    {
-        try {
-            $validated = $request->validate([
-                'items' => 'required|array|min:1',
-                'items.*.item_id' => 'required|exists:purchase_order_items,id',
-                'items.*.received_quantity' => 'required|integer|min:1',
-            ]);
-
-            $purchaseOrder = $this->purchaseOrderService->receivePurchaseOrder($id, $validated['items']);
-
-            return response()->json($purchaseOrder);
-        } catch (ValidationException $e) {
-            return response()->json([
-                'error' => 'Validation failed',
-                'errors' => $e->errors()
-            ], 422);
-        } catch (\Exception $e) {
-            $statusCode = $e->getCode() ?: 500;
-            return response()->json([
-                'error' => 'Failed to receive purchase order',
-                'message' => $e->getMessage()
-            ], $statusCode);
-        }
-    }
-
-        public function pending(): JsonResponse
-
-        {
-
-            try {
-
-                $purchaseOrders = $this->purchaseOrderService->getPendingOrders();
-
-    
-
-                return response()->json([
-
-                    'data' => $purchaseOrders
-
-                ]);
-
-            } catch (\Exception $e) {
-
-                return response()->json([
-
-                    'error' => 'Failed to load pending purchase orders',
-
-                    'message' => $e->getMessage()
-
-                ], 500);
-
-            }
-
-        }
-
-    
-
-        public function kanbanIndex(): JsonResponse
-
-        {
-
-            try {
-
-                $purchaseOrders = $this->purchaseOrderService->getKanbanPurchaseOrders();
-
-                
-
-                return response()->json([
-
-                    'data' => $purchaseOrders
-
-                ]);
-
-            } catch (\Exception $e) {
-
-                return response()->json([
-
-                    'error' => 'Failed to load purchase orders for Kanban board',
-
-                    'message' => $e->getMessage()
-
-                ], 500);
-
-            }
-
-        }
 
     public function split(SplitPurchaseOrderRequest $request, PurchaseOrder $purchaseOrder): JsonResponse
     {

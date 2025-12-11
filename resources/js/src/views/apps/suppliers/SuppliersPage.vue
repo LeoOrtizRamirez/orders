@@ -31,7 +31,7 @@
         <div class="mt-5">
             <SuppliersListView
                 v-if="displayType === 'list'"
-                :suppliers="filteredSuppliersList"
+                :suppliers="suppliersList"
                 :loading="loading"
                 @edit-supplier="handleEditSupplier"
                 @delete-supplier="handleDeleteSupplier"
@@ -40,12 +40,50 @@
             
             <SuppliersGridView
                 v-else
-                :suppliers="filteredSuppliersList"
+                :suppliers="suppliersList"
                 :loading="loading"
                 @edit-supplier="handleEditSupplier"
                 @delete-supplier="handleDeleteSupplier"
                 @toggle-status="handleToggleStatus"
             />
+        </div>
+
+        <!-- Paginación -->
+        <div class="mt-6 flex justify-center">
+            <ul class="inline-flex items-center space-x-1 rtl:space-x-reverse m-auto mb-4">
+                <li>
+                    <button
+                        type="button"
+                        class="flex justify-center font-semibold px-3.5 py-2 rounded transition text-dark hover:text-primary border-2 border-[#e0e6ed] dark:border-[#191e3a] hover:border-primary dark:hover:border-primary dark:text-white-light"
+                        :disabled="pagination.current_page === 1"
+                        @click="changePage(pagination.current_page - 1)"
+                    >
+                        Prev
+                    </button>
+                </li>
+                <li v-for="(page, index) in displayedPages" :key="index">
+                    <button
+                        v-if="page !== '...'"
+                        type="button"
+                        class="flex justify-center font-semibold px-3.5 py-2 rounded transition"
+                        :class="{'text-primary border-2 border-primary dark:border-primary dark:text-white-light': pagination.current_page === page, 'text-dark hover:text-primary border-2 border-[#e0e6ed] dark:border-[#191e3a] hover:border-primary dark:hover:border-primary dark:text-white-light': pagination.current_page !== page}"
+                        @click="changePage(page as number)"
+                    >
+                        {{ page }}
+                    </button>
+                    <span v-else class="px-3.5 py-2">...</span>
+                </li>
+                <li>
+                    <button
+                        type="button"
+                        class="flex justify-center font-semibold px-3.5 py-2 rounded transition text-dark hover:text-primary border-2 border-[#e0e6ed] dark:border-[#191e3a] hover:border-primary dark:hover:border-primary dark:text-white-light"
+                        :disabled="pagination.current_page === pagination.last_page"
+                        @click="changePage(pagination.current_page + 1)"
+                    >
+                        Next
+                    </button>
+                </li>
+            </ul>
         </div>
 
         <!-- Modal -->
@@ -61,7 +99,7 @@
 </template>
 
 <script lang="ts" setup>
-    import { ref, onMounted } from 'vue';
+    import { ref, onMounted, computed } from 'vue';
     import { useMeta } from '@/composables/use-meta';
     import { useSuppliers } from './composables/useSuppliers';
     
@@ -89,7 +127,7 @@
         searchSupplier,
         filters,
         params,
-        filteredSuppliersList,
+        pagination,
         totalSuppliers,
         activeSuppliers,
         inactiveSuppliers,
@@ -104,7 +142,47 @@
     } = useSuppliers();
 
     onMounted(() => {
-        fetchSuppliers();
+        fetchSuppliers(1);
+    });
+
+    const changePage = (page: number) => {
+        if (page > 0 && page <= pagination.value.last_page && page !== pagination.value.current_page) {
+            fetchSuppliers(page);
+        }
+    };
+
+    const displayedPages = computed(() => {
+        const currentPage = pagination.value.current_page;
+        const lastPage = pagination.value.last_page;
+        const delta = 2;
+        const pages: (number | string)[] = [];
+
+        if (lastPage <= 7) {
+            for (let i = 1; i <= lastPage; i++) {
+                pages.push(i);
+            }
+            return pages;
+        }
+
+        pages.push(1);
+        if (currentPage > delta + 2) {
+            pages.push('...');
+        }
+
+        const start = Math.max(2, currentPage - delta);
+        const end = Math.min(lastPage - 1, currentPage + delta);
+
+        for (let i = start; i <= end; i++) {
+            pages.push(i);
+        }
+
+        if (currentPage < lastPage - delta - 1) {
+            pages.push('...');
+        }
+        
+        pages.push(lastPage);
+
+        return pages;
     });
 
     // Event handlers
@@ -123,7 +201,7 @@
         resetParams();
     };
 
-    const handleSaveSupplier = async (supplierParams: any) => {
+    const handleSaveSupplier = async () => {
         const success = await saveSupplier();
         if (success) {
             handleCloseModal();
@@ -140,6 +218,6 @@
 
     const handleFiltersUpdate = (newFilters: any) => {
         Object.assign(filters, newFilters);
-        fetchSuppliers();
+        fetchSuppliers(1);
     };
 </script>

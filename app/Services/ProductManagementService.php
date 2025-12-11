@@ -7,6 +7,9 @@ use Exception;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Http\UploadedFile; // Added
 
+use App\Imports\ProductsStockImport;
+use Maatwebsite\Excel\Facades\Excel;
+
 class ProductManagementService
 {
     public function __construct(private ProductRepository $productRepository) {}
@@ -207,5 +210,12 @@ class ProductManagementService
             'failed' => $failedCount,
             'errors' => $errors,
         ];
+    }
+
+    public function importStock(UploadedFile $file): array
+    {
+        $import = new ProductsStockImport();
+        Excel::import($import, $file);
+        return $import->getResults();
     }
 }

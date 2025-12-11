@@ -39,6 +39,13 @@ export function useProducts() {
     const errors = ref<Record<string, string[]>>({});
     const searchProduct = ref('');
     
+    const pagination = ref({
+        current_page: 1,
+        last_page: 1,
+        per_page: 15,
+        total: 0,
+    });
+
     const filters = ref<ProductFilters>({
         category: '',
         stock_status: ''
@@ -63,37 +70,26 @@ export function useProducts() {
     const params = ref<ProductParams>({ ...defaultParams });
 
     // Computed
-    const filteredProductsList = computed(() => {
-        let filtered = productsList.value;
-
-        if (searchProduct.value) {
-            const search = searchProduct.value.toLowerCase();
-            filtered = filtered.filter((product) => 
-                product.name.toLowerCase().includes(search) ||
-                product.sku.toLowerCase().includes(search) ||
-                product.description.toLowerCase().includes(search)
-            );
-        }
-
-        return filtered;
-    });
-
-    const totalProducts = computed(() => productsList.value.length);
-    const activeProducts = computed(() => productsList.value.filter(p => p.is_active).length);
-    const lowStockProducts = computed(() => productsList.value.filter(p => p.stock <= p.reorder_point && p.stock > 0).length);
-    const outOfStockProducts = computed(() => productsList.value.filter(p => p.stock === 0).length);
+    const totalProducts = computed(() => pagination.value.total);
+    const activeProducts = computed(() => productsList.value.filter(p => p.is_active).length); // Note: This only reflects the current page
+    const lowStockProducts = computed(() => productsList.value.filter(p => p.stock <= p.reorder_point && p.stock > 0).length); // Note: This only reflects the current page
+    const outOfStockProducts = computed(() => productsList.value.filter(p => p.stock === 0).length); // Note: This only reflects the current page
 
     // Methods
-    const fetchProducts = async () => {
+    const fetchProducts = async (page: number = 1) => {
         loading.value = true;
         errorMessage.value = '';
         try {
             const queryParams = new URLSearchParams();
+            queryParams.append('page', page.toString());
+            queryParams.append('per_page', pagination.value.per_page.toString());
+            if (searchProduct.value) queryParams.append('search', searchProduct.value);
             if (filters.value.category) queryParams.append('category', filters.value.category);
             if (filters.value.stock_status) queryParams.append('stock_status', filters.value.stock_status);
 
             const response = await axios.get(`/api/products?${queryParams}`);
             productsList.value = response.data.data;
+            pagination.value = response.data.meta;
         } catch (error) {
             console.error('Error fetching products:', error);
             errorMessage.value = t('products_page.alerts.loading_error');
@@ -120,18 +116,14 @@ export function useProducts() {
 
         try {
             if (params.value.id) {
-                const { data } = await axios.put(`/api/products/${params.value.id}`, params.value);
-                const index = productsList.value.findIndex(product => product.id === params.value.id);
-                if (index !== -1) {
-                    productsList.value.splice(index, 1, data);
-                }
+                await axios.put(`/api/products/${params.value.id}`, params.value);
                 showMessage(t('products_page.alerts.update_success'));
             } else {
-                const { data } = await axios.post('/api/products', params.value);
-                productsList.value.unshift(data);
+                await axios.post('/api/products', params.value);
                 showMessage(t('products_page.alerts.save_success'));
             }
             
+            await fetchProducts(pagination.value.current_page); // Refresh current page
             await fetchCategories();
             return true;
         } catch (error: any) {
@@ -169,7 +161,7 @@ export function useProducts() {
         if (result.isConfirmed) {
             try {
                 await axios.delete(`/api/products/${product.id}`);
-                productsList.value = productsList.value.filter(p => p.id !== product.id);
+                await fetchProducts(pagination.value.current_page); // Refresh current page
                 showMessage(t('products_page.alerts.delete_success'));
                 return true;
             } catch (error: any) {
@@ -187,13 +179,10 @@ export function useProducts() {
 
     const toggleProductStatus = async (product: Product): Promise<boolean> => {
         try {
-            const { data } = await axios.put(`/api/products/${product.id}/toggle-status`);
-            const index = productsList.value.findIndex(p => p.id === product.id);
-            if (index !== -1) {
-                productsList.value[index].is_active = data.is_active;
-            }
+            await axios.put(`/api/products/${product.id}/toggle-status`);
+            await fetchProducts(pagination.value.current_page); // Refresh current page
             
-            const status = data.is_active ? 'activado' : 'desactivado';
+            const status = !product.is_active ? 'activado' : 'desactivado';
             showMessage(t('products_page.alerts.status_toggle_success', { status }));
             return true;
         } catch (error) {
@@ -287,6 +276,7 @@ export function useProducts() {
                     updated: response.data.updated,
                     failed: response.data.failed
                 }), 'success');
+                await fetchProducts(); // Refresh first page
                 return true;
             } else {
                 showMessage(response.data.message || t('products_page.import_modal.import_failed'), 'error');
@@ -349,9 +339,9 @@ export function useProducts() {
         searchProduct,
         filters,
         params,
+        pagination,
         
         // Computed
-        filteredProductsList,
         totalProducts,
         activeProducts,
         lowStockProducts,

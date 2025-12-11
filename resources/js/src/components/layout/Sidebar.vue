@@ -202,8 +202,13 @@
                                     </router-link>
                                 </li>
 
-                                <li class="nav-item">
-                                    <router-link to="/apps/products" class="group" @click="toggleMobileMenu">
+                                <li class="menu nav-item">
+                                    <button
+                                        type="button"
+                                        class="nav-link group w-full"
+                                        :class="{ active: activeDropdown === 'products' }"
+                                        @click="activeDropdown === 'products' ? (activeDropdown = null) : (activeDropdown = 'products')"
+                                    >
                                         <div class="flex items-center">
                                             <svg
                                                 class="group-hover:!text-primary shrink-0"
@@ -223,16 +228,30 @@
                                                     fill="currentColor"
                                                 />
                                             </svg>
-
                                             <span class="ltr:pl-3 rtl:pr-3 text-black dark:text-[#506690] dark:group-hover:text-white-dark">{{
                                                 $t('products')
                                             }}</span>
                                         </div>
-                                    </router-link>
+                                        <div class="rtl:rotate-180" :class="{ '!rotate-90': activeDropdown === 'products' }">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M9 5L15 12L9 19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                            </svg>
+                                        </div>
+                                    </button>
+                                    <vue-collapsible :isOpen="activeDropdown === 'products'">
+                                        <ul class="sub-menu text-gray-500">
+                                            <li>
+                                                <router-link to="/apps/products" @click="toggleMobileMenu">Lista de Productos</router-link>
+                                            </li>
+                                            <li>
+                                                <router-link to="/apps/products/import-stock" @click="toggleMobileMenu">Importar Stock</router-link>
+                                            </li>
+                                        </ul>
+                                    </vue-collapsible>
                                 </li>
 
                                 <li class="nav-item">
-                                    <router-link to="/apps/purchase-orders" class="group" @click="toggleMobileMenu">
+                                    <router-link to="/apps/reports/sales" class="group" @click="toggleMobileMenu">
                                         <div class="flex items-center">
                                             <svg
                                                 class="group-hover:!text-primary shrink-0"
@@ -242,20 +261,32 @@
                                                 fill="none"
                                                 xmlns="http://www.w3.org/2000/svg"
                                             >
-                                                <path
-                                                    d="M6.94028 2C7.35614 2 7.69326 2.32421 7.69326 2.72414V4.18487C8.36117 4.17241 9.10983 4.17241 9.95219 4.17241H13.9681C14.8104 4.17241 15.5591 4.17241 16.227 4.18487V2.72414C16.227 2.32421 16.5641 2 16.98 2C17.3958 2 17.733 2.32421 17.733 2.72414V4.24894C19.178 4.36022 20.1267 4.63333 20.8236 5.30359C21.5206 5.97385 21.8046 6.88616 21.9203 8.27586L22 9H2.92456H2V8.27586C2.11571 6.88616 2.39970 5.97385 3.09665 5.30359C3.79361 4.63333 4.74226 4.36022 6.18730 4.24894V2.72414C6.18730 2.32421 6.52442 2 6.94028 2Z"
-                                                    fill="currentColor"
-                                                />
+                                                <path d="M9 17H15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
                                                 <path
                                                     opacity="0.5"
-                                                    d="M21.9995 14.0001V12.0001C21.9995 11.161 21.9963 9.66527 21.9834 9H2.00917C1.99626 9.66527 1.99953 11.161 1.99953 12.0001V14.0001C1.99953 17.7713 1.99953 19.6569 3.17110 20.8285C4.34267 22.0001 6.22829 22.0001 9.99953 22.0001H13.9995C17.7708 22.0001 19.6564 22.0001 20.8280 20.8285C21.9995 19.6569 21.9995 17.7713 21.9995 14.0001Z"
-                                                    fill="currentColor"
+                                                    d="M20 17L20 12C20 8.22876 20 6.34315 18.8284 5.17157C17.6569 4 15.7712 4 12 4C8.22876 4 6.34315 4 5.17157 5.17157C4 6.34315 4 8.22876 4 12L4 17"
+                                                    stroke="currentColor"
+                                                    stroke-width="1.5"
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
                                                 />
+                                                <path
+                                                    d="M20 21C18.8954 21 18 20.1046 18 19C18 17.8954 18.8954 17 20 17"
+                                                    stroke="currentColor"
+                                                    stroke-width="1.5"
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                />
+                                                <path
+                                                    d="M4 21C5.10457 21 6 20.1046 6 19C6 17.8954 5.10457 17 4 17"
+                                                    stroke="currentColor"
+                                                    stroke-width="1.5"
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                />
+                                                <path d="M12 21C10.8954 21 10 20.1046 10 19C10 17.8954 10.8954 17 12 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
                                             </svg>
-
-                                            <span class="ltr:pl-3 rtl:pr-3 text-black dark:text-[#506690] dark:group-hover:text-white-dark">{{
-                                                $t('orders')
-                                            }}</span>
+                                            <span class="ltr:pl-3 rtl:pr-3 text-black dark:text-[#506690] dark:group-hover:text-white-dark">{{ $t('reports') }}</span>
                                         </div>
                                     </router-link>
                                 </li>
