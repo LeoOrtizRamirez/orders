@@ -166,9 +166,6 @@
                                             <li>
                                                 <router-link to="/apps/manage-roles/permissions-list" @click="toggleMobileMenu">{{ $t('add') }}</router-link>
                                             </li>
-                                            <li>
-                                                <router-link to="/apps/manage-roles/roles-permissions-list" @click="toggleMobileMenu">{{ $t('list') }}</router-link>
-                                            </li>
                                         </ul>
                                     </vue-collapsible>
                                 </li>

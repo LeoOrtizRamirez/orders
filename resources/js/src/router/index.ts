@@ -62,12 +62,6 @@ const routes: RouteRecordRaw[] = [
         component: () => import(/* webpackChunkName: "apps-roles-preview" */ '../views/apps/roles/permissions-list.vue'),
         meta: { requiresAuth: true }
     },
-    {
-        path: '/apps/manage-roles/roles-permissions-list',
-        name: 'roles-permissions-list',
-        component: () => import(/* webpackChunkName: "apps-roles-add" */ '../views/apps/roles/roles-permissions-list.vue'),
-        meta: { requiresAuth: true }
-    },
 
     {
         path: '/apps/products/',
