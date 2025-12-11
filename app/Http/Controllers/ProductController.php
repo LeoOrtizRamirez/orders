@@ -260,44 +260,13 @@ class ProductController extends Controller
             'Content-Disposition' => 'attachment; filename="products_template.csv"',
         ];
 
-        $templateContent = "name,sku,description,stock,min_stock,reorder_point,unit,category,brand,supplier,is_active,order\n";
-        $templateContent .= "Example Product,PROD001,Description for example product,100,10,5,unit,Electronics,BrandX,SupplierY,1,1\n";
+        $templateContent = "name,sku,description,stock,min_stock,reorder_point,unit,category,brand,is_active,order\n";
+        $templateContent .= "Example Product,PROD001,Description for example product,100,10,5,unit,Electronics,BrandX,1,1\n";
 
         // Create a temporary file and write the content to it
         $tempFilePath = tempnam(sys_get_temp_dir(), 'products_template_');
         file_put_contents($tempFilePath, $templateContent);
 
         return response()->download($tempFilePath, 'products_template.csv', $headers)->deleteFileAfterSend(true);
-    }
-
-    public function importStock(Request $request): JsonResponse
-    {
-        try {
-            $request->validate([
-                'file' => 'required|file|mimes:csv,txt',
-            ]);
-
-            $result = $this->productService->importStock($request->file('file'));
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Importación de stock completada.',
-                'updated' => $result['updated'],
-                'failed' => $result['failed'],
-                'errors' => $result['errors'] ?? [],
-            ]);
-        } catch (ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'error' => 'Validation failed',
-                'errors' => $e->errors()
-            ], 422);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'error' => 'Failed to import stock',
-                'message' => $e->getMessage()
-            ], 500);
-        }
     }
 }

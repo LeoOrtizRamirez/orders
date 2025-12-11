@@ -152,10 +152,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::put('/{id}/toggle-status', [ProductController::class, 'toggleStatus']);
         Route::get('/sku/{sku}', [ProductController::class, 'getProductBySku']);
         // New routes for CSV import/export
-        Route::post('/import', [ProductController::class, 'importProductsCsv'])->middleware('permission:create products');
-        Route::get('/template', [ProductController::class, 'downloadProductsCsvTemplate'])->middleware('permission:create products');
-        Route::post('/import/stock', [ProductController::class, 'importStock'])->middleware('permission:create products');
-    });
+    Route::post('/import', [ProductController::class, 'importProductsCsv'])->middleware('permission:create products');
+    Route::get('/template', [ProductController::class, 'downloadProductsCsvTemplate'])->middleware('permission:create products');
+});
     Route::apiResource('products', ProductController::class);
 
     // Rutas de proveedores

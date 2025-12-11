@@ -202,13 +202,8 @@
                                     </router-link>
                                 </li>
 
-                                <li class="menu nav-item">
-                                    <button
-                                        type="button"
-                                        class="nav-link group w-full"
-                                        :class="{ active: activeDropdown === 'products' }"
-                                        @click="activeDropdown === 'products' ? (activeDropdown = null) : (activeDropdown = 'products')"
-                                    >
+                                <li class="nav-item">
+                                    <router-link to="/apps/products" class="group" @click="toggleMobileMenu">
                                         <div class="flex items-center">
                                             <svg
                                                 class="group-hover:!text-primary shrink-0"
@@ -232,22 +227,7 @@
                                                 $t('products')
                                             }}</span>
                                         </div>
-                                        <div class="rtl:rotate-180" :class="{ '!rotate-90': activeDropdown === 'products' }">
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <path d="M9 5L15 12L9 19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                                            </svg>
-                                        </div>
-                                    </button>
-                                    <vue-collapsible :isOpen="activeDropdown === 'products'">
-                                        <ul class="sub-menu text-gray-500">
-                                            <li>
-                                                <router-link to="/apps/products" @click="toggleMobileMenu">Lista de Productos</router-link>
-                                            </li>
-                                            <li>
-                                                <router-link to="/apps/products/import-stock" @click="toggleMobileMenu">Importar Stock</router-link>
-                                            </li>
-                                        </ul>
-                                    </vue-collapsible>
+                                    </router-link>
                                 </li>
 
                                 <li class="nav-item">

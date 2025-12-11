@@ -77,13 +77,6 @@ const routes: RouteRecordRaw[] = [
     },
 
     {
-        path: '/apps/products/import-stock',
-        name: 'products-import-stock',
-        component: () => import(/* webpackChunkName: "apps-products-import-stock" */ '../views/apps/products/StockImport.vue'),
-        meta: { requiresAuth: true }
-    },
-
-    {
         path: '/apps/suppliers/',
         name: 'suppliers',
         component: () => import(/* webpackChunkName: "apps-services" */ '../views/apps/suppliers/SuppliersPage.vue'),

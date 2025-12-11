@@ -204,18 +204,20 @@ class ProductManagementService
             throw new Exception('Could not open CSV file.');
         }
 
-        return [
-            'imported' => $importedCount,
-            'updated' => $updatedCount,
-            'failed' => $failedCount,
-            'errors' => $errors,
-        ];
-    }
+                return [
 
-    public function importStock(UploadedFile $file): array
-    {
-        $import = new ProductsStockImport();
-        Excel::import($import, $file);
-        return $import->getResults();
-    }
-}
+                    'imported' => $importedCount,
+
+                    'updated' => $updatedCount,
+
+                    'failed' => $failedCount,
+
+                    'errors' => $errors,
+
+                ];
+
+            }
+
+        }
+
+        

@@ -167,8 +167,8 @@
         (e: 'update:filters', value: Props['filters']): void;
         (e: 'update:search-product', value: string): void;
         (e: 'add-product'): void;
-        (e: 'open-import-modal'): void; // New emit
-        (e: 'download-template'): void; // New emit
+        (e: 'open-import-modal'): void;
+        (e: 'download-template'): void;
     }
 
     const props = defineProps<Props>();
