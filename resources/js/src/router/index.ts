@@ -68,13 +68,6 @@ const routes: RouteRecordRaw[] = [
         component: () => import(/* webpackChunkName: "apps-roles-add" */ '../views/apps/roles/roles-permissions-list.vue'),
         meta: { requiresAuth: true }
     },
-    
-    {
-        path: '/apps/calendar',
-        name: 'calendar',
-        component: () => import(/* webpackChunkName: "apps-calendar" */ '../views/apps/calendar.vue'),
-        meta: { requiresAuth: true }
-    },
 
     {
         path: '/apps/products/',

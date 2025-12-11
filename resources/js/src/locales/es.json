@@ -385,12 +385,6 @@
                     "change_avatar": "Cambiar avatar",
                     "delete_avatar": "Eliminar avatar",
                     "change_image": "Cambiar imagen"
-                },
-                "only": {
-                    "title": "Configuraciones de Only",
-                    "user_name": "Nombre de usuario Only",
-                    "password": "Contraseña",
-                    "btn_save": "Guardar Usuario Only"
                 }
             },
             "preferences": {

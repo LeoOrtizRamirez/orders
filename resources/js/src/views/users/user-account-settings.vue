@@ -115,29 +115,6 @@
                                     </div>
                                 </div>
                             </form>
-                            <form @submit.prevent="saveUserOnly" class="border border-[#ebedf2] dark:border-[#191e3a] rounded-md p-4 bg-white dark:bg-[#0e1726]">
-                                <h6 class="text-lg font-bold mb-5">{{ $t('user_account_settings.tabs.settings.only.title') }}</h6>
-                                <div class="flex flex-col sm:flex-row">
-                                    <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-5">
-                                        <div>
-                                            <label for="user_name">{{ $t('user_account_settings.tabs.settings.only.user_name') }}</label>
-                                            <input id="user_name" v-model="userOnlyParams.user_name" type="text" :placeholder="$t('user_account_settings.tabs.settings.only.user_name')" class="form-input" />
-                                            <div v-if="errors.user_name" class="text-danger mt-1">{{ errors.user_name[0] }}</div>
-                                        </div>
-                                        <div>
-                                            <label for="user_only_password">{{ $t('user_account_settings.tabs.settings.only.password') }}</label>
-                                            <input id="user_only_password" v-model="userOnlyParams.password" type="password" :placeholder="$t('user_account_settings.tabs.settings.only.password')" class="form-input" />
-                                            <div v-if="errors.user_only_password" class="text-danger mt-1">{{ errors.user_only_password[0] }}</div>
-                                        </div>
-                                        <div class="sm:col-span-2 mt-3">
-                                            <button type="submit" :disabled="savingOnly" class="btn btn-primary">
-                                                <span v-if="savingOnly" class="animate-spin border-2 border-white border-l-transparent rounded-full w-4 h-4 ltr:mr-2 rtl:ml-2 inline-block"></span>
-                                                {{ $t('user_account_settings.tabs.settings.only.btn_save') }}
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </form>
                         </div>
                     </TabPanel>
                     <TabPanel>
@@ -370,45 +347,6 @@
             }
         } finally {
             saving.value = false;
-        }
-    };
-
-    const saveUserOnly = async () => {
-        savingOnly.value = true;
-        errors.value = {};
-
-        try {
-            const userId = route.params.id || authStore.user?.id;
-            const response = await axios.put(`/api/user-only/${userId}`, userOnlyParams);
-            
-            // Actualizar los datos locales
-            if (userData.value) {
-                userData.value.user_only = response.data;
-            }
-            
-            // ✅ ACTUALIZAR AUTHSTORE SI ES EL USUARIO LOGUEADO
-            if (authStore.user && authStore.user.id === parseInt(userId)) {
-                // Actualizar solo la parte user_only del usuario
-                const updatedUser = {
-                    ...authStore.user,
-                    user_only: response.data
-                };
-                authStore.setUser(updatedUser);
-            }
-            
-            showMessage('Usuario only actualizado satisfactoriamente!', 'success');
-            
-        } catch (error: any) {
-            if (error.response && error.response.status === 422) {
-                errors.value = error.response.data.errors;
-                errorMessage.value = 'Por favor corrija los errores de validación.';
-            } else {
-                console.error('Error al guardar usuario only:', error);
-                errorMessage.value = 'No se pudo guardar el usuario only. Inténtalo de nuevo.';
-                showMessage('No se pudo guardar el usuario only.', 'error');
-            }
-        } finally {
-            savingOnly.value = false;
         }
     };
 

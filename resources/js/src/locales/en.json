@@ -385,12 +385,6 @@
                     "change_avatar": "Change Avatar",
                     "delete_avatar": "Delete Avatar",
                     "change_image": "Change Image"
-                },
-                "only": {
-                    "title": "Only Settings",
-                    "user_name": "Only Username",
-                    "password": "Password",
-                    "btn_save": "Save Only User"
                 }
             },
             "preferences": {

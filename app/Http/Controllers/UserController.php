@@ -115,31 +115,4 @@ class UserController extends Controller
 
         return response()->json(null, 204);
     }
-
-    public function updateUserOnly(Request $request, $userId): JsonResponse
-    {
-        $user = User::findOrFail($userId);
-        
-        $validated = $request->validate([
-            'user_name' => 'sometimes|string|max:255|unique:user_only,user_name,' . $user->id . ',user_id',
-            'password' => 'sometimes|string|min:8'
-        ]);
-
-        // Buscar o crear el registro user_only
-        $userOnly = $user->user_only ?? new UserOnly();
-        
-        if (isset($validated['user_name'])) {
-            $userOnly->user_name = $validated['user_name'];
-        }
-
-        // Hashear contraseña si se proporciona
-        if (!empty($validated['password'])) {
-            $userOnly->user_password = Hash::make($validated['password']);
-        }
-        
-        $user->user_only()->save($userOnly);
-        
-        return response()->json($userOnly);
-    }
-
 }
