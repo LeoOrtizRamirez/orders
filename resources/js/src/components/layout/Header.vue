@@ -138,24 +138,32 @@
                                         </div>
                                     </li>
                                     <template v-if="notifications.length">
-                                        <li v-for="item in notifications" :key="item.id">
-                                            <a href="javascript:;" class="dark:hover:bg-dark-light/90" @click="markAsRead(item, close)">
-                                                <div class="group flex items-center px-4 py-2">
-                                                    <div class="grid place-content-center w-12 h-12 rounded-full ltr:mr-4 rtl:ml-4 text-primary">
-                                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                                                    </div>
-                                                    <div class="flex-1">
-                                                        <div class="flex items-center justify-between">
-                                                            <h4 class="text-sm font-semibold" v-html="item.data.message"></h4>
-                                                            <p class="text-xs text-white-dark/70">{{ formatNotificationTime(item.created_at) }}</p>
-                                                        </div>
+                                        <li v-for="item in notifications" :key="item.id" class="dark:hover:bg-dark-light/90" @click.stop>
+                                            <div class="group flex items-center px-4 py-2">
+                                                <div class="grid place-content-center w-12 h-12 rounded-full ltr:mr-4 rtl:ml-4 text-primary">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                                                </div>
+                                                <div class="flex-1">
+                                                    <div class="flex items-center justify-between">
+                                                        <h4 class="text-sm font-semibold">
+                                                            <template v-for="(part, index) in item.data.message_parts" :key="index">
+                                                                <span v-if="part.type === 'text'">{{ part.content }}</span>
+                                                                <router-link
+                                                                    v-if="part.type === 'link'"
+                                                                    :to="`/apps/purchase-orders/kanban/${item.data.order_id}`"
+                                                                    class="text-primary hover:underline"
+                                                                    @click="handleNotificationClick(item, close)"
+                                                                >
+                                                                    {{ part.content }}
+                                                                </router-link>
+                                                            </template>
+                                                        </h4>
+                                                        <p class="text-xs text-white-dark/70">{{ formatNotificationTime(item.created_at) }}</p>
                                                     </div>
                                                 </div>
-                                            </a>
-                                        </li>
-                                        <li>
-                                            <div class="p-4">
-                                                <button class="btn btn-primary btn-small block w-full" @click="markAllAsRead(close)">Marcar todas como leídas</button>
+                                                 <button type="button" class="btn btn-sm btn-outline-danger p-1 ml-2" @click="markAsRead(item, true)">
+                                                    &times;
+                                                </button>
                                             </div>
                                         </li>
                                     </template>
@@ -283,12 +291,21 @@
         }
     };
 
-    const markAsRead = async (notification: any, closeDropdown: Function) => {
+    const handleNotificationClick = (notification: any, closeDropdown: Function) => {
+        router.push(`/apps/purchase-orders/kanban/${notification.data.order_id}`);
+        closeDropdown();
+    };
+
+    const dismissNotification = (notification: any) => {
+        markAsRead(notification, true); // Mark as read in DB and remove from UI list
+    };
+
+    const markAsRead = async (notification: any, removeFromList: boolean) => {
         try {
             await axios.post(`/api/notifications/${notification.id}/mark-as-read`);
-            notifications.value = notifications.value.filter((n) => n.id !== notification.id);
-            router.push(`/apps/purchase-orders/kanban`);
-            closeDropdown();
+            if (removeFromList) {
+                notifications.value = notifications.value.filter((n) => n.id !== notification.id);
+            }
         } catch (error) {
             console.error('Error marking notification as read:', error);
         }

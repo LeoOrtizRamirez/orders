@@ -91,7 +91,7 @@ const routes: RouteRecordRaw[] = [
     },
 
     {
-        path: '/apps/purchase-orders/kanban',
+        path: '/apps/purchase-orders/kanban/:orderId?',
         name: 'purchase-orders-kanban',
         component: () => import(/* webpackChunkName: "apps-purchase-orders-kanban" */ '../views/apps/purchase-orders/OrderKanbanBoard.vue'),
         meta: { requiresAuth: true }

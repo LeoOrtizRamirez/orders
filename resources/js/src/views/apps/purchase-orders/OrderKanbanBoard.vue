@@ -160,7 +160,7 @@
 </template>
 
 <script lang="ts" setup>
-    import { ref, onMounted } from 'vue';
+    import { ref, onMounted, watch } from 'vue';
     import { VueDraggableNext as draggable } from 'vue-draggable-next';
     import { useMeta } from '@/composables/use-meta';
     import axios from 'axios';
@@ -173,11 +173,12 @@
     import PurchaseOrderViewModal from './components/PurchaseOrderViewModal.vue';
     import PurchaseOrderSplitModal from './components/PurchaseOrderSplitModal.vue'; 
     import AlertMessages from '../../components/shared/AlertMessages.vue';
-    import { useRouter } from 'vue-router';
+    import { useRouter, useRoute } from 'vue-router';
     import type { PurchaseOrder } from '@/types/purchase-orders';
 
     const { t } = useI18n();
     const router = useRouter(); 
+    const route = useRoute();
     useMeta({ title: t('ordenes.order_kanban_board') });
 
 
@@ -396,9 +397,28 @@
         return statusMap[status.toLowerCase()] || 'badge-outline-light';
     };
 
-    onMounted(() => {
-        fetchOrdersKanban();
-        fetchSuppliers(); 
-        fetchProducts();  
+    const findAndShowOrder = (orderId: string | string[] | undefined) => {
+        if (!orderId) return;
+
+        let foundOrder = null;
+        for (const status of orderStatuses.value) {
+            foundOrder = status.orders.find(o => o.id === parseInt(orderId as string));
+            if (foundOrder) break;
+        }
+
+        if (foundOrder) {
+            handleViewOrder(foundOrder);
+        }
+    };
+
+    onMounted(async () => {
+        await Promise.all([fetchOrdersKanban(), fetchSuppliers(), fetchProducts()]);
+        findAndShowOrder(route.params.orderId);
+    });
+
+    watch(() => route.params.orderId, (newId) => {
+        if (newId) {
+            findAndShowOrder(newId);
+        }
     });
 </script>

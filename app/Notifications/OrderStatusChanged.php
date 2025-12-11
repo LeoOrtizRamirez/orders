@@ -40,13 +40,30 @@ class OrderStatusChanged extends Notification implements ShouldQueue
      */
     public function toDatabase(object $notifiable): array
     {
-        $message = $this->customMessage ?? "La orden #{$this->purchaseOrder->order_number} ha cambiado su estado a: {$this->purchaseOrder->status}";
+        $defaultMessage = "La orden #{$this->purchaseOrder->order_number} ha cambiado su estado a: {$this->purchaseOrder->status}";
+        $message = $this->customMessage ?? $defaultMessage;
+
+        // Default structured message
+        $messageParts = [
+            ['type' => 'text', 'content' => 'La orden '],
+            ['type' => 'link', 'content' => "#{$this->purchaseOrder->order_number}"],
+            ['type' => 'text', 'content' => " ha cambiado su estado a: {$this->purchaseOrder->status}"],
+        ];
+
+        // If a custom message is provided, we won't use the structured format for now,
+        // as we'd need a more complex parser. We will just send the plain custom message.
+        if ($this->customMessage) {
+            $messageParts = [
+                ['type' => 'text', 'content' => $this->customMessage],
+            ];
+        }
 
         return [
             'order_id' => $this->purchaseOrder->id,
             'order_number' => $this->purchaseOrder->order_number,
             'status' => $this->purchaseOrder->status,
-            'message' => $message,
+            'message' => $message, // Keep for simple clients
+            'message_parts' => $messageParts, // For rich clients
         ];
     }
 
@@ -57,7 +74,8 @@ class OrderStatusChanged extends Notification implements ShouldQueue
      */
     public function toArray(object $notifiable): array
     {
-        $message = $this->customMessage ?? "La orden #{$this->purchaseOrder->order_number} ha cambiado su estado a: {$this->purchaseOrder->status}";
+        $defaultMessage = "La orden #{$this->purchaseOrder->order_number} ha cambiado su estado a: {$this->purchaseOrder->status}";
+        $message = $this->customMessage ?? $defaultMessage;
         
         return [
             'order_id' => $this->purchaseOrder->id,
