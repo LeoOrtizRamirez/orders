@@ -7,7 +7,7 @@
                     <h5 class="font-bold text-lg">
                         {{ params.id ? $t('purchase_orders_page.create_modal.edit_title') : $t('purchase_orders_page.create_modal.add_title') }}
                     </h5>
-                    <button type="button" class="text-white-dark hover:text-dark" @click="$emit('close')">
+                    <button type="button" class="text-white-dark hover:text-dark" @click="handleClose()">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6">
                             <line x1="18" y1="6" x2="6" y2="18"></line>
                             <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -147,57 +147,60 @@
                                                  class="text-info mt-1 text-xs">
                                                 Máx: {{ getMaxQuantity(item.product_id) }}
                                             </div>
-                                        </div>
 
-                                        <!-- Eliminar -->
-                                        <div class="md:col-span-2">
-                                            <button
-                                                type="button"
-                                                class="btn btn-outline-danger btn-sm w-full"
-                                                @click="$emit('remove-item', index)"
-                                                :disabled="params.items.length === 1"
-                                            >
-                                                {{ $t('purchase_orders_page.create_modal.buttons.remove_item') }}
-                                            </button>
+                                            <!-- Notas del item -->
+                                            <div class="mt-3">
+                                                <label class="form-label font-semibold text-xs">{{ $t('user_notes.notes_label') }}</label>
+                                                <div class="bg-gray-100 dark:bg-gray-700 p-2 rounded space-y-2 max-h-24 overflow-y-auto">
+                                                    <div v-for="note in item.itemNotes" :key="note.id" class="text-xs pb-1 border-b dark:border-gray-600 last:border-b-0">
+                                                        <p class="font-semibold">{{ note.author?.name }} <span class="text-gray-500 text-xs">- {{ formatNoteTimestamp(note.created_at) }}</span></p>
+                                                        <p class="text-gray-600 dark:text-gray-300 whitespace-pre-wrap">{{ note.note }}</p>
+                                                    </div>
+                                                    <div v-if="!item.itemNotes || item.itemNotes.length === 0" class="text-gray-500 text-xs">
+                                                        {{ $t('user_notes.no_notes_for_item') }}
+                                                    </div>
+                                                </div>
+                                                <button type="button" class="btn btn-outline-info btn-sm mt-2"
+                                                    @click="openUserNotesModal(item.id, 'purchase_order_item', $t('user_notes.notes_title_item_for_product', { product: item.product?.name }))"
+                                                    :disabled="!item.id"
+                                                >
+                                                    {{ $t('user_notes.view_add_notes') }}
+                                                </button>
+                                            </div>
                                         </div>
-                                    </div>
-
-                                    <!-- Notas del item -->
-                                    <div class="mt-3">
-                                        <label class="form-label">
-                                            {{ $t('purchase_orders_page.create_modal.fields.item_notes') }}
-                                        </label>
-                                        <textarea
-                                            v-model="item.notes"
-                                            class="form-textarea min-h-[60px]"
-                                            :placeholder="$t('purchase_orders_page.create_modal.placeholders.item_notes')"
-                                            rows="2"
-                                        ></textarea>
-                                    </div>
                                 </div>
+                            </div>
                             </div>
                         </div>
 
-                        <!-- Notas -->
+                        <!-- Notas de la Orden -->
                         <div class="mb-5">
-                            <label for="notes" class="form-label">
-                                {{ $t('purchase_orders_page.create_modal.fields.notes') }}
-                            </label>
-                            <textarea
-                                id="notes"
-                                v-model="params.notes"
-                                class="form-textarea min-h-[80px]"
-                                :placeholder="$t('purchase_orders_page.create_modal.placeholders.notes')"
-                                rows="3"
-                            ></textarea>
+                            <label class="form-label font-semibold">{{ $t('purchase_orders_page.view_modal.fields.notes') }}</label>
+                            <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded space-y-3">
+                                <div v-for="note in orderNotes" :key="note.id" class="text-sm pb-2 border-b dark:border-gray-700 last:border-b-0">
+                                    <p class="font-semibold">{{ note.author?.name }} <span class="text-gray-500 text-xs">- {{ formatNoteTimestamp(note.created_at) }}</span></p>
+                                    <p class="text-gray-600 dark:text-gray-300 whitespace-pre-wrap">{{ note.note }}</p>
+                                </div>
+                                <div v-if="!orderNotes || orderNotes.length === 0" class="text-gray-500">
+                                    {{ $t('user_notes.no_notes_general') }}
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-outline-info btn-sm mt-2"
+                                @click="openUserNotesModal(params.id, 'purchase_order', $t('user_notes.notes_title_for_order', { orderNumber: params.order_number }))"
+                                :disabled="!params.id"
+                            >
+                                {{ $t('user_notes.view_add_notes') }}
+                            </button>
                         </div>
+                        
+
 
                         <!-- Botones -->
                         <div class="flex justify-end items-center mt-8 border-t pt-4">
                             <button
                                 type="button"
                                 class="btn btn-outline-danger mr-3"
-                                @click="$emit('close')"
+                                @click="handleClose()"
                                 :disabled="saving"
                             >
                                 {{ $t('purchase_orders_page.create_modal.buttons.cancel') }}
@@ -227,14 +230,31 @@
             </div>
         </div>
     </div>
+
+    <UserNotesModal
+        :is-open="showUserNotesModal"
+        @update:is-open="closeUserNotesModal"
+        :notable-id="currentNotableId"
+        :notable-type="currentNotableType"
+        :notable-title="currentNotableTitle"
+        @note-added="closeUserNotesModal"
+        @note-deleted="closeUserNotesModal"
+    />
 </template>
 
 <script lang="ts" setup>
-    import { computed } from 'vue';
+    import { computed, ref } from 'vue';
+    import type { UserNote, PurchaseOrderParams } from '@/types/purchase-orders';
+    import UserNotesModal from '@/components/UserNotesModal.vue';
+    import { useI18n } from 'vue-i18n';
+    import { usePurchaseOrders } from '../composables/usePurchaseOrders'; // Import the composable
+
+    const { t } = useI18n();
+    const { orderNotes } = usePurchaseOrders(); // Access orderNotes from the composable
 
     interface Props {
         show: boolean;
-        params: any;
+        params: PurchaseOrderParams; // Use the more specific type
         errors: any;
         saving: boolean;
         suppliers: any[];
@@ -243,13 +263,34 @@
 
     interface Emits {
         (e: 'close'): void;
-        (e: 'save', params: any): void;
+        (e: 'save', params: PurchaseOrderParams): void;
         (e: 'add-item'): void;
         (e: 'remove-item', index: number): void;
+        (e: 'refresh-view-order'): void; // Emit to refresh notes after adding/deleting
     }
 
     const props = defineProps<Props>();
     const emit = defineEmits<Emits>();
+
+    const showUserNotesModal = ref(false);
+    const currentNotableId = ref<number | null>(null);
+    const currentNotableType = ref<string | null>(null);
+    const currentNotableTitle = ref<string | null>(null);
+
+    const openUserNotesModal = (notableId: number, notableType: string, title: string) => {
+        currentNotableId.value = notableId;
+        currentNotableType.value = notableType;
+        currentNotableTitle.value = title;
+        showUserNotesModal.value = true;
+    };
+
+    const closeUserNotesModal = () => {
+        showUserNotesModal.value = false;
+        currentNotableId.value = null;
+        currentNotableType.value = null;
+        currentNotableTitle.value = null;
+        emit('refresh-view-order'); // Refresh notes in parent component
+    };
 
     // Computed
     const availableProducts = computed(() => {
@@ -299,5 +340,21 @@
             };
         }
         return { hasError: false, message: '' };
+    };
+
+    const formatNoteTimestamp = (dateString: string | null): string => {
+        if (!dateString) return '-';
+        return new Date(dateString).toLocaleDateString('es-ES', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    };
+
+    const handleClose = () => {
+        console.log('PurchaseOrderModal: Emitting close event');
+        emit('close');
     };
 </script>

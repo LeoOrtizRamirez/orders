@@ -138,10 +138,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     });
 
     Route::prefix('user-notes')->group(function () {
-        Route::get('/user/{userId}', [UserNoteController::class, 'index']);
-        Route::post('/user/{userId}', [UserNoteController::class, 'store']);
-        Route::put('/user/{userId}/{noteId}', [UserNoteController::class, 'update']);
-        Route::delete('/user/{userId}/{noteId}', [UserNoteController::class, 'destroy']);
+        Route::get('/', [UserNoteController::class, 'index']);
+        Route::post('/', [UserNoteController::class, 'store']);
+        Route::put('/{noteId}', [UserNoteController::class, 'update']);
+        Route::delete('/{noteId}', [UserNoteController::class, 'destroy']);
     });
 
     // Rutas de productos

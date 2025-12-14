@@ -28,7 +28,7 @@
                             <button
                                 type="button"
                                 class="absolute top-4 ltr:right-4 rtl:left-4 text-gray-400 hover:text-gray-800 dark:hover:text-gray-600 outline-none"
-                                @click="$emit('close')"
+                                @click="handleClose()"
                             >
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
@@ -177,12 +177,20 @@
                                                         <td>
                                                             <div class="font-semibold">{{ item.product?.name }}</div>
                                                             <div class="text-sm text-gray-500">{{ item.product?.sku }}</div>
-                                                            <div v-if="item.notes && item.notes.length" class="mt-2 space-y-2 text-xs">
-                                                                <div v-for="(note, index) in item.notes" :key="index" class="p-2 rounded bg-gray-100 dark:bg-gray-700">
-                                                                    <p class="font-semibold">{{ note.user_name }} <span class="text-gray-500 text-xs">- {{ formatNoteTimestamp(note.timestamp) }}</span></p>
+                                                            <div class="mt-2 space-y-2 text-xs">
+                                                                <div v-for="note in item.item_notes" :key="note.id" class="p-2 rounded bg-gray-100 dark:bg-gray-700">
+                                                                    <p class="font-semibold">{{ note.author?.name }} <span class="text-gray-500 text-xs">- {{ formatNoteTimestamp(note.created_at) }}</span></p>
                                                                     <p class="text-gray-600 dark:text-gray-300">{{ note.note }}</p>
                                                                 </div>
+                                                                <div v-if="!item.item_notes || item.item_notes.length === 0" class="text-gray-500">
+                                                                    {{ $t('user_notes.no_notes_for_item') }}
+                                                                </div>
                                                             </div>
+                                                            <button type="button" class="btn btn-outline-info btn-sm mt-2"
+                                                                @click="openUserNotesModal(item.id, 'purchase_order_item', $t('user_notes.notes_title_item_for_product', { product: item.product?.name }))"
+                                                            >
+                                                                {{ $t('user_notes.view_add_notes') }}
+                                                            </button>
                                                         </td>
                                                         <td class="text-center">{{ item.quantity }}</td>
                                                         <td class="text-center">
@@ -204,19 +212,24 @@
                                     <!-- Notes and Rejection Reason -->
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                         <div class="space-y-2">
-                                            <div v-if="order.notes">
+                                            <div class="mb-2">
                                                 <label class="font-semibold text-gray-600">
                                                     {{ $t('purchase_orders_page.view_modal.fields.notes') }}:
                                                 </label>
                                                 <div class="bg-gray-50 dark:bg-gray-800 p-3 rounded space-y-3">
-                                                    <div v-if="!order.notes || order.notes.length === 0" class="text-gray-500">
-                                                        No hay notas generales.
-                                                    </div>
-                                                    <div v-for="(note, index) in order.notes" :key="index" class="text-sm pb-2 border-b dark:border-gray-700 last:border-b-0">
-                                                        <p class="font-semibold">{{ note.user_name }} <span class="text-gray-500 text-xs">- {{ formatNoteTimestamp(note.timestamp) }}</span></p>
+                                                    <div v-for="note in order.notes" :key="note.id" class="text-sm pb-2 border-b dark:border-gray-700 last:border-b-0">
+                                                        <p class="font-semibold">{{ note.author?.name }} <span class="text-gray-500 text-xs">- {{ formatNoteTimestamp(note.created_at) }}</span></p>
                                                         <p class="text-gray-600 dark:text-gray-300 whitespace-pre-wrap">{{ note.note }}</p>
                                                     </div>
+                                                    <div v-if="!order.notes || order.notes.length === 0" class="text-gray-500">
+                                                        {{ $t('user_notes.no_notes_general') }}
+                                                    </div>
                                                 </div>
+                                                <button type="button" class="btn btn-outline-info btn-sm mt-2"
+                                                    @click="openUserNotesModal(order.id, 'purchase_order', $t('user_notes.notes_title_for_order', { orderNumber: order.order_number }))"
+                                                >
+                                                    {{ $t('user_notes.view_add_notes') }}
+                                                </button>
                                             </div>
 
                                             <div v-if="order.rejection_reason">
@@ -243,7 +256,7 @@
                                         <button 
                                             type="button" 
                                             class="btn btn-outline-danger ltr:ml-4 rtl:mr-4" 
-                                            @click="$emit('close')"
+                                            @click="handleClose()"
                                         >
                                             {{ $t('purchase_orders_page.view_modal.buttons.close') }}
                                         </button>
@@ -258,6 +271,15 @@
                                     </div>
                                 </template>
                             </div>
+                            <UserNotesModal
+                                :is-open="showUserNotesModal"
+                                @update:is-open="closeUserNotesModal"
+                                :notable-id="currentNotableId"
+                                :notable-type="currentNotableType"
+                                :notable-title="currentNotableTitle"
+                                @note-added="closeUserNotesModal"
+                                @note-deleted="closeUserNotesModal"
+                            />
                         </DialogPanel>
                     </TransitionChild>
                 </div>
@@ -269,6 +291,8 @@
 <script lang="ts" setup>
     import { TransitionRoot, TransitionChild, Dialog, DialogPanel, DialogOverlay } from '@headlessui/vue';
     import type { PurchaseOrder } from '@/types/purchase-orders';
+    import UserNotesModal from '@/components/UserNotesModal.vue';
+    import { ref } from 'vue';
 
     interface Props {
         show: boolean;
@@ -278,10 +302,34 @@
     interface Emits {
         (e: 'close'): void;
         (e: 'view-order-id', orderId: number): void; // New emit for navigating to parent/sub-orders
+        (e: 'refresh-view-order', orderId: number): void; // New emit for refreshing without loading state
     }
 
     const props = defineProps<Props>();
     const emit = defineEmits<Emits>();
+
+    const showUserNotesModal = ref(false);
+    const currentNotableId = ref<number | null>(null);
+    const currentNotableType = ref<string | null>(null);
+    const currentNotableTitle = ref<string | null>(null);
+
+    const openUserNotesModal = (notableId: number, notableType: string, title: string) => {
+        currentNotableId.value = notableId;
+        currentNotableType.value = notableType;
+        currentNotableTitle.value = title;
+        showUserNotesModal.value = true;
+    };
+
+    const closeUserNotesModal = () => {
+        showUserNotesModal.value = false;
+        currentNotableId.value = null;
+        currentNotableType.value = null;
+        currentNotableTitle.value = null;
+        // Optionally refresh the order to get updated notes
+        if (props.order?.id) {
+            emit('refresh-view-order', props.order.id);
+        }
+    };
 
     const getStatusClass = (status: string): string => {
         const classes: Record<string, string> = {
@@ -339,6 +387,11 @@
 
     const printOrder = () => {
         window.print();
+    };
+
+    const handleClose = () => {
+        console.log('PurchaseOrderViewModal: Emitting close event');
+        emit('close');
     };
 </script>
 

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class PurchaseOrder extends Model
 {
@@ -19,7 +20,6 @@ class PurchaseOrder extends Model
         'expected_delivery_date',
         'delivery_date',
         'status',
-        'notes',
         'rejection_reason',
         'created_by',
         'approved_by',
@@ -32,7 +32,6 @@ class PurchaseOrder extends Model
         'expected_delivery_date' => 'date',
         'delivery_date' => 'date',
         'approved_at' => 'datetime',
-        'notes' => 'array',
     ];
 
     protected $hidden = [];
@@ -66,6 +65,11 @@ class PurchaseOrder extends Model
     public function items(): HasMany
     {
         return $this->hasMany(PurchaseOrderItem::class);
+    }
+
+    public function notes(): MorphMany
+    {
+        return $this->morphMany(UserNote::class, 'notable');
     }
 
     public function parent(): BelongsTo

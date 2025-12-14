@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class UserNote extends Model
 {
@@ -14,7 +15,9 @@ class UserNote extends Model
         'user_id',
         'author_id',
         'note',
-        'is_important'
+        'is_important',
+        'notable_id',
+        'notable_type'
     ];
 
     protected $casts = [
@@ -31,6 +34,11 @@ class UserNote extends Model
     public function author(): BelongsTo
     {
         return $this->belongsTo(User::class, 'author_id');
+    }
+
+    public function notable(): MorphTo
+    {
+        return $this->morphTo();
     }
 
     public function scopeImportant($query)

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class PurchaseOrderItem extends Model
 {
@@ -15,13 +16,11 @@ class PurchaseOrderItem extends Model
         'product_id',
         'quantity',
         'received_quantity',
-        'notes',
     ];
 
     protected $casts = [
         'quantity' => 'integer',
         'received_quantity' => 'integer',
-        'notes' => 'array',
     ];
 
     protected $hidden = [
@@ -37,6 +36,11 @@ class PurchaseOrderItem extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function itemNotes(): MorphMany
+    {
+        return $this->morphMany(UserNote::class, 'notable');
     }
 
     public function calculateTotal(): void

@@ -2,6 +2,7 @@
     <TransitionRoot appear :show="isOpen" as="template">
         <Dialog as="div" @close="closeModal" class="relative z-[52]">
             <TransitionChild
+                v-if="!nested"
                 as="template"
                 enter="duration-300 ease-out"
                 enter-from="opacity-0"
@@ -24,7 +25,7 @@
                         leave-from="opacity-100 scale-100"
                         leave-to="opacity-0 scale-95"
                     >
-                        <DialogPanel class="panel border-0 p-0 rounded-lg overflow-hidden w-full max-w-2xl text-black dark:text-white-dark">
+                        <DialogPanel @click.stop class="panel border-0 p-0 rounded-lg overflow-hidden w-full max-w-2xl text-black dark:text-white-dark shadow-lg">
                             <button
                                 type="button"
                                 class="absolute top-4 ltr:right-4 rtl:left-4 text-gray-400 hover:text-gray-800 dark:hover:text-gray-600 outline-none"
@@ -36,7 +37,7 @@
                                 </svg>
                             </button>
                             <div class="text-lg font-medium bg-[#fbfbfb] dark:bg-[#121c2c] ltr:pl-5 rtl:pr-5 py-3 ltr:pr-[50px] rtl:pl-[50px]">
-                                {{ $t('user_notes.modal_title', { name: user?.name }) }}
+                                {{ modalTitle }}
                             </div>
                             <div class="p-5">
                                 <!-- Formulario para agregar nota -->
@@ -134,6 +135,9 @@
     import Swal from 'sweetalert2';
     import { useAuthStore } from '@/stores/auth';
     import axios from 'axios';
+    import { useI18n } from 'vue-i18n'; // Import useI18n
+
+    const { t } = useI18n(); // Use useI18n
 
     interface User {
         id: number;
@@ -154,7 +158,11 @@
 
     interface Props {
         isOpen: boolean;
-        user: User | null;
+        user?: User | null; // Made optional
+        notableId?: number | null; // New optional prop for polymorphic relation
+        notableType?: string | null; // New optional prop for polymorphic relation
+        notableTitle?: string | null; // New optional prop for dynamic title
+        nested?: boolean; // New prop for nested modals
     }
 
     interface Emits {
@@ -173,99 +181,131 @@
     const loading = ref(false);
     const notesLoading = ref(false);
 
+    const modalTitle = computed(() => {
+        if (props.notableTitle) {
+            return props.notableTitle;
+        } else if (props.user?.name) {
+            return t('user_notes.modal_title', { name: props.user.name });
+        }
+        return t('user_notes.notes_title_generic'); 
+    });
+
     // Computed para controlar la visibilidad del modal
     const modalOpen = computed({
         get: () => props.isOpen,
         set: (value) => emit('update:isOpen', value)
     });
 
-    // Watcher para cuando se abre el modal
-    watch(() => props.isOpen, async (newVal) => {
-        if (newVal && props.user) {
+    // Watcher para cuando se abre el modal o cambian los notables
+    watch([() => props.isOpen, () => props.user, () => props.notableId, () => props.notableType], async ([newIsOpen, newUser, newNotableId, newNotableType]) => {
+        if (newIsOpen && (newUser || (newNotableId && newNotableType))) {
             await fetchNotes();
         } else {
-            resetForm();
+            notes.value = [];
+            newNote.value = '';
+            isImportant.value = false;
         }
-    });
+    }, { immediate: true });
 
     // Métodos
     const closeModal = () => {
+        console.log('UserNotesModal: closeModal triggered');
         modalOpen.value = false;
     };
 
-    const resetForm = () => {
-        newNote.value = '';
-        isImportant.value = false;
-        notes.value = [];
-    };
-
     const fetchNotes = async () => {
-        if (!props.user) return;
+        if (!props.user && (!props.notableId || !props.notableType)) return;
 
         notesLoading.value = true;
         try {
-            const response = await axios.get(`/api/user-notes/user/${props.user.id}`);
-            notes.value = response.data.data;
+            let apiUrl = `/api/user-notes`;
+            const params = new URLSearchParams();
+
+            if (props.user) {
+                params.append('userId', props.user.id.toString());
+            } else if (props.notableId && props.notableType) {
+                params.append('notable_id', props.notableId.toString());
+                params.append('notable_type', props.notableType);
+            }
+
+            if (params.toString()) {
+                apiUrl += `?${params.toString()}`;
+            }
+
+            const response = await axios.get(apiUrl);
+            notes.value = response.data.data || [];
         } catch (error) {
             console.error('Error fetching notes:', error);
-            showMessage('Error al cargar las notas', 'error');
+            showMessage(t('user_notes.error_fetching_notes'), 'error'); 
         } finally {
             notesLoading.value = false;
         }
     };
 
     const addNote = async () => {
-        if (!newNote.value.trim() || !props.user) return;
+        if (!newNote.value.trim() || (!props.user && (!props.notableId || !props.notableType))) return;
 
         loading.value = true;
         try {
-            const response = await axios.post(`/api/user-notes/user/${props.user.id}`, {
+            const payload: { [key: string]: any } = {
                 note: newNote.value,
                 is_important: isImportant.value
-            });
+            };
+
+            if (props.user) {
+                payload.userId = props.user.id;
+            } else if (props.notableId && props.notableType) {
+                payload.notable_id = props.notableId;
+                payload.notable_type = props.notableType;
+            }
+
+            // Always use the generic /api/user-notes endpoint for POST as the controller handles the logic
+            const response = await axios.post(`/api/user-notes`, payload);
 
             if (response.data.success) {
                 notes.value.unshift(response.data.data);
                 newNote.value = '';
                 isImportant.value = false;
-                showMessage('Nota agregada correctamente');
+                showMessage(t('user_notes.note_added_successfully')); 
                 emit('note-added');
             }
         } catch (error) {
             console.error('Error adding note:', error);
-            showMessage('Error al agregar la nota', 'error');
+            showMessage(t('user_notes.error_adding_note'), 'error'); 
         } finally {
             loading.value = false;
         }
     };
 
     const deleteNote = async (noteId: number) => {
-        if (!props.user) return;
+        // No need to check props.user or notableId/Type here, as noteId is sufficient for a specific note
+        // The backend authorization handles if the user can delete this specific note.
 
         const result = await Swal.fire({
-            title: '¿Eliminar nota?',
-            text: "Esta acción no se puede deshacer",
+            title: t('user_notes.delete_note_confirm_title'), 
+            text: t('user_notes.delete_note_confirm_text'), 
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#d33',
             cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Sí, eliminar',
-            cancelButtonText: 'Cancelar'
+            confirmButtonText: t('user_notes.delete_note_confirm_yes'), 
+            cancelButtonText: t('user_notes.delete_note_confirm_cancel') 
         });
 
         if (result.isConfirmed) {
             loading.value = true;
             try {
-                const response = await axios.delete(`/api/user-notes/user/${props.user.id}/${noteId}`);
+                // DELETE endpoint should be direct to the note ID now
+                const response = await axios.delete(`/api/user-notes/${noteId}`);
                 
                 if (response.data.success) {
                     notes.value = notes.value.filter(note => note.id !== noteId);
-                    showMessage('Nota eliminada correctamente');
+                    showMessage(t('user_notes.note_deleted_successfully')); 
                     emit('note-deleted');
                 }
             } catch (error) {
                 console.error('Error deleting note:', error);
-                showMessage('Error al eliminar la nota', 'error');
+                showMessage(t('user_notes.error_deleting_note'), 'error'); 
             } finally {
                 loading.value = false;
             }

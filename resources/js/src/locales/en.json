@@ -1,4 +1,5 @@
 {
+    "delete": "Delete",
     "login_page": {
         "sign_in": "Sign in",
         "desc": "Enter your email and password to sign in",
@@ -506,6 +507,7 @@
     },
     "user_notes": {
         "modal_title": "Notes for {name}",
+        "notes_title_generic": "Notes",
         "placeholder": "Write a note...",
         "characters": "characters",
         "important": "Important",
@@ -513,7 +515,22 @@
         "no_notes": "No notes for this user",
         "loading": "Loading notes...",
         "add_note": "Add note",
-        "delete_note": "Delete note"
+        "delete_note": "Delete note",
+        "error_fetching_notes": "Error fetching notes",
+        "note_added_successfully": "Note added successfully",
+        "error_adding_note": "Error adding note",
+        "delete_note_confirm_title": "Delete note?",
+        "delete_note_confirm_text": "This action cannot be undone",
+        "delete_note_confirm_yes": "Yes, delete",
+        "delete_note_confirm_cancel": "Cancel",
+        "note_deleted_successfully": "Note deleted successfully",
+        "error_deleting_note": "Error deleting note",
+        "view_add_notes": "View/Add Notes",
+        "notes_title_item_for_product": "Notes for {product}",
+        "notes_title_for_order": "Notes for Order #{orderNumber}",
+        "no_notes_general": "No general notes.",
+        "notes_label": "Notes:",
+        "no_notes_for_item": "No notes for this item."
     },
     "products_page": {
         "title": "Products Management",

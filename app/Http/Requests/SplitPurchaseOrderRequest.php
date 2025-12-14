@@ -25,7 +25,7 @@ class SplitPurchaseOrderRequest extends FormRequest
     {
         return [
             'expected_delivery_date' => 'nullable|date',
-            'notes' => 'nullable|string',
+            // 'notes' => 'nullable|string', // Removed, handled by service as UserNote
             'items' => 'required|array|min:1',
             'items.*.item_id' => 'required|exists:purchase_order_items,id',
             'items.*.quantity' => 'required|integer|min:1',

@@ -7,7 +7,8 @@ import type {
     PurchaseOrderFilters, 
     PurchaseOrderParams,
     PurchaseOrderItemParams,
-    Supplier 
+    Supplier,
+    UserNote 
 } from '@/types/purchase-orders';
 
 export function usePurchaseOrders() {
@@ -27,6 +28,7 @@ export function usePurchaseOrders() {
         show: false,
         data: null as PurchaseOrder | null
     });
+    const orderNotes = ref<UserNote[] | null>(null); // New reactive state for order notes
     
     const filters = ref<PurchaseOrderFilters>({
         status: '',
@@ -37,7 +39,7 @@ export function usePurchaseOrders() {
         id: null,
         supplier_id: null,
         expected_delivery_date: null,
-        notes: '',
+        notes: '', // For the new note input
         items: []
     };
 
@@ -479,37 +481,69 @@ export function usePurchaseOrders() {
         }
     };
 
+    // Helper to fetch order details without opening view modal
+    const fetchOrderDetails = async (orderId: number): Promise<PurchaseOrder | null> => {
+        loading.value = true;
+        try {
+            const response = await axios.get(`/api/purchase-orders/${orderId}`);
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching order details:', error);
+            showMessage(t('purchase_orders_page.alerts.loading_error'), 'error');
+            return null;
+        } finally {
+            loading.value = false;
+        }
+    };
+
     // Métodos helpers
-    const editOrder = (order: PurchaseOrder | null = null) => {
+    const editOrder = async (order: PurchaseOrder | null = null) => {
         errors.value = {};
         if (order) {
+            // Use internal helper so we don't trigger the view modal
+            const fullOrder = await fetchOrderDetails(order.id);
+
+            if (!fullOrder) {
+                return;
+            }
+
+            // Set orderNotes for the main order
+            orderNotes.value = fullOrder.notes; 
+            
+            // Formatear la fecha a YYYY-MM-DD para el input type="date"
+            const formattedDate = fullOrder.expected_delivery_date 
+                ? new Date(fullOrder.expected_delivery_date).toISOString().split('T')[0] 
+                : null;
+
             params.value = {
-                id: order.id,
-                supplier_id: order.supplier_id,
-                expected_delivery_date: order.expected_delivery_date,
-                notes: order.notes ? (Array.isArray(order.notes) && order.notes.length > 0 ? order.notes[0].note : '') : '', // Load existing order notes
-                items: order.items?.map(item => ({
-                    id: item.id, // Mapear el ID del ítem
+                id: fullOrder.id,
+                supplier_id: fullOrder.supplier_id,
+                expected_delivery_date: formattedDate,
+                items: fullOrder.items?.map(item => ({
+                    id: item.id,
                     product_id: item.product_id,
                     quantity: item.quantity,
-                    notes: item.notes ? (Array.isArray(item.notes) && item.notes.length > 0 ? item.notes[0].note : '') : '' // Load existing item notes
+                    // Ensure itemNotes are included
+                    itemNotes: item.item_notes || [],
                 })) || []
             };
         } else {
-            params.value = { ...defaultParams };
-            params.value.items = [createEmptyItem()];
+            orderNotes.value = null; // Clear orderNotes when creating a new order
+            params.value = { ...defaultParams, items: [createEmptyItem()] };
         }
     };
 
     const resetParams = () => {
         params.value = { ...defaultParams };
+        orderNotes.value = null; // Also clear orderNotes on reset
         errors.value = {};
     };
+
 
     const createEmptyItem = (): PurchaseOrderItemParams => ({
         product_id: null,
         quantity: 1,
-        notes: ''
+        itemNotes: [] // Initialize with empty array
     });
 
     const addItem = () => {
@@ -562,20 +596,22 @@ export function usePurchaseOrders() {
     };
 
     const viewOrder = async (orderId: number) => { // Accept ID
-        loading.value = true;
         viewModal.value = {
             show: true,
             data: null // Clear previous data while loading
         };
-        try {
-            const response = await axios.get(`/api/purchase-orders/${orderId}`);
-            viewModal.value.data = response.data;
-        } catch (error) {
-            console.error('Error fetching order for view:', error);
-            showMessage(t('purchase_orders_page.alerts.loading_error'), 'error');
-            viewModal.value.show = false; // Close modal on error
-        } finally {
-            loading.value = false;
+        const data = await fetchOrderDetails(orderId);
+        if (data) {
+            viewModal.value.data = data;
+        } else {
+            viewModal.value.show = false; // Close if failed
+        }
+    };
+
+    const refreshViewOrderData = async (orderId: number) => {
+        const data = await fetchOrderDetails(orderId);
+        if (data) {
+            viewModal.value.data = data;
         }
     };
 
@@ -600,6 +636,7 @@ export function usePurchaseOrders() {
         filters,
         params,
         viewModal,
+        orderNotes, // Include orderNotes in the returned object
         
         // Computed
         filteredOrdersList,
@@ -632,6 +669,7 @@ export function usePurchaseOrders() {
         showMessage,
         formatDate,
         viewOrder,
+        refreshViewOrderData, // Expose new method
         closeViewModal,
         splitOrder // Add new splitOrder method
     };

@@ -13,10 +13,20 @@ class UserNoteController extends Controller
         private UserNoteService $userNoteService
     ) {}
 
-    public function index(Request $request, int $userId): JsonResponse
+    public function index(Request $request, ?int $userId = null): JsonResponse
     {
         try {
-            $notes = $this->userNoteService->getUserNotes($userId);
+            $notableId = $request->input('notable_id');
+            $notableType = $request->input('notable_type');
+
+            if (!$userId && (!$notableId || !$notableType)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Se requiere user_id o notable_id y notable_type.'
+                ], 400);
+            }
+
+            $notes = $this->userNoteService->getUserNotes($userId, $notableId, $notableType);
 
             return response()->json([
                 'success' => true,
@@ -31,16 +41,25 @@ class UserNoteController extends Controller
         }
     }
 
-    public function store(Request $request, int $userId): JsonResponse
+    public function store(Request $request, ?int $userId = null): JsonResponse
     {
         try {
             $validated = $request->validate([
                 'note' => 'required|string|max:1000',
-                'is_important' => 'sometimes|boolean'
+                'is_important' => 'sometimes|boolean',
+                'notable_id' => 'sometimes|integer|nullable',
+                'notable_type' => 'sometimes|string|nullable'
             ]);
 
+            if (!$userId && (!isset($validated['notable_id']) || !isset($validated['notable_type']))) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Se requiere user_id o notable_id y notable_type para crear una nota.'
+                ], 400);
+            }
+
             $noteData = array_merge($validated, [
-                'user_id' => $userId,
+                'user_id' => $userId, // This will be null if not provided in route
                 'author_id' => auth()->id()
             ]);
 
@@ -62,12 +81,14 @@ class UserNoteController extends Controller
         }
     }
 
-    public function update(Request $request, int $userId, int $noteId): JsonResponse
+    public function update(Request $request, ?int $userId = null, int $noteId): JsonResponse
     {
         try {
             $validated = $request->validate([
                 'note' => 'sometimes|string|max:1000',
-                'is_important' => 'sometimes|boolean'
+                'is_important' => 'sometimes|boolean',
+                'notable_id' => 'sometimes|integer|nullable',
+                'notable_type' => 'sometimes|string|nullable'
             ]);
 
             $result = $this->userNoteService->updateNote($noteId, $validated);
@@ -88,7 +109,7 @@ class UserNoteController extends Controller
         }
     }
 
-    public function destroy(int $userId, int $noteId): JsonResponse
+    public function destroy(?int $userId, int $noteId): JsonResponse
     {
         try {
             $result = $this->userNoteService->deleteNote($noteId);

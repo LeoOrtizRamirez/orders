@@ -60,11 +60,11 @@ class PurchaseOrderController extends Controller
             $validated = $request->validate([
                 'supplier_id' => 'required|exists:suppliers,id',
                 'expected_delivery_date' => 'nullable|date',
-                'notes' => 'nullable|string',
+                'notes' => 'nullable|string', // Keep for main order, service will handle
                 'items' => 'required|array|min:1',
                 'items.*.product_id' => 'required|exists:products,id',
                 'items.*.quantity' => 'required|min:0',//PENDIENTE DESCOMENTAR CAMBIAR A 1
-                'items.*.notes' => 'nullable|string',
+                // 'items.*.notes' => 'nullable|string', // Removed, handled by service as UserNote
             ]);
 
             //PENDIENTE DESCOMENTAR
@@ -99,7 +99,7 @@ class PurchaseOrderController extends Controller
     {
         try {
             $purchaseOrder = $this->purchaseOrderService->getPurchaseOrder((int)$id);
-            $purchaseOrder->load('parent', 'subOrders'); // Eager load relationships
+            $purchaseOrder->load(['parent', 'subOrders', 'notes.author', 'items.product', 'items.itemNotes.author']); // Eager load relationships with note authors and products
             
             return response()->json($purchaseOrder);
         } catch (\Exception $e) {
@@ -116,11 +116,11 @@ class PurchaseOrderController extends Controller
             $validated = $request->validate([
                 'supplier_id' => 'sometimes|exists:suppliers,id',
                 'expected_delivery_date' => 'nullable|date',
-                'notes' => 'nullable|string',
+                'notes' => 'nullable|string', // Keep for main order, service will handle
                 'items' => 'sometimes|array|min:1',
                 'items.*.product_id' => 'required|exists:products,id',
                 'items.*.quantity' => 'required|integer|min:1',
-                'items.*.notes' => 'nullable|string',
+                // 'items.*.notes' => 'nullable|string', // Removed, handled by service as UserNote
             ]);
 
             $purchaseOrder = $this->purchaseOrderService->updatePurchaseOrder((int)$id, $validated, $request->user());

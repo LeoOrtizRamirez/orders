@@ -66,6 +66,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        \Illuminate\Database\Eloquent\Relations\Relation::morphMap([
+            'purchase_order' => \App\Models\PurchaseOrder::class,
+            'purchase_order_item' => \App\Models\PurchaseOrderItem::class,
+            'user' => \App\Models\User::class,
+        ]);
     }
 }

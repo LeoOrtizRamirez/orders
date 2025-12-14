@@ -1,8 +1,14 @@
-export interface Note {
-    user_id: number;
-    user_name: string;
+export interface UserNote {
+    id: number;
     note: string;
-    timestamp: string;
+    is_important: boolean;
+    created_at: string;
+    author: {
+        id: number;
+        name: string;
+    };
+    notable_id?: number;
+    notable_type?: string;
 }
 
 export interface PurchaseOrder {
@@ -13,8 +19,8 @@ export interface PurchaseOrder {
     order_date: string;
     expected_delivery_date: string | null;
     delivery_date: string | null;
-    status: 'draft' | 'pending' | 'approved' | 'rejected' | 'ordered' | 'received' | 'cancelled';
-    notes: Note[] | null;
+    status: 'draft' | 'pending' | 'approved' | 'rejected' | 'ordered' | 'received' | 'cancelled' | 'nuevo pedido' | 'disponibilidad' | 'preparar pedido' | 'en preparación' | 'facturación' | 'en despacho' | 'en ruta' | 'entregado';
+    notes: UserNote[] | null;
     rejection_reason: string | null;
     created_by: number;
     creator: User;
@@ -22,6 +28,9 @@ export interface PurchaseOrder {
     approver: User | null;
     approved_at: string | null;
     items: PurchaseOrderItem[];
+    parent_id: number | null;
+    parent?: PurchaseOrder;
+    sub_orders?: PurchaseOrder[];
     can_be_edited: boolean;
     can_be_approved: boolean;
     can_be_received: boolean;
@@ -36,7 +45,7 @@ export interface PurchaseOrderItem {
     product: Product;
     quantity: number;
     received_quantity: number;
-    notes: Note[] | null;
+    item_notes: UserNote[] | null; // Changed to match API snake_case
 }
 
 export interface PurchaseOrderFilters {
@@ -48,7 +57,6 @@ export interface PurchaseOrderParams {
     id: number | null;
     supplier_id: number | null;
     expected_delivery_date: string | null;
-    new_note: string; // Representa la nueva nota a añadir
     items: PurchaseOrderItemParams[];
 }
 
@@ -56,7 +64,7 @@ export interface PurchaseOrderItemParams {
     id?: number;
     product_id: number | null;
     quantity: number;
-    new_note: string; // Representa la nueva nota a añadir para el ítem
+    itemNotes?: UserNote[]; // Add itemNotes to params
 }
 
 export interface Supplier {

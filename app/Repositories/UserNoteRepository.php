@@ -7,11 +7,25 @@ use Illuminate\Support\Collection;
 
 class UserNoteRepository
 {
-    public function getNotesByUserId(int $userId): Collection
+    public function getNotes(?int $userId = null, ?int $notableId = null, ?string $notableType = null, bool $isImportant = false): Collection
     {
-        return UserNote::with('author')
-            ->where('user_id', $userId)
-            ->orderBy('is_important', 'desc')
+        $query = UserNote::with('author');
+
+        if ($userId) {
+            $query->where('user_id', $userId);
+        }
+
+        if ($notableId && $notableType) {
+            $query->where('notable_id', $notableId)
+                  ->where('notable_type', $notableType)
+                  ->with('notable'); // Eager load the notable relationship
+        }
+
+        if ($isImportant) {
+            $query->important();
+        }
+
+        return $query->orderBy('is_important', 'desc')
             ->orderBy('created_at', 'desc')
             ->get();
     }
@@ -29,14 +43,6 @@ class UserNoteRepository
     public function deleteNote(int $noteId): bool
     {
         return UserNote::where('id', $noteId)->delete();
-    }
-
-    public function getImportantNotes(int $userId): Collection
-    {
-        return UserNote::with('author')
-            ->where('user_id', $userId)
-            ->important()
-            ->get();
     }
 
     public function getNoteById(int $noteId): ?UserNote

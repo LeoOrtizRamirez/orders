@@ -133,6 +133,7 @@
             :saving="saving"
             :suppliers="suppliers"
             :products="products"
+            :existingOrderNotes="orderNotes"
             @close="handleCloseModal"
             @save="handleSaveOrder"
             @add-item="addItem"
@@ -145,6 +146,7 @@
             :order="viewModal.data"
             @close="closeViewModal"
             @view-order-id="handleViewOrder"
+            @refresh-view-order="handleRefreshViewOrder"
         />
 
         <!-- Modal de División de Orden -->
@@ -194,16 +196,18 @@
         errors,
         params,
         viewModal,
+        orderNotes, // Added orderNotes
         fetchOrders, // This is the generic fetchOrders that calls /api/purchase-orders
         saveOrder,
         deleteOrder: deleteOrderComposable, 
         editOrder,
         resetParams,
         viewOrder,
+        refreshViewOrderData, // Import refreshViewOrderData
         closeViewModal,
         addItem,
         removeItem,
-        handleProductChange, 
+        // handleProductChange, // Removed as it's not emitted by modal
         showMessage, 
         splitOrder 
     } = usePurchaseOrders();
@@ -320,6 +324,10 @@
     const handleViewOrder = (orderOrId: PurchaseOrder | number) => {
         const orderId = typeof orderOrId === 'number' ? orderOrId : orderOrId.id;
         viewOrder(orderId);
+    };
+
+    const handleRefreshViewOrder = (orderId: number) => {
+        refreshViewOrderData(orderId);
     };
 
     const handleDeleteOrder = async (order: PurchaseOrder) => {
