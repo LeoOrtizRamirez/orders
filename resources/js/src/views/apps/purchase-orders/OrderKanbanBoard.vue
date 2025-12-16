@@ -324,7 +324,7 @@
     };
 
     const canSplitOrder = (order: PurchaseOrder) => {
-        const allowedStatuses = ['nuevo pedido', 'disponibilidad', 'preparar pedido'];
+        const allowedStatuses = ['nuevo pedido', 'disponibilidad', 'preparar pedido', 'en preparación'];
         return !order.parent_id && allowedStatuses.includes(order.status);
     };
 
