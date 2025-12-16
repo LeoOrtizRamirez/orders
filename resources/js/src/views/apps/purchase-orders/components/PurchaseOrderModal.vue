@@ -102,7 +102,6 @@
                                                     v-for="product in availableProducts"
                                                     :key="product.id"
                                                     :value="product.id"
-                                                    :disabled="!product.stock || product.stock <= 0"
                                                 >
                                                     {{ product.name }} 
                                                     <span v-if="!product.stock || product.stock <= 0" class="text-danger text-xs">
