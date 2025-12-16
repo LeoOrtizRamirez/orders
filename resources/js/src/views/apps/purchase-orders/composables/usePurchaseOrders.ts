@@ -447,7 +447,7 @@ export function usePurchaseOrders() {
         }
     };
 
-    const splitOrder = async (orderId: number, splitData: { items: { item_id: number; quantity: number }[], expected_delivery_date: string | null, notes: string | null }): Promise<boolean> => {
+    const splitOrder = async (orderId: number, splitData: { items: { item_id: number; quantity: number; notes?: string }[], expected_delivery_date: string | null, notes: string | null }): Promise<boolean> => {
         saving.value = true;
         errors.value = {};
         errorMessage.value = '';
@@ -525,6 +525,7 @@ export function usePurchaseOrders() {
                     quantity: item.quantity,
                     // Ensure itemNotes are included
                     itemNotes: item.item_notes || [],
+                    notes: '' // Initialize notes
                 })) || []
             };
         } else {

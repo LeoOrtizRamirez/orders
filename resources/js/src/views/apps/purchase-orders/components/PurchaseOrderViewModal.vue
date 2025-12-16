@@ -277,6 +277,7 @@
                                 :notable-id="currentNotableId"
                                 :notable-type="currentNotableType"
                                 :notable-title="currentNotableTitle"
+                                :read-only="true"
                                 @note-added="closeUserNotesModal"
                                 @note-deleted="closeUserNotesModal"
                             />

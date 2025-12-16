@@ -153,6 +153,7 @@
         <PurchaseOrderSplitModal
             :show="showSplitModal"
             :order="orderToSplit"
+            :products="products" 
             :errors="errors"
             :saving="saving"
             @close="handleCloseSplitModal"
@@ -372,7 +373,7 @@
         errors.value = {}; 
     };
 
-    const handleSplitOrder = async (splitData: { items: { item_id: number; quantity: number }[], expected_delivery_date: string | null, notes: string | null }) => {
+    const handleSplitOrder = async (splitData: { items: { item_id: number; quantity: number; notes?: string }[], expected_delivery_date: string | null, notes: string | null }) => {
         if (!orderToSplit.value?.id) {
             showMessage(t('purchase_orders_page.split_modal.alerts.no_order_selected'), 'error'); 
             return;

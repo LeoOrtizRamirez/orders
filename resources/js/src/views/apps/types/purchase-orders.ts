@@ -57,6 +57,7 @@ export interface PurchaseOrderParams {
     id: number | null;
     supplier_id: number | null;
     expected_delivery_date: string | null;
+    notes: string | null; // Add notes back
     items: PurchaseOrderItemParams[];
 }
 
@@ -64,7 +65,8 @@ export interface PurchaseOrderItemParams {
     id?: number;
     product_id: number | null;
     quantity: number;
-    itemNotes?: UserNote[]; // Add itemNotes to params
+    notes: string | null; // Add notes back
+    itemNotes?: UserNote[]; // Keep history
 }
 
 export interface Supplier {

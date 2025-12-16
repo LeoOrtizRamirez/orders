@@ -41,7 +41,7 @@
                             </div>
                             <div class="p-5">
                                 <!-- Formulario para agregar nota -->
-                                <form @submit.prevent="addNote" class="mb-6">
+                                <form v-if="!readOnly" @submit.prevent="addNote" class="mb-6">
                                     <div class="flex gap-3">
                                         <div class="flex-1">
                                             <textarea 
@@ -98,7 +98,7 @@
                                                 }) }}
                                             </div>
                                             <button 
-                                                v-if="authStore.can('edit users')"
+                                                v-if="authStore.can('edit users') && !readOnly"
                                                 @click="deleteNote(note.id)"
                                                 class="text-red-500 hover:text-red-700 transition-colors"
                                                 :disabled="loading"
@@ -163,6 +163,7 @@
         notableType?: string | null; // New optional prop for polymorphic relation
         notableTitle?: string | null; // New optional prop for dynamic title
         nested?: boolean; // New prop for nested modals
+        readOnly?: boolean; // New prop for read-only mode
     }
 
     interface Emits {

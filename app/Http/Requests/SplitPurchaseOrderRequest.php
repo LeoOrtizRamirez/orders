@@ -25,10 +25,12 @@ class SplitPurchaseOrderRequest extends FormRequest
     {
         return [
             'expected_delivery_date' => 'nullable|date',
-            // 'notes' => 'nullable|string', // Removed, handled by service as UserNote
+            'notes' => 'nullable|string',
             'items' => 'required|array|min:1',
-            'items.*.item_id' => 'required|exists:purchase_order_items,id',
+            'items.*.item_id' => 'required_without:items.*.product_id|nullable|exists:purchase_order_items,id',
+            'items.*.product_id' => 'required_without:items.*.item_id|nullable|exists:products,id',
             'items.*.quantity' => 'required|integer|min:1',
+            'items.*.notes' => 'nullable|string',
         ];
     }
 }

@@ -64,20 +64,8 @@ class PurchaseOrderController extends Controller
                 'items' => 'required|array|min:1',
                 'items.*.product_id' => 'required|exists:products,id',
                 'items.*.quantity' => 'required|min:0',//PENDIENTE DESCOMENTAR CAMBIAR A 1
-                // 'items.*.notes' => 'nullable|string', // Removed, handled by service as UserNote
+                'items.*.notes' => 'nullable|string', // Removed, handled by service as UserNote
             ]);
-
-            //PENDIENTE DESCOMENTAR
-            /* foreach ($validated['items'] as $item) {
-                $product = Product::find($item['product_id']);
-                if ($product && $item['quantity'] > $product->stock) {
-                    return response()->json([
-                        'errors' => [
-                            'items' => ["El producto {$product->name} tiene stock insuficiente. Stock disponible: {$product->stock}"]
-                        ]
-                    ], 422);
-                }
-            } */
 
             $purchaseOrder = $this->purchaseOrderService->createPurchaseOrder($validated, $request->user());
 
@@ -116,11 +104,12 @@ class PurchaseOrderController extends Controller
             $validated = $request->validate([
                 'supplier_id' => 'sometimes|exists:suppliers,id',
                 'expected_delivery_date' => 'nullable|date',
-                'notes' => 'nullable|string', // Keep for main order, service will handle
+                'notes' => 'nullable|string',
                 'items' => 'sometimes|array|min:1',
+                'items.*.id' => 'nullable|integer|exists:purchase_order_items,id',
                 'items.*.product_id' => 'required|exists:products,id',
                 'items.*.quantity' => 'required|integer|min:1',
-                // 'items.*.notes' => 'nullable|string', // Removed, handled by service as UserNote
+                'items.*.notes' => 'nullable|string',
             ]);
 
             $purchaseOrder = $this->purchaseOrderService->updatePurchaseOrder((int)$id, $validated, $request->user());

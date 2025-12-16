@@ -8,6 +8,7 @@ use App\Models\PurchaseOrderItem;
 use App\Notifications\OrderStatusChanged;
 use App\Repositories\ProductRepository;
 use App\Repositories\PurchaseOrderRepository;
+use App\Repositories\UserNoteRepository;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
@@ -18,7 +19,8 @@ class PurchaseOrderManagementService
     public function __construct(
         private PurchaseOrderRepository $purchaseOrderRepository,
         private ProductRepository $productRepository,
-        private UserNoteService $userNoteService // Inject UserNoteService
+        private UserNoteService $userNoteService,
+        private UserNoteRepository $userNoteRepository
     ) {}
 
     public function getAllPurchaseOrders(array $filters = [])
@@ -34,7 +36,6 @@ class PurchaseOrderManagementService
             throw new Exception('Orden de compra no encontrada', 404);
         }
         
-        // Eager load item notes
         $purchaseOrder->load('items.itemNotes.author', 'notes.author');
 
         return $purchaseOrder;
@@ -54,21 +55,19 @@ class PurchaseOrderManagementService
                 'order_date' => $data['order_date'],
                 'expected_delivery_date' => $data['expected_delivery_date'] ?? null,
                 'status' => $data['status'],
-                // No longer directly assign notes here
                 'created_by' => $data['created_by'],
             ];
 
             $purchaseOrder = $this->purchaseOrderRepository->create($purchaseOrderData);
 
-            // Handle main purchase order notes
             if (!empty($data['notes'])) {
                 $this->userNoteService->createNote([
-                    'user_id' => null, // No direct user for order notes
+                    'user_id' => null,
                     'author_id' => $user->id,
                     'note' => $data['notes'],
                     'is_important' => false,
                     'notable_id' => $purchaseOrder->id,
-                    'notable_type' => PurchaseOrder::class,
+                    'notable_type' => 'purchase_order',
                 ]);
             }
 
@@ -78,15 +77,14 @@ class PurchaseOrderManagementService
                     'quantity' => $itemData['quantity'],
                 ]);
 
-                // Handle item-specific notes
                 if (!empty($itemData['notes'])) {
                     $this->userNoteService->createNote([
-                        'user_id' => null, // No direct user for item notes
+                        'user_id' => null,
                         'author_id' => $user->id,
                         'note' => $itemData['notes'],
                         'is_important' => false,
                         'notable_id' => $purchaseOrderItem->id,
-                        'notable_type' => PurchaseOrderItem::class,
+                        'notable_type' => 'purchase_order_item',
                     ]);
                 }
             }
@@ -107,16 +105,8 @@ class PurchaseOrderManagementService
             if (isset($data['supplier_id'])) $updateData['supplier_id'] = $data['supplier_id'];
             if (isset($data['expected_delivery_date'])) $updateData['expected_delivery_date'] = $data['expected_delivery_date'];
 
-            // Handle main purchase order notes update
-            if (isset($data['notes'])) { // 'notes' field is now a single string from frontend
-                $this->userNoteService->createNote([ // Always create a new note on update for history
-                    'user_id' => null,
-                    'author_id' => $user->id,
-                    'note' => $data['notes'],
-                    'is_important' => false,
-                    'notable_id' => $purchaseOrder->id,
-                    'notable_type' => PurchaseOrder::class,
-                ]);
+            if (isset($data['notes'])) {
+                $this->processNoteUpdate($user, $data['notes'], $purchaseOrder->notes, $purchaseOrder->id, 'purchase_order');
             }
 
             if (isset($data['items'])) {
@@ -133,16 +123,8 @@ class PurchaseOrderManagementService
                             ]);
                             $itemsToKeep[] = $item->id;
 
-                            // Handle item-specific notes update
-                            if (isset($itemData['notes'])) { // Assuming single note string from frontend
-                                $this->userNoteService->createNote([
-                                    'user_id' => null,
-                                    'author_id' => $user->id,
-                                    'note' => $itemData['notes'],
-                                    'is_important' => false,
-                                    'notable_id' => $item->id,
-                                    'notable_type' => PurchaseOrderItem::class,
-                                ]);
+                            if (isset($itemData['notes'])) {
+                                $this->processNoteUpdate($user, $itemData['notes'], $item->itemNotes, $item->id, 'purchase_order_item');
                             }
                         }
                     } else {
@@ -152,7 +134,6 @@ class PurchaseOrderManagementService
                         ]);
                         $itemsToKeep[] = $newItem->id;
 
-                        // Handle item-specific notes for new items
                         if (isset($itemData['notes'])) {
                             $this->userNoteService->createNote([
                                 'user_id' => null,
@@ -160,7 +141,7 @@ class PurchaseOrderManagementService
                                 'note' => $itemData['notes'],
                                 'is_important' => false,
                                 'notable_id' => $newItem->id,
-                                'notable_type' => PurchaseOrderItem::class,
+                                'notable_type' => 'purchase_order_item',
                             ]);
                         }
                     }
@@ -168,7 +149,6 @@ class PurchaseOrderManagementService
 
                 $itemsToDelete = array_diff($existingItemIds, $itemsToKeep);
                 if (!empty($itemsToDelete)) {
-                    // Delete associated UserNotes when an item is deleted
                     foreach ($itemsToDelete as $deletedItemId) {
                         $deletedItem = PurchaseOrderItem::find($deletedItemId);
                         if ($deletedItem) {
@@ -185,6 +165,20 @@ class PurchaseOrderManagementService
 
             return $this->getPurchaseOrder($purchaseOrder->id);
         });
+    }
+
+    private function processNoteUpdate(User $user, ?string $newNoteText, $existingNotes, int $notableId, string $notableType)
+    {
+        if (!empty($newNoteText)) {
+            $this->userNoteService->createNote([
+                'user_id' => null,
+                'author_id' => $user->id,
+                'note' => $newNoteText,
+                'is_important' => false,
+                'notable_id' => $notableId,
+                'notable_type' => $notableType,
+            ]);
+        }
     }
 
     public function deletePurchaseOrder(int $id)
@@ -299,7 +293,6 @@ class PurchaseOrderManagementService
                 'order_date' => now(),
                 'expected_delivery_date' => $expectedDeliveryDate,
                 'status' => 'nuevo pedido',
-                // No longer directly assign notes here
                 'created_by' => $user->id,
                 'parent_id' => $parentOrder->id,
             ]);
@@ -312,47 +305,79 @@ class PurchaseOrderManagementService
                     'note' => $notes,
                     'is_important' => false,
                     'notable_id' => $subOrder->id,
-                    'notable_type' => PurchaseOrder::class,
+                    'notable_type' => 'purchase_order',
                 ]);
             }
 
             foreach ($itemsToSplit as $splitItemData) {
-                $originalItem = $parentOrder->items()->find($splitItemData['item_id']);
+                // CASE 1: SPLIT EXISTING ITEM
+                if (isset($splitItemData['item_id'])) {
+                    $originalItem = $parentOrder->items()->find($splitItemData['item_id']);
 
-                if (!$originalItem) {
-                    throw new Exception("Original item not found: {$splitItemData['item_id']}", 404);
-                }
+                    if (!$originalItem) {
+                        throw new Exception("Original item not found: {$splitItemData['item_id']}", 404);
+                    }
 
-                $quantityToSplit = $splitItemData['quantity'];
+                    $quantityToSplit = $splitItemData['quantity'];
 
-                if ($quantityToSplit <= 0 || $quantityToSplit > $originalItem->quantity) {
-                    throw new Exception("Invalid quantity to split for item {$originalItem->product->name}. Max available: {$originalItem->quantity}", 400);
-                }
+                    if ($quantityToSplit <= 0 || $quantityToSplit > $originalItem->quantity) {
+                        throw new Exception("Invalid quantity to split for item {$originalItem->product->name}. Max available: {$originalItem->quantity}", 400);
+                    }
 
-                $newSubOrderItem = $subOrder->items()->create([
-                    'product_id' => $originalItem->product_id,
-                    'quantity' => $quantityToSplit,
-                    // No longer assign notes directly
-                ]);
-
-                // Copy original item's notes to the new sub-order item
-                foreach ($originalItem->itemNotes as $originalItemNote) {
-                    $this->userNoteService->createNote([
-                        'user_id' => null,
-                        'author_id' => $originalItemNote->author_id, // Keep original author
-                        'note' => $originalItemNote->note,
-                        'is_important' => $originalItemNote->is_important,
-                        'notable_id' => $newSubOrderItem->id,
-                        'notable_type' => PurchaseOrderItem::class,
+                    $newSubOrderItem = $subOrder->items()->create([
+                        'product_id' => $originalItem->product_id,
+                        'quantity' => $quantityToSplit,
                     ]);
-                }
 
+                    // Copy original item's notes to the new sub-order item
+                    foreach ($originalItem->itemNotes as $originalItemNote) {
+                        $this->userNoteService->createNote([
+                            'user_id' => null,
+                            'author_id' => $originalItemNote->author_id, // Keep original author
+                            'note' => $originalItemNote->note,
+                            'is_important' => $originalItemNote->is_important,
+                            'notable_id' => $newSubOrderItem->id,
+                            'notable_type' => 'purchase_order_item',
+                        ]);
+                    }
 
-                if ($quantityToSplit === $originalItem->quantity) {
-                    $originalItem->delete();
-                } else {
-                    $originalItem->quantity -= $quantityToSplit;
-                    $originalItem->save();
+                    // Add new note for this split item if provided
+                    if (!empty($splitItemData['notes'])) {
+                        $this->userNoteService->createNote([
+                            'user_id' => null,
+                            'author_id' => $user->id,
+                            'note' => $splitItemData['notes'],
+                            'is_important' => false,
+                            'notable_id' => $newSubOrderItem->id,
+                            'notable_type' => 'purchase_order_item',
+                        ]);
+                    }
+
+                    if ($quantityToSplit === $originalItem->quantity) {
+                        $originalItem->delete();
+                    } else {
+                        $originalItem->quantity -= $quantityToSplit;
+                        $originalItem->save();
+                    }
+                } 
+                // CASE 2: ADD NEW ITEM
+                elseif (isset($splitItemData['product_id'])) {
+                    $newSubOrderItem = $subOrder->items()->create([
+                        'product_id' => $splitItemData['product_id'],
+                        'quantity' => $splitItemData['quantity'],
+                    ]);
+
+                    // Add note for this new item if provided
+                    if (!empty($splitItemData['notes'])) {
+                        $this->userNoteService->createNote([
+                            'user_id' => null,
+                            'author_id' => $user->id,
+                            'note' => $splitItemData['notes'],
+                            'is_important' => false,
+                            'notable_id' => $newSubOrderItem->id,
+                            'notable_type' => 'purchase_order_item',
+                        ]);
+                    }
                 }
             }
 
