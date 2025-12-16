@@ -186,11 +186,6 @@
                                                                     {{ $t('user_notes.no_notes_for_item') }}
                                                                 </div>
                                                             </div>
-                                                            <button type="button" class="btn btn-outline-info btn-sm mt-2"
-                                                                @click="openUserNotesModal(item.id, 'purchase_order_item', $t('user_notes.notes_title_item_for_product', { product: item.product?.name }))"
-                                                            >
-                                                                {{ $t('user_notes.view_add_notes') }}
-                                                            </button>
                                                         </td>
                                                         <td class="text-center">{{ item.quantity }}</td>
                                                         <td class="text-center">
@@ -225,11 +220,6 @@
                                                         {{ $t('user_notes.no_notes_general') }}
                                                     </div>
                                                 </div>
-                                                <button type="button" class="btn btn-outline-info btn-sm mt-2"
-                                                    @click="openUserNotesModal(order.id, 'purchase_order', $t('user_notes.notes_title_for_order', { orderNumber: order.order_number }))"
-                                                >
-                                                    {{ $t('user_notes.view_add_notes') }}
-                                                </button>
                                             </div>
 
                                             <div v-if="order.rejection_reason">
@@ -271,16 +261,6 @@
                                     </div>
                                 </template>
                             </div>
-                            <UserNotesModal
-                                :is-open="showUserNotesModal"
-                                @update:is-open="closeUserNotesModal"
-                                :notable-id="currentNotableId"
-                                :notable-type="currentNotableType"
-                                :notable-title="currentNotableTitle"
-                                :read-only="true"
-                                @note-added="closeUserNotesModal"
-                                @note-deleted="closeUserNotesModal"
-                            />
                         </DialogPanel>
                     </TransitionChild>
                 </div>
@@ -292,8 +272,6 @@
 <script lang="ts" setup>
     import { TransitionRoot, TransitionChild, Dialog, DialogPanel, DialogOverlay } from '@headlessui/vue';
     import type { PurchaseOrder } from '@/types/purchase-orders';
-    import UserNotesModal from '@/components/UserNotesModal.vue';
-    import { ref } from 'vue';
 
     interface Props {
         show: boolean;
@@ -308,29 +286,6 @@
 
     const props = defineProps<Props>();
     const emit = defineEmits<Emits>();
-
-    const showUserNotesModal = ref(false);
-    const currentNotableId = ref<number | null>(null);
-    const currentNotableType = ref<string | null>(null);
-    const currentNotableTitle = ref<string | null>(null);
-
-    const openUserNotesModal = (notableId: number, notableType: string, title: string) => {
-        currentNotableId.value = notableId;
-        currentNotableType.value = notableType;
-        currentNotableTitle.value = title;
-        showUserNotesModal.value = true;
-    };
-
-    const closeUserNotesModal = () => {
-        showUserNotesModal.value = false;
-        currentNotableId.value = null;
-        currentNotableType.value = null;
-        currentNotableTitle.value = null;
-        // Optionally refresh the order to get updated notes
-        if (props.order?.id) {
-            emit('refresh-view-order', props.order.id);
-        }
-    };
 
     const getStatusClass = (status: string): string => {
         const classes: Record<string, string> = {
