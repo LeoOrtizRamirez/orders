@@ -104,7 +104,7 @@
                                                 </svg>
                                                 <span>{{ order.supplier?.name || $t('purchase_orders_page.kanban.no_supplier') }}</span>
                                             </div>
-                                            <p class="break-all text-sm text-gray-700 dark:text-gray-400">{{ order.notes ? (Array.isArray(order.notes) && order.notes.length > 0 ? order.notes[0].note : '') : 'No description' }}</p>
+                                            <p class="break-all text-sm text-gray-700 dark:text-gray-400">{{ order.notes ? (Array.isArray(order.notes) && order.notes.length > 0 ? order.notes[0].note : '') : $t('purchase_orders_page.kanban.no_description') }}</p>
                                             <div class="flex items-center justify-between text-xs text-gray-500 mt-2">
                                                 <span>{{ $t('ordenes.created_at') }}: {{ formatDate(order.created_at) }}</span>
                                             </div>

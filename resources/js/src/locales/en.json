@@ -687,7 +687,9 @@
             "disponibilidad": "Availability",
             "preparar_pedido": "Prepare Order",
             "en_preparacion": "In Preparation",
+            "en_preparación": "In Preparation",
             "facturacion": "Billing",
+            "facturación": "Billing",
             "en_despacho": "Dispatching",
             "en_ruta": "In Transit",
             "entregado": "Delivered"
@@ -862,6 +864,7 @@
                 "supplier": "Customer",
                 "expected_delivery_date": "Expected Delivery Date",
                 "notes": "Notes",
+                "add_note": "Add note",
                 "tax": "Tax",
                 "shipping": "Shipping",
                 "items": "Items",
@@ -909,7 +912,8 @@
             "no_results_description": "Try adjusting your search filters"
         },
         "kanban": {
-            "no_supplier": "No Supplier"
+            "no_supplier": "No Supplier",
+            "no_description": "No description"
         }
     },
     "suppliers_page": {

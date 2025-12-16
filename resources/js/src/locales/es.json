@@ -687,7 +687,9 @@
             "disponibilidad": "Disponibilidad",
             "preparar_pedido": "Preparar Pedido",
             "en_preparacion": "En Preparación",
+            "en_preparación": "En Preparación",
             "facturacion": "Facturación",
+            "facturación": "Facturación",
             "en_despacho": "En Despacho",
             "en_ruta": "En Ruta",
             "entregado": "Entregado"
@@ -862,6 +864,7 @@
                 "supplier": "Cliente",
                 "expected_delivery_date": "Fecha de Entrega Esperada",
                 "notes": "Notas",
+                "add_note": "Agregar nota",
                 "tax": "Impuestos",
                 "shipping": "Envío",
                 "items": "Items",
@@ -909,7 +912,8 @@
             "no_results_description": "Intenta ajustar tus filtros de búsqueda"
         },
         "kanban": {
-            "no_supplier": "Sin Proveedor"
+            "no_supplier": "Sin Proveedor",
+            "no_description": "Sin descripción"
         }
     },
     "suppliers_page": {
