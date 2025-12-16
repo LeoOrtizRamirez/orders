@@ -302,6 +302,10 @@
         try {
             await axios.put(`/api/purchase-orders/${orderId}/status`, { status: newStatusId });
             showMessage(t('ordenes.order_status_updated_successfully'), 'success');
+            
+            if (movedOrder) {
+                movedOrder.status = newStatusId;
+            }
         } catch (err: any) {
             console.error('Error updating order status:', err);
             const msg = err.response?.data?.message || t('ordenes.error_updating_order_status');
