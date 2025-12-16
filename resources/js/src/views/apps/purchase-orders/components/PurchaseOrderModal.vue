@@ -136,8 +136,9 @@
                                             <div v-if="errors[`items.${index}.quantity`]" class="text-danger mt-1 text-xs">
                                                 {{ errors[`items.${index}.quantity`][0] }}
                                             </div>
-                                            <div v-if="item.product_id && getMaxQuantity(item.product_id) > 0" 
-                                                 class="text-info mt-1 text-xs">
+                                            <div v-if="item.product_id" 
+                                                 class="mt-1 text-xs"
+                                                 :class="getStockClass(item.product_id)">
                                                 Stock actual: {{ getMaxQuantity(item.product_id) }}
                                             </div>
 
@@ -301,6 +302,16 @@
     const getQuantityValidation = (productId: number | null, quantity: number) => {
         if (!productId) return { hasError: false, message: '' };
         return { hasError: false, message: '' };
+    };
+
+    const getStockClass = (productId: number | null): string => {
+        if (!productId) return '';
+        const product = props.products.find(p => p.id === productId);
+        if (!product) return '';
+        
+        if (product.stock === 0) return 'text-danger';
+        if (product.stock <= (product.reorder_point || 0)) return 'text-warning';
+        return 'text-success';
     };
 
     const formatNoteTimestamp = (dateString: string | null): string => {
