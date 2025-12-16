@@ -6,8 +6,10 @@ use App\Models\PurchaseOrder;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Notifications\Messages\BroadcastMessage;
 
-class OrderStatusChanged extends Notification implements ShouldQueue
+class OrderStatusChanged extends Notification implements ShouldQueue, ShouldBroadcast
 {
     use Queueable;
 
@@ -30,7 +32,7 @@ class OrderStatusChanged extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return ['database', 'broadcast'];
     }
 
     /**
@@ -59,12 +61,24 @@ class OrderStatusChanged extends Notification implements ShouldQueue
         }
 
         return [
+            'id' => $this->id, // Include Notification ID for tracking
             'order_id' => $this->purchaseOrder->id,
             'order_number' => $this->purchaseOrder->order_number,
             'status' => $this->purchaseOrder->status,
             'message' => $message, // Keep for simple clients
             'message_parts' => $messageParts, // For rich clients
+            'created_at' => now()->toIso8601String(),
+            'read_at' => null,
         ];
+    }
+
+    /**
+     * Get the broadcastable representation of the notification.
+     */
+    public function toBroadcast(object $notifiable): BroadcastMessage
+    {
+        // Use the same structure as toDatabase for consistency on frontend
+        return new BroadcastMessage($this->toDatabase($notifiable));
     }
 
     /**

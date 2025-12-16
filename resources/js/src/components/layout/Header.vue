@@ -358,7 +358,27 @@
     onMounted(() => {
         setActiveDropdown();
         fetchNotifications();
-        setInterval(fetchNotifications, 30000); // Poll every 30 seconds
+        
+        // Real-time notifications listener
+        if (authStore.user?.id) {
+            window.Echo.private(`App.Models.User.${authStore.user.id}`)
+                .notification((notification: any) => {
+                    // Refresh notifications list when a new one arrives
+                    fetchNotifications();
+                    
+                    // Optional: Show a toast or alert
+                    // const toast = window.Swal.mixin({
+                    //     toast: true,
+                    //     position: 'top-end',
+                    //     showConfirmButton: false,
+                    //     timer: 3000,
+                    //     showCloseButton: true,
+                    // });
+                    // toast.fire({
+                    //     title: 'Nueva notificación recibida',
+                    // });
+                });
+        }
     });
 
     watch(route, (to, from) => {
