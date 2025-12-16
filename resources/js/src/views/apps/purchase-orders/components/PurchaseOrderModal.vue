@@ -127,11 +127,9 @@
                                                 type="number"
                                                 v-model.number="item.quantity"
                                                 min="1"
-                                                :max="getMaxQuantity(item.product_id)"
                                                 class="form-input"
                                                 :class="{ 
-                                                    'border-danger': errors[`items.${index}.quantity`] || 
-                                                    getQuantityValidation(item.product_id, item.quantity).hasError 
+                                                    'border-danger': errors[`items.${index}.quantity`] 
                                                 }"
                                                 @input="handleQuantityChange(index, item.quantity)"
                                                 required
@@ -139,13 +137,9 @@
                                             <div v-if="errors[`items.${index}.quantity`]" class="text-danger mt-1 text-xs">
                                                 {{ errors[`items.${index}.quantity`][0] }}
                                             </div>
-                                            <div v-if="getQuantityValidation(item.product_id, item.quantity).hasError" 
-                                                 class="text-danger mt-1 text-xs">
-                                                {{ getQuantityValidation(item.product_id, item.quantity).message }}
-                                            </div>
                                             <div v-if="item.product_id && getMaxQuantity(item.product_id) > 0" 
                                                  class="text-info mt-1 text-xs">
-                                                Máx: {{ getMaxQuantity(item.product_id) }}
+                                                Stock actual: {{ getMaxQuantity(item.product_id) }}
                                             </div>
 
                                             <!-- Notas del item -->
@@ -283,8 +277,7 @@
         const hasValidItems = props.params.items.length > 0 && 
             props.params.items.every((item: any) => 
                 item.product_id && 
-                item.quantity > 0 && 
-                item.quantity <= getMaxQuantity(item.product_id)
+                item.quantity > 0
             );
         
         return props.params.supplier_id && 
@@ -298,11 +291,6 @@
         if (quantity < 1) {
             props.params.items[index].quantity = 1;
         }
-        
-        const maxQuantity = getMaxQuantity(props.params.items[index].product_id);
-        if (quantity > maxQuantity) {
-            props.params.items[index].quantity = maxQuantity;
-        }
     };
 
     const getMaxQuantity = (productId: number | null): number => {
@@ -313,14 +301,6 @@
 
     const getQuantityValidation = (productId: number | null, quantity: number) => {
         if (!productId) return { hasError: false, message: '' };
-        
-        const maxQuantity = getMaxQuantity(productId);
-        if (quantity > maxQuantity) {
-            return { 
-                hasError: true, 
-                message: `Excede stock disponible (${maxQuantity})` 
-            };
-        }
         return { hasError: false, message: '' };
     };
 
