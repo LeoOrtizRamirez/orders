@@ -165,10 +165,7 @@
                                                             {{ $t('purchase_orders_page.view_modal.fields.quantity') }}
                                                         </th>
                                                         <th class="text-center">
-                                                            {{ $t('purchase_orders_page.view_modal.fields.received') }}
-                                                        </th>
-                                                        <th class="text-center">
-                                                            {{ $t('purchase_orders_page.view_modal.fields.pending') }}
+                                                            Stock Actual
                                                         </th>
                                                     </tr>
                                                 </thead>
@@ -189,13 +186,8 @@
                                                         </td>
                                                         <td class="text-center">{{ item.quantity }}</td>
                                                         <td class="text-center">
-                                                            <span :class="getReceivedQuantityClass(item)">
-                                                                {{ item.received_quantity }}
-                                                            </span>
-                                                        </td>
-                                                        <td class="text-center">
-                                                            <span :class="getPendingQuantityClass(item)">
-                                                                {{ item.quantity - item.received_quantity }}
+                                                            <span :class="getStockClass(item.product)">
+                                                                {{ item.product?.stock ?? '-' }}
                                                             </span>
                                                         </td>
                                                     </tr>
@@ -301,17 +293,11 @@
         return classes[status] || 'bg-gray-100 text-gray-800';
     };
 
-    const getReceivedQuantityClass = (item: any): string => {
-        if (item.received_quantity === 0) return 'text-danger';
-        if (item.received_quantity < item.quantity) return 'text-warning';
+    const getStockClass = (product: any): string => {
+        if (!product || product.stock === undefined) return '';
+        if (product.stock === 0) return 'text-danger';
+        if (product.stock <= (product.reorder_point || 0)) return 'text-warning';
         return 'text-success';
-    };
-
-    const getPendingQuantityClass = (item: any): string => {
-        const pending = item.quantity - item.received_quantity;
-        if (pending === 0) return 'text-success';
-        if (pending > 0) return 'text-warning';
-        return 'text-danger';
     };
 
     const isDeliveryDelayed = (order: PurchaseOrder): boolean => {
