@@ -97,6 +97,13 @@
                                                 <span>Orden Principal</span>
                                             </div>
                                             <div class="text-base font-medium">{{ order.order_number }} - {{ order.creator?.name || 'N/A' }}</div>
+                                            <div class="flex items-center text-sm text-gray-500 font-semibold">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-3.5 h-3.5 mr-1">
+                                                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                                                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                                                </svg>
+                                                <span>{{ order.supplier?.name || $t('purchase_orders_page.kanban.no_supplier') }}</span>
+                                            </div>
                                             <p class="break-all text-sm text-gray-700 dark:text-gray-400">{{ order.notes ? (Array.isArray(order.notes) && order.notes.length > 0 ? order.notes[0].note : '') : 'No description' }}</p>
                                             <div class="flex items-center justify-between text-xs text-gray-500 mt-2">
                                                 <span>{{ $t('ordenes.created_at') }}: {{ formatDate(order.created_at) }}</span>

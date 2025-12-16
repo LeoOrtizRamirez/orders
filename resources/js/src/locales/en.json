@@ -907,6 +907,9 @@
             "no_orders_description": "Start by creating your first purchase order",
             "no_results": "No results found",
             "no_results_description": "Try adjusting your search filters"
+        },
+        "kanban": {
+            "no_supplier": "No Supplier"
         }
     },
     "suppliers_page": {
