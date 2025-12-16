@@ -192,7 +192,7 @@
                 product_name: item.product?.name || 'Unknown Product',
                 original_quantity: item.quantity,
                 notes: ''
-            }));
+            })).sort((a: any, b: any) => a.product_name.localeCompare(b.product_name));
             params.expected_delivery_date = '';
             params.newItems = [];
         } else {
