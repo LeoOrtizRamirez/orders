@@ -78,6 +78,7 @@ class PurchaseOrderManagementService
                 $purchaseOrderItem = $purchaseOrder->items()->create([
                     'product_id' => $itemData['product_id'],
                     'quantity' => $itemData['quantity'],
+                    'checked' => $itemData['checked'] ?? false,
                 ]);
 
                 if (!empty($itemData['notes'])) {
@@ -122,7 +123,8 @@ class PurchaseOrderManagementService
                         if ($item) {
                             $item->update([
                                 'product_id' => $itemData['product_id'],
-                                'quantity' => $itemData['quantity']
+                                'quantity' => $itemData['quantity'],
+                                'checked' => $itemData['checked'] ?? false,
                             ]);
                             $itemsToKeep[] = $item->id;
 
@@ -133,7 +135,8 @@ class PurchaseOrderManagementService
                     } else {
                         $newItem = $purchaseOrder->items()->create([
                             'product_id' => $itemData['product_id'],
-                            'quantity' => $itemData['quantity']
+                            'quantity' => $itemData['quantity'],
+                            'checked' => $itemData['checked'] ?? false,
                         ]);
                         $itemsToKeep[] = $newItem->id;
 

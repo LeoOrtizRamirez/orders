@@ -65,6 +65,7 @@ class PurchaseOrderController extends Controller
                 'items.*.product_id' => 'required|exists:products,id',
                 'items.*.quantity' => 'required|min:0',//PENDIENTE DESCOMENTAR CAMBIAR A 1
                 'items.*.notes' => 'nullable|string', // Removed, handled by service as UserNote
+                'items.*.checked' => 'nullable|boolean',
             ]);
 
             $purchaseOrder = $this->purchaseOrderService->createPurchaseOrder($validated, $request->user());
@@ -109,6 +110,7 @@ class PurchaseOrderController extends Controller
                 'items.*.product_id' => 'required|exists:products,id',
                 'items.*.quantity' => 'required|integer|min:1',
                 'items.*.notes' => 'nullable|string',
+                'items.*.checked' => 'nullable|boolean',
             ]);
 
             $purchaseOrder = $this->purchaseOrderService->updatePurchaseOrder((int)$id, $validated, $request->user());

@@ -16,11 +16,13 @@ class PurchaseOrderItem extends Model
         'product_id',
         'quantity',
         'received_quantity',
+        'checked',
     ];
 
     protected $casts = [
         'quantity' => 'integer',
         'received_quantity' => 'integer',
+        'checked' => 'boolean',
     ];
 
     protected $hidden = [

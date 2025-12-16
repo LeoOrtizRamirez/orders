@@ -82,9 +82,14 @@
                                     :key="index"
                                     class="border border-[#e0e6ed] dark:border-[#1b2e4b] rounded p-4 bg-gray-50 dark:bg-[#1a2234]"
                                 >
-                                    <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
+                                    <div class="grid grid-cols-1 md:grid-cols-[auto_1.5fr_1fr_auto] gap-4 items-start">
+                                        <!-- Checkbox Visual -->
+                                        <div class="flex justify-center mt-8">
+                                            <input type="checkbox" class="form-checkbox w-5 h-5" v-model="item.checked" />
+                                        </div>
+
                                         <!-- Producto -->
-                                        <div class="md:col-span-6">
+                                        <div>
                                             <label class="form-label">
                                                 {{ $t('purchase_orders_page.create_modal.fields.product') }} *
                                             </label>
@@ -118,7 +123,7 @@
                                         </div>
 
                                         <!-- Cantidad -->
-                                        <div class="md:col-span-4">
+                                        <div>
                                             <label class="form-label">
                                                 {{ $t('purchase_orders_page.create_modal.fields.quantity') }} *
                                             </label>
@@ -159,7 +164,7 @@
                                         </div>
                                         
                                         <!-- Botón Eliminar Item -->
-                                        <div class="md:col-span-2 flex justify-end mt-7">
+                                        <div class="flex justify-end mt-7">
                                             <button type="button" class="btn btn-outline-danger btn-sm p-2" @click="$emit('remove-item', index)" v-if="params.items.length > 1">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                                             </button>

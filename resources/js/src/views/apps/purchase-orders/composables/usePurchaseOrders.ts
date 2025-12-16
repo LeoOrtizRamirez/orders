@@ -525,7 +525,8 @@ export function usePurchaseOrders() {
                     quantity: item.quantity,
                     // Ensure itemNotes are included
                     itemNotes: item.item_notes || [],
-                    notes: '' // Initialize notes
+                    notes: '', // Initialize notes
+                    checked: item.checked ?? false, // Map checked status
                 })) || []
             };
         } else {
@@ -544,7 +545,8 @@ export function usePurchaseOrders() {
     const createEmptyItem = (): PurchaseOrderItemParams => ({
         product_id: null,
         quantity: 1,
-        itemNotes: [] // Initialize with empty array
+        itemNotes: [], // Initialize with empty array
+        checked: false // Initialize checked
     });
 
     const addItem = () => {
