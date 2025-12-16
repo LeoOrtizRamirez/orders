@@ -115,7 +115,7 @@
                                                 <button type="button" class="btn btn-outline-secondary btn-sm" @click="handleEditOrder(order)">
                                                     {{ $t('edit') }}
                                                 </button>
-                                                <button v-if="!order.parent_id" type="button" class="btn btn-outline-warning btn-sm" @click="handleShowSplitModal(order)">
+                                                <button v-if="canSplitOrder(order)" type="button" class="btn btn-outline-warning btn-sm" @click="handleShowSplitModal(order)">
                                                     {{ $t('purchase_orders_page.actions.split') }}
                                                 </button>
                                                 <button type="button" class="btn btn-outline-danger btn-sm" @click="handleDeleteOrder(order)">
@@ -317,6 +317,11 @@
             }
             await fetchOrdersKanban(); 
         }
+    };
+
+    const canSplitOrder = (order: PurchaseOrder) => {
+        const allowedStatuses = ['nuevo pedido', 'disponibilidad', 'preparar pedido'];
+        return !order.parent_id && allowedStatuses.includes(order.status);
     };
 
     const handleAddOrder = () => {
