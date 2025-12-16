@@ -140,12 +140,11 @@
             :saving="saving"
             :suppliers="suppliers"
             :products="products"
-            :existingOrderNotes="orderNotes"
+            :existingOrderNotes="orderNotes || []"
             @close="handleCloseModal"
             @save="handleSaveOrder"
             @add-item="addItem"
             @remove-item="removeItem"
-            @product-change="handleProductChange"
         />
 
         <PurchaseOrderViewModal
@@ -348,19 +347,8 @@
     };
 
     const handleDeleteOrder = async (order: PurchaseOrder) => {
-        const result = await Swal.fire({
-            title: t('purchase_orders_page.delete_confirm.title'),
-            text: t('purchase_orders_page.delete_confirm.text'),
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#3085d6',
-            cancelButtonColor: '#d33',
-            confirmButtonText: t('purchase_orders_page.delete_confirm.confirm'),
-            cancelButtonText: t('purchase_orders_page.delete_confirm.cancel')
-        });
-
-        if (result.isConfirmed) {
-            await deleteOrderComposable(order); 
+        const success = await deleteOrderComposable(order);
+        if (success) {
             await fetchOrdersKanban(); 
         }
     };
