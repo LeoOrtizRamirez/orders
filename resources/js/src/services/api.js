@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'http://distrifruver.local', // URL de tu backend Laravel
+    baseURL: import.meta.env.VITE_APP_URL || 'http://orders.local', // URL de tu backend Laravel
     withCredentials: true,
 });
 
@@ -12,6 +12,16 @@ api.interceptors.request.use(
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
+
+        const xsrfToken = document.cookie
+            .split('; ')
+            .find((row) => row.startsWith('XSRF-TOKEN='))
+            ?.split('=')[1];
+
+        if (xsrfToken) {
+            config.headers['X-XSRF-TOKEN'] = decodeURIComponent(xsrfToken);
+        }
+
         return config;
     },
     (error) => {

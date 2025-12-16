@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import axios from 'axios';
+import api from '@/services/api'; // Import the configured api instance
 
 export interface User {
     id: number;
@@ -51,7 +51,7 @@ export const useAuthStore = defineStore('auth', () => {
         isAuthenticated.value = false;
         permissions.value = [];
         
-        // Limpiar localStorage
+        // Limpiar localStorage y sessionStorage
         localStorage.removeItem('auth_token');
         localStorage.removeItem('user');
         localStorage.removeItem('permissions');
@@ -60,7 +60,7 @@ export const useAuthStore = defineStore('auth', () => {
         sessionStorage.removeItem('permissions');
         
         // Limpiar headers de axios
-        delete axios.defaults.headers.common['Authorization'];
+        delete api.defaults.headers.common['Authorization'];
     };
 
     const setAuth = (authToken: string, userData: User, remember: boolean = false) => {
@@ -69,26 +69,16 @@ export const useAuthStore = defineStore('auth', () => {
         user.value = userData;
         isAuthenticated.value = true;
         
-        // Guardar en storage según la opción remember
-        if (remember) {
-            localStorage.setItem('auth_token', authToken);
-            localStorage.setItem('user', JSON.stringify(userData));
-            // Limpiar sessionStorage si existe
-            sessionStorage.removeItem('auth_token');
-            sessionStorage.removeItem('user');
-        } else {
-            // Usar sessionStorage para sesiones de navegador
-            sessionStorage.setItem('auth_token', authToken);
-            sessionStorage.setItem('user', JSON.stringify(userData));
-            // Limpiar localStorage si existe
-            localStorage.removeItem('auth_token');
-            localStorage.removeItem('user');
-        }
+        // Guardar siempre en localStorage para persistencia entre pestañas
+        localStorage.setItem('auth_token', authToken);
+        localStorage.setItem('user', JSON.stringify(userData));
+        
+        // Limpiar sessionStorage por si acaso existía algo antiguo
+        sessionStorage.removeItem('auth_token');
+        sessionStorage.removeItem('user');
         
         // Configurar axios
-        axios.defaults.headers.common['Authorization'] = `Bearer ${authToken}`;
-        
-        // Los permisos se establecerán explícitamente desde la respuesta del login
+        api.defaults.headers.common['Authorization'] = `Bearer ${authToken}`;
     };
 
     const checkAuth = () => {
@@ -107,7 +97,7 @@ export const useAuthStore = defineStore('auth', () => {
                 permissions.value = JSON.parse(storedPermissions);
             }
             
-            axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
+            api.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
         } else {
             // Usar la función logout ya definida
             logout();
@@ -120,7 +110,10 @@ export const useAuthStore = defineStore('auth', () => {
 
     const login = async (credentials: LoginCredentials, remember: boolean = false) => {
         try {
-            const response = await axios.post('/api/login', credentials);
+            // First, get the CSRF cookie
+            await api.get('/sanctum/csrf-cookie');
+            
+            const response = await api.post('/api/login', credentials);
             
             if (response.status === 200) {
                 const { token: authToken, user: userData, permissions: userPermissions } = response.data;
@@ -131,14 +124,9 @@ export const useAuthStore = defineStore('auth', () => {
                 // Establecer los permisos explícitamente
                 permissions.value = userPermissions || [];
                 
-                // También guardar permisos en el almacenamiento
-                if (remember) {
-                    localStorage.setItem('permissions', JSON.stringify(userPermissions));
-                    sessionStorage.removeItem('permissions');
-                } else {
-                    sessionStorage.setItem('permissions', JSON.stringify(userPermissions));
-                    localStorage.removeItem('permissions');
-                }
+                // Guardar permisos siempre en localStorage
+                localStorage.setItem('permissions', JSON.stringify(userPermissions));
+                sessionStorage.removeItem('permissions');
                 
                 return response;
             }
@@ -150,7 +138,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     // Configurar axios para usar el token por defecto (si existe)
     if (token.value) {
-        axios.defaults.headers.common['Authorization'] = `Bearer ${token.value}`;
+        api.defaults.headers.common['Authorization'] = `Bearer ${token.value}`;
     }
 
     // Verificar autenticación al inicializar el store
