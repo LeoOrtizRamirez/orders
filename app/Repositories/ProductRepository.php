@@ -75,7 +75,7 @@ class ProductRepository
 
     public function getActiveProducts()
     {
-        return $this->model->active()->withCount('purchaseOrderItems')->ordered()->get();
+        return $this->model->where('is_active', true)->orderBy('name', 'asc')->get();
     }
 
     public function getLowStockProducts()

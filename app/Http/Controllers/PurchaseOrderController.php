@@ -87,7 +87,6 @@ class PurchaseOrderController extends Controller
     {
         try {
             $purchaseOrder = $this->purchaseOrderService->getPurchaseOrder((int)$id);
-            $purchaseOrder->load(['parent', 'subOrders', 'notes.author', 'items.product', 'items.itemNotes.author']); // Eager load relationships with note authors and products
             
             return response()->json($purchaseOrder);
         } catch (\Exception $e) {

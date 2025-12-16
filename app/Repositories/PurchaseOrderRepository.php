@@ -43,7 +43,19 @@ class PurchaseOrderRepository
 
     public function findById(int $id): ?PurchaseOrder
     {
-        return $this->model->with(['supplier', 'creator', 'approver', 'items.product', 'parent', 'subOrders'])->find($id);
+        return $this->model->with([
+            'supplier', 
+            'creator', 
+            'approver', 
+            'items' => function($query) {
+                $query->join('products', 'purchase_order_items.product_id', '=', 'products.id')
+                      ->orderBy('products.name', 'asc')
+                      ->select('purchase_order_items.*');
+            },
+            'items.product', 
+            'parent', 
+            'subOrders'
+        ])->find($id);
     }
 
     public function findByOrderNumber(string $orderNumber): ?PurchaseOrder

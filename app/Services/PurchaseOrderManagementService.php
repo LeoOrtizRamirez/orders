@@ -36,7 +36,10 @@ class PurchaseOrderManagementService
             throw new Exception('Orden de compra no encontrada', 404);
         }
         
-        $purchaseOrder->load('items.itemNotes.author', 'notes.author');
+        $purchaseOrder->load('notes.author');
+        if ($purchaseOrder->items) {
+            $purchaseOrder->items->load('itemNotes.author');
+        }
 
         return $purchaseOrder;
     }
