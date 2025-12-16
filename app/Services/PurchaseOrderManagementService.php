@@ -204,6 +204,10 @@ class PurchaseOrderManagementService
             return $this->prepareOrder($id, $userId);
         }
 
+        if ($newStatus === 'facturación') {
+            return $this->processBilling($id);
+        }
+
         $purchaseOrder = $this->getPurchaseOrder($id);
         $purchaseOrder->update(['status' => $newStatus]);
         
@@ -216,11 +220,28 @@ class PurchaseOrderManagementService
     {
         return DB::transaction(function () use ($id, $userId) {
             $purchaseOrder = $this->getPurchaseOrder($id);
+            
+            $purchaseOrder->update([
+                'status' => 'preparar pedido',
+                'approved_by' => $userId,
+                'approved_at' => now(),
+            ]);
+
+            $this->notifyUsersOnStatusChange($purchaseOrder, null);
+
+            return $this->getPurchaseOrder($id);
+        });
+    }
+
+    private function processBilling(int $id)
+    {
+        return DB::transaction(function () use ($id) {
+            $purchaseOrder = $this->getPurchaseOrder($id);
             $purchaseOrder->load('items.product');
 
             foreach ($purchaseOrder->items as $item) {
                 if ($item->product->stock < $item->quantity) {
-                    throw new Exception("Stock insuficiente para 'preparar pedido': {$item->product->name}. Disponible: {$item->product->stock}, Solicitado: {$item->quantity}", 400);
+                    throw new Exception("Stock insuficiente para 'facturación': {$item->product->name}. Disponible: {$item->product->stock}, Solicitado: {$item->quantity}", 400);
                 }
             }
 
@@ -229,9 +250,7 @@ class PurchaseOrderManagementService
             }
 
             $purchaseOrder->update([
-                'status' => 'preparar pedido',
-                'approved_by' => $userId,
-                'approved_at' => now(),
+                'status' => 'facturación',
             ]);
 
             $this->notifyUsersOnStatusChange($purchaseOrder, null);
