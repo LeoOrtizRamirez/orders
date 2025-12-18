@@ -361,23 +361,34 @@
         
         // Real-time notifications listener
         if (authStore.user?.id) {
-            window.Echo.private(`App.Models.User.${authStore.user.id}`)
+            const userId = authStore.user.id;
+            const channelName = `App.Models.User.${userId}`;
+            
+            console.log(`Intentando suscribirse al canal privado: ${channelName}`);
+
+            window.Echo.private(channelName)
                 .notification((notification: any) => {
-                    // Refresh notifications list when a new one arrives
+                    console.log('Notificación en tiempo real recibida:', notification); 
                     fetchNotifications();
-                    
-                    // Optional: Show a toast or alert
-                    // const toast = window.Swal.mixin({
-                    //     toast: true,
-                    //     position: 'top-end',
-                    //     showConfirmButton: false,
-                    //     timer: 3000,
-                    //     showCloseButton: true,
-                    // });
-                    // toast.fire({
-                    //     title: 'Nueva notificación recibida',
-                    // });
+                    // Opcional: Mostrar un toast o alerta directamente desde aquí
+                    // if (window.Swal) { // Asumiendo que SweetAlert2 está disponible globalmente
+                    //     window.Swal.mixin({
+                    //         toast: true,
+                    //         position: 'top-end',
+                    //         showConfirmButton: false,
+                    //         timer: 3000,
+                    //         showCloseButton: true,
+                    //     }).fire({
+                    //         icon: 'info',
+                    //         title: notification.message || 'Nueva notificación',
+                    //     });
+                    // }
+                })
+                .error((error: any) => {
+                    console.error(`Error en el canal privado ${channelName}:`, error);
                 });
+        } else {
+            console.warn('Usuario no autenticado o ID de usuario no disponible para suscribirse a notificaciones en tiempo real.');
         }
     });
 
