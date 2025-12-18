@@ -29,8 +29,13 @@ class ProductRepository
             $query->where('category', $filters['category']);
         }
 
-        if (isset($filters['low_stock'])) {
-            $query->where('stock', '<=', 'reorder_point');
+        if (isset($filters['stock_status'])) {
+            if ($filters['stock_status'] === 'low') {
+                $query->whereColumn('stock', '<=', 'reorder_point')
+                      ->where('stock', '>', 0);
+            } elseif ($filters['stock_status'] === 'out') {
+                $query->where('stock', 0);
+            }
         }
 
         return $query->ordered()->paginate($filters['per_page'] ?? 15);

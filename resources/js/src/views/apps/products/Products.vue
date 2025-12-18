@@ -96,6 +96,7 @@
             :errors="errors"
             :saving="saving"
             :categories="categories"
+            :units="units"
             @close="handleCloseModal"
             @save="handleSaveProduct"
         />
@@ -111,7 +112,7 @@
 </template>
 
 <script lang="ts" setup>
-    import { ref, onMounted, computed } from 'vue';
+    import { ref, onMounted, computed, watch } from 'vue';
     import { useMeta } from '@/composables/use-meta';
     import { useProducts } from './composables/useProducts';
     
@@ -134,6 +135,7 @@
     const {
         productsList,
         categories,
+        units,
         loading,
         saving,
         errorMessage,
@@ -149,6 +151,7 @@
         outOfStockProducts,
         fetchProducts,
         fetchCategories,
+        fetchUnits,
         saveProduct,
         deleteProduct,
         toggleProductStatus,
@@ -163,6 +166,15 @@
     onMounted(() => {
         fetchProducts(1);
         fetchCategories();
+        fetchUnits();
+    });
+
+    let searchTimer: any;
+    watch(searchProduct, () => {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => {
+            fetchProducts(1);
+        }, 300);
     });
 
     const changePage = (page: number) => {
@@ -261,7 +273,7 @@
     };
 
     const handleFiltersUpdate = (newFilters: any) => {
-        Object.assign(filters, newFilters);
+        filters.value = newFilters;
         fetchProducts(1);
     };
 </script>

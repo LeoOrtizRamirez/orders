@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\ProductCategory;
+use App\Enums\ProductUnit;
 use App\Services\ProductManagementService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\BinaryFileResponse; // Added
 
@@ -12,16 +15,16 @@ class ProductController extends Controller
 {
     public function __construct(private ProductManagementService $productService)
     {
-        $this->middleware('permission:view products')->only(['index', 'show']);
-        $this->middleware('permission:create products')->only(['store']);
-        $this->middleware('permission:edit products')->only(['update']);
+        $this->middleware('permission:view products')->only(['index', 'show', 'activeProducts', 'categories', 'units']);
+        $this->middleware('permission:create products')->only(['store', 'import']);
+        $this->middleware('permission:edit products')->only(['update', 'toggleStatus']);
         $this->middleware('permission:delete products')->only(['destroy']);
     }
 
     public function index(Request $request): JsonResponse
     {
         try {
-            $filters = $request->only(['search', 'active', 'category', 'low_stock', 'per_page']);
+            $filters = $request->only(['search', 'active', 'category', 'stock_status', 'per_page']);
             $perPage = $request->get('per_page', 15);
             $filters['per_page'] = $perPage;
 
@@ -49,18 +52,18 @@ class ProductController extends Controller
         try {
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
-                'sku' => 'sometimes|string|max:255|unique:products,sku',
+                'sku' => 'nullable|string|max:255|unique:products,sku',
                 'description' => 'nullable|string',
-                'stock' => 'sometimes|integer|min:0',
-                'min_stock' => 'sometimes|integer|min:0',
-                'reorder_point' => 'sometimes|integer|min:0',
-                'unit' => 'nullable|string|max:50',
-                'category' => 'nullable|string|max:100',
+                'stock' => 'required|integer|min:0',
+                'min_stock' => 'required|integer|min:0',
+                'reorder_point' => 'required|integer|min:0',
+                'unit' => ['required', Rule::enum(ProductUnit::class)],
+                'category' => ['required', Rule::enum(ProductCategory::class)],
                 'brand' => 'nullable|string|max:100',
                 'supplier' => 'nullable|string|max:100',
                 'specifications' => 'nullable|array',
-                'is_active' => 'sometimes|boolean',
-                'order' => 'sometimes|integer',
+                'is_active' => 'boolean',
+                'order' => 'integer|min:0',
             ]);
 
             $product = $this->productService->createProduct($validated);
@@ -103,13 +106,13 @@ class ProductController extends Controller
                 'stock' => 'sometimes|integer|min:0',
                 'min_stock' => 'sometimes|integer|min:0',
                 'reorder_point' => 'sometimes|integer|min:0',
-                'unit' => 'nullable|string|max:50',
-                'category' => 'nullable|string|max:100',
+                'unit' => ['sometimes', 'required', Rule::enum(ProductUnit::class)],
+                'category' => ['sometimes', 'required', Rule::enum(ProductCategory::class)],
                 'brand' => 'nullable|string|max:100',
                 'supplier' => 'nullable|string|max:100',
                 'specifications' => 'nullable|array',
                 'is_active' => 'sometimes|boolean',
-                'order' => 'sometimes|integer',
+                'order' => 'sometimes|integer|min:0',
             ]);
 
             $product = $this->productService->updateProduct($id, $validated);
@@ -194,14 +197,23 @@ class ProductController extends Controller
     public function categories(): JsonResponse
     {
         try {
-            $categories = $this->productService->getCategories();
-
-            return response()->json([
-                'data' => $categories
-            ]);
+            // Return Enum values instead of DB distinct
+            return response()->json(['data' => ProductCategory::options()]);
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Failed to load categories',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function units(): JsonResponse
+    {
+        try {
+            return response()->json(['data' => ProductUnit::options()]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Failed to load units',
                 'message' => $e->getMessage()
             ], 500);
         }
@@ -260,8 +272,8 @@ class ProductController extends Controller
             'Content-Disposition' => 'attachment; filename="products_template.csv"',
         ];
 
-        $templateContent = "name,sku,description,stock,min_stock,reorder_point,unit,category,brand,is_active,order\n";
-        $templateContent .= "Example Product,PROD001,Description for example product,100,10,5,unit,Electronics,BrandX,1,1\n";
+        $templateContent = "ITEM,DESCRIPCION,LINEA,TIPOFACTOR,ONHAND\n";
+        $templateContent .= "PROD001,Producto Ejemplo,01,UNIDAD,100\n";
 
         // Create a temporary file and write the content to it
         $tempFilePath = tempnam(sys_get_temp_dir(), 'products_template_');

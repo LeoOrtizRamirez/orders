@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\ProductCategory;
+use App\Enums\ProductUnit;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -34,6 +36,8 @@ class Product extends Model
         'specifications' => 'array',
         'is_active' => 'boolean',
         'order' => 'integer',
+        'category' => ProductCategory::class,
+        'unit' => ProductUnit::class,
     ];
 
     protected $hidden = [

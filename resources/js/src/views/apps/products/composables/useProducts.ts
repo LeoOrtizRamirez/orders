@@ -31,7 +31,8 @@ export function useProducts() {
 
     // States
     const productsList = ref<Product[]>([]);
-    const categories = ref<string[]>([]);
+    const categories = ref<{id: string, name: string}[]>([]);
+    const units = ref<{id: string, name: string}[]>([]);
     const loading = ref(false);
     const saving = ref(false);
     const errorMessage = ref('');
@@ -59,7 +60,7 @@ export function useProducts() {
         stock: 0,
         min_stock: 10,
         reorder_point: 5,
-        unit: 'kg',
+        unit: 'KILO',
         category: '',
         brand: '',
         supplier: '',
@@ -105,6 +106,15 @@ export function useProducts() {
             categories.value = response.data.data;
         } catch (error) {
             console.error('Error fetching categories:', error);
+        }
+    };
+
+    const fetchUnits = async () => {
+        try {
+            const response = await axios.get('/api/products/units');
+            units.value = response.data.data;
+        } catch (error) {
+            console.error('Error fetching units:', error);
         }
     };
 
@@ -203,7 +213,7 @@ export function useProducts() {
                 stock: product.stock,
                 min_stock: product.min_stock,
                 reorder_point: product.reorder_point,
-                unit: product.unit || 'unidad',
+                unit: product.unit || 'UNIDAD',
                 category: product.category || '',
                 brand: product.brand || '',
                 supplier: product.supplier || '',
@@ -331,6 +341,7 @@ export function useProducts() {
         // States
         productsList,
         categories,
+        units,
         loading,
         saving,
         errorMessage,
@@ -350,6 +361,7 @@ export function useProducts() {
         // Methods
         fetchProducts,
         fetchCategories,
+        fetchUnits,
         saveProduct,
         deleteProduct,
         toggleProductStatus,

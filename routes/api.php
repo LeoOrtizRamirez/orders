@@ -149,6 +149,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/active/list', [ProductController::class, 'activeProducts']);
         Route::get('/low-stock', [ProductController::class, 'lowStockProducts']);
         Route::get('/categories', [ProductController::class, 'categories']);
+        Route::get('/units', [ProductController::class, 'units']);
         Route::put('/{id}/toggle-status', [ProductController::class, 'toggleStatus']);
         Route::get('/sku/{sku}', [ProductController::class, 'getProductBySku']);
         // New routes for CSV import/export

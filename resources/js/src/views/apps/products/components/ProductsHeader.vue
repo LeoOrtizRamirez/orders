@@ -112,8 +112,8 @@
                     @change="handleFiltersChange"
                 >
                     <option value="">{{ $t('products_page.filters.all_categories') }}</option>
-                    <option v-for="category in categories" :key="category" :value="category">
-                        {{ category }}
+                    <option v-for="category in categories" :key="category.id" :value="category.id">
+                        {{ category.name }}
                     </option>
                 </select>
                 
@@ -158,7 +158,7 @@
             category: string;
             stock_status: string;
         };
-        categories: string[];
+        categories: {id: string, name: string}[];
         searchProduct: string;
     }
 

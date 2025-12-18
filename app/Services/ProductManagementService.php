@@ -151,7 +151,12 @@ class ProductManagementService
 
         if (($handle = fopen($file->getPathname(), 'r')) !== FALSE) {
             $header = fgetcsv($handle, 1000, ','); // Read header row
-            $expectedHeaders = ['name', 'sku', 'description', 'stock', 'min_stock', 'reorder_point', 'unit', 'category', 'brand', 'supplier', 'is_active', 'order'];
+            // BOM handling for UTF-8 files created in Excel
+            if (isset($header[0]) && str_starts_with($header[0], "\xEF\xBB\xBF")) {
+                $header[0] = substr($header[0], 3);
+            }
+            
+            $expectedHeaders = ['ITEM', 'DESCRIPCION', 'LINEA', 'TIPOFACTOR', 'ONHAND'];
 
             // Basic header validation
             if (array_diff($expectedHeaders, $header)) {
@@ -160,27 +165,48 @@ class ProductManagementService
 
             while (($row = fgetcsv($handle, 1000, ',')) !== FALSE) {
                 // Combine header with row data
+                if (count($header) !== count($row)) {
+                    $failedCount++;
+                    $errors[] = ['row' => $row, 'error' => 'Row column count mismatch header count'];
+                    continue;
+                }
+                
                 $data = array_combine($header, $row);
 
                 try {
                     // Basic validation for required fields
-                    if (empty($data['name']) || empty($data['sku'])) {
-                        throw new Exception('Product name and SKU are required.');
+                    if (empty($data['DESCRIPCION']) || empty($data['ITEM'])) {
+                        throw new Exception('Product name (DESCRIPCION) and SKU (ITEM) are required.');
                     }
 
+                    // Normalize Category (LINEA) from Code (01, 02) to Enum Value
+                    $lineaCode = isset($data['LINEA']) ? trim((string)$data['LINEA']) : null;
+                    $categoryMap = [
+                        '01' => 'FRUTAS',
+                        '02' => 'VERDURAS',
+                        '03' => 'TUBERCULOS',
+                        '04' => 'JUGOS',
+                        '05' => 'PULPAS',
+                        '99' => 'OTROS',
+                    ];
+                    $category = $categoryMap[$lineaCode] ?? 'OTROS';
+
+                    // Normalize Unit to uppercase if needed (e.g. 'Unidad' -> 'UNIDAD')
+                    $unit = isset($data['TIPOFACTOR']) ? strtoupper($data['TIPOFACTOR']) : 'UNIDAD';
+
                     $productData = [
-                        'name' => $data['name'],
-                        'sku' => $data['sku'],
-                        'description' => $data['description'] ?? null,
-                        'stock' => (int)($data['stock'] ?? 0),
-                        'min_stock' => (int)($data['min_stock'] ?? 0),
-                        'reorder_point' => (int)($data['reorder_point'] ?? 0),
-                        'unit' => $data['unit'] ?? 'unit',
-                        'category' => $data['category'] ?? null,
-                        'brand' => $data['brand'] ?? null,
-                        'supplier' => $data['supplier'] ?? null,
-                        'is_active' => (bool)($data['is_active'] ?? true),
-                        'order' => (int)($data['order'] ?? 0),
+                        'name' => $data['DESCRIPCION'],
+                        'sku' => $data['ITEM'],
+                        'description' => null,
+                        'stock' => (int)($data['ONHAND'] ?? 0),
+                        'min_stock' => 5,
+                        'reorder_point' => 10,
+                        'unit' => $unit,
+                        'category' => $category,
+                        'brand' => null,
+                        'supplier' => null,
+                        'is_active' => true,
+                        'order' => 0,
                     ];
 
                     $existingProduct = $this->productRepository->findBySku($productData['sku']);
@@ -204,19 +230,13 @@ class ProductManagementService
             throw new Exception('Could not open CSV file.');
         }
 
-                return [
-
-                    'imported' => $importedCount,
-
-                    'updated' => $updatedCount,
-
-                    'failed' => $failedCount,
-
-                    'errors' => $errors,
-
-                ];
-
-            }
+        return [
+            'imported' => $importedCount,
+            'updated' => $updatedCount,
+            'failed' => $failedCount,
+            'errors' => $errors,
+        ];
+    }
 
         }
 
