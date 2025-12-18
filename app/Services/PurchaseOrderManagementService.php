@@ -12,6 +12,7 @@ use App\Repositories\UserNoteRepository;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Log;
 use Spatie\Permission\Models\Role;
 
 class PurchaseOrderManagementService
@@ -206,16 +207,19 @@ class PurchaseOrderManagementService
 
     public function updateStatus(int $id, string $newStatus, int $userId)
     {
-        if ($newStatus === 'preparar pedido') {
+        $normalizedStatus = mb_strtolower($newStatus, 'UTF-8');
+
+        if ($normalizedStatus === 'preparar pedido') {
             return $this->prepareOrder($id, $userId);
         }
 
-        if ($newStatus === 'facturación') {
+        // Manejar variaciones con y sin tilde para mayor robustez
+        if ($normalizedStatus === 'facturación' || $normalizedStatus === 'facturacion') {
             return $this->processBilling($id);
         }
 
         $purchaseOrder = $this->getPurchaseOrder($id);
-        $purchaseOrder->update(['status' => $newStatus]);
+        $purchaseOrder->update(['status' => $newStatus]); // Guardamos el status original que vino del request para consistencia visual si se desea
         
         $this->notifyUsersOnStatusChange($purchaseOrder, null);
 
@@ -241,23 +245,42 @@ class PurchaseOrderManagementService
 
     private function processBilling(int $id)
     {
+        Log::info("Iniciando processBilling para Orden #{$id}");
+
         return DB::transaction(function () use ($id) {
             $purchaseOrder = $this->getPurchaseOrder($id);
+            
+            // Protección contra doble descuento de stock
+            $currentStatus = mb_strtolower($purchaseOrder->status, 'UTF-8');
+            if ($currentStatus === 'facturación' || $currentStatus === 'facturacion') {
+                 Log::warning("Orden #{$id} ya está en estado facturación. Omitiendo proceso de facturación.");
+                 return $purchaseOrder;
+            }
+
             $purchaseOrder->load('items.product');
 
+            Log::info("Orden cargada. Items: " . $purchaseOrder->items->count());
+
             foreach ($purchaseOrder->items as $item) {
+                Log::info("Verificando stock para Item {$item->id} (Producto {$item->product_id}). Stock: {$item->product->stock}, Cantidad: {$item->quantity}");
                 if ($item->product->stock < $item->quantity) {
+                    Log::error("Stock insuficiente para Item {$item->id}");
                     throw new Exception("Stock insuficiente para 'facturación': {$item->product->name}. Disponible: {$item->product->stock}, Solicitado: {$item->quantity}", 400);
                 }
             }
 
             foreach ($purchaseOrder->items as $item) {
-                $item->product->updateStock(-$item->quantity);
+                $qty = -$item->quantity;
+                Log::info("Descontando stock. Producto {$item->product_id}. Cantidad a sumar: {$qty}");
+                $updated = $item->product->updateStock($qty);
+                Log::info("Resultado updateStock: " . ($updated ? 'true' : 'false') . ". Nuevo Stock: {$item->product->stock}");
             }
 
             $purchaseOrder->update([
                 'status' => 'facturación',
             ]);
+            
+            Log::info("Estado actualizado a facturación.");
 
             $this->notifyUsersOnStatusChange($purchaseOrder, null);
 

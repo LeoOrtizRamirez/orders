@@ -90,6 +90,18 @@ const routes: RouteRecordRaw[] = [
         component: () => import(/* webpackChunkName: "apps-reports-sales" */ '../views/apps/reports/SalesDashboard.vue'),
         meta: { requiresAuth: true }
     },
+    {
+        path: '/apps/reports/inventory',
+        name: 'inventory-report',
+        component: () => import(/* webpackChunkName: "apps-reports-inventory" */ '../views/apps/reports/InventoryReport.vue'),
+        meta: { requiresAuth: true }
+    },
+    {
+        path: '/apps/reports/operations',
+        name: 'operations-report',
+        component: () => import(/* webpackChunkName: "apps-reports-operations" */ '../views/apps/reports/OperationsReport.vue'),
+        meta: { requiresAuth: true }
+    },
 
 
     // components

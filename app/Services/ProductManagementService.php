@@ -142,102 +142,206 @@ class ProductManagementService
         return $prefix . '-' . substr($timestamp, -6);
     }
 
-    public function importProducts(UploadedFile $file): array
-    {
-        $importedCount = 0;
-        $updatedCount = 0;
-        $failedCount = 0;
-        $errors = [];
+        public function importProducts(UploadedFile $file): array
 
-        if (($handle = fopen($file->getPathname(), 'r')) !== FALSE) {
-            $header = fgetcsv($handle, 1000, ','); // Read header row
-            // BOM handling for UTF-8 files created in Excel
-            if (isset($header[0]) && str_starts_with($header[0], "\xEF\xBB\xBF")) {
-                $header[0] = substr($header[0], 3);
-            }
-            
-            $expectedHeaders = ['ITEM', 'DESCRIPCION', 'LINEA', 'TIPOFACTOR', 'ONHAND'];
+        {
 
-            // Basic header validation
-            if (array_diff($expectedHeaders, $header)) {
-                throw new Exception('Invalid CSV header. Expected: ' . implode(', ', $expectedHeaders));
-            }
+            $importedCount = 0;
 
-            while (($row = fgetcsv($handle, 1000, ',')) !== FALSE) {
-                // Combine header with row data
-                if (count($header) !== count($row)) {
-                    $failedCount++;
-                    $errors[] = ['row' => $row, 'error' => 'Row column count mismatch header count'];
-                    continue;
+            $updatedCount = 0;
+
+            $failedCount = 0;
+
+            $errors = [];
+
+    
+
+            if (($handle = fopen($file->getPathname(), 'r')) !== FALSE) {
+
+                $header = fgetcsv($handle, 1000, ','); // Read header row
+
+                // BOM handling for UTF-8 files created in Excel
+
+                if (isset($header[0]) && str_starts_with($header[0], "\xEF\xBB\xBF")) {
+
+                    $header[0] = substr($header[0], 3);
+
                 }
+
                 
-                $data = array_combine($header, $row);
 
-                try {
-                    // Basic validation for required fields
-                    if (empty($data['DESCRIPCION']) || empty($data['ITEM'])) {
-                        throw new Exception('Product name (DESCRIPCION) and SKU (ITEM) are required.');
-                    }
+                $expectedHeaders = ['ITEM', 'DESCRIPCION', 'LINEA', 'TIPOFACTOR', 'ONHAND'];
 
-                    // Normalize Category (LINEA) from Code (01, 02) to Enum Value
-                    $lineaCode = isset($data['LINEA']) ? trim((string)$data['LINEA']) : null;
-                    $categoryMap = [
-                        '01' => 'FRUTAS',
-                        '02' => 'VERDURAS',
-                        '03' => 'TUBERCULOS',
-                        '04' => 'JUGOS',
-                        '05' => 'PULPAS',
-                        '99' => 'OTROS',
-                    ];
-                    $category = $categoryMap[$lineaCode] ?? 'OTROS';
+    
 
-                    // Normalize Unit to uppercase if needed (e.g. 'Unidad' -> 'UNIDAD')
-                    $unit = isset($data['TIPOFACTOR']) ? strtoupper($data['TIPOFACTOR']) : 'UNIDAD';
+                // Basic header validation
 
-                    $productData = [
-                        'name' => $data['DESCRIPCION'],
-                        'sku' => $data['ITEM'],
-                        'description' => null,
-                        'stock' => (int)($data['ONHAND'] ?? 0),
-                        'min_stock' => 5,
-                        'reorder_point' => 10,
-                        'unit' => $unit,
-                        'category' => $category,
-                        'brand' => null,
-                        'supplier' => null,
-                        'is_active' => true,
-                        'order' => 0,
-                    ];
+                if (array_diff($expectedHeaders, $header)) {
 
-                    $existingProduct = $this->productRepository->findBySku($productData['sku']);
+                    throw new Exception('Invalid CSV header. Expected: ' . implode(', ', $expectedHeaders));
 
-                    if ($existingProduct) {
-                        // Update existing product
-                        $this->productRepository->update($existingProduct->id, $productData);
-                        $updatedCount++;
-                    } else {
-                        // Create new product
-                        $this->productRepository->create($productData);
-                        $importedCount++;
-                    }
-                } catch (Exception $e) {
-                    $failedCount++;
-                    $errors[] = ['row' => $data, 'error' => $e->getMessage()];
                 }
+
+    
+
+                while (($row = fgetcsv($handle, 1000, ',')) !== FALSE) {
+
+                    // Combine header with row data
+
+                    if (count($header) !== count($row)) {
+
+                        $failedCount++;
+
+                        $errors[] = ['row' => $row, 'error' => 'Row column count mismatch header count'];
+
+                        continue;
+
+                    }
+
+                    
+
+                    $data = array_combine($header, $row);
+
+    
+
+                    try {
+
+                        // Basic validation for required fields
+
+                        if (empty($data['DESCRIPCION']) || empty($data['ITEM'])) {
+
+                            throw new Exception('Product name (DESCRIPCION) and SKU (ITEM) are required.');
+
+                        }
+
+    
+
+                        // Normalize Category (LINEA) from Code (01, 02) to Enum Value
+
+                        $lineaCode = isset($data['LINEA']) ? trim((string)$data['LINEA']) : null;
+
+                        $categoryMap = [
+
+                            '01' => 'FRUTAS',
+
+                            '02' => 'VERDURAS',
+
+                            '03' => 'TUBERCULOS',
+
+                            '04' => 'JUGOS',
+
+                            '05' => 'PULPAS',
+
+                            '99' => 'OTROS',
+
+                        ];
+
+                        $category = $categoryMap[$lineaCode] ?? 'OTROS';
+
+    
+
+                        // Normalize Unit to uppercase if needed (e.g. 'Unidad' -> 'UNIDAD')
+
+                        $unit = isset($data['TIPOFACTOR']) ? strtoupper($data['TIPOFACTOR']) : 'UNIDAD';
+
+    
+
+                        $productData = [
+
+                            'name' => $data['DESCRIPCION'],
+
+                            'sku' => $data['ITEM'],
+
+                            'description' => null,
+
+                            'stock' => (int)($data['ONHAND'] ?? 0),
+
+                            'min_stock' => 5,
+
+                            'reorder_point' => 10,
+
+                            'unit' => $unit,
+
+                            'category' => $category,
+
+                            'brand' => null,
+
+                            'supplier' => null,
+
+                            'is_active' => true,
+
+                            'order' => 0,
+
+                        ];
+
+    
+
+                        $existingProduct = $this->productRepository->findBySku($productData['sku']);
+
+    
+
+                        if ($existingProduct) {
+
+                            // Update existing product
+
+                            $this->productRepository->update($existingProduct->id, $productData);
+
+                            $updatedCount++;
+
+                        } else {
+
+                            // Create new product
+
+                            $this->productRepository->create($productData);
+
+                            $importedCount++;
+
+                        }
+
+                    } catch (Exception $e) {
+
+                        $failedCount++;
+
+                        $errors[] = ['row' => $data, 'error' => $e->getMessage()];
+
+                    }
+
+                }
+
+                fclose($handle);
+
+            } else {
+
+                throw new Exception('Could not open CSV file.');
+
             }
-            fclose($handle);
-        } else {
-            throw new Exception('Could not open CSV file.');
+
+    
+
+            return [
+
+                'imported' => $importedCount,
+
+                'updated' => $updatedCount,
+
+                'failed' => $failedCount,
+
+                'errors' => $errors,
+
+            ];
+
         }
 
-        return [
-            'imported' => $importedCount,
-            'updated' => $updatedCount,
-            'failed' => $failedCount,
-            'errors' => $errors,
-        ];
+    
+
+        public function getPendingOrdersForProduct(int $productId)
+
+        {
+
+            return $this->productRepository->getPendingOrders($productId);
+
+        }
+
     }
-
-        }
 
         

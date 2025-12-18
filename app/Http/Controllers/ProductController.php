@@ -24,7 +24,7 @@ class ProductController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            $filters = $request->only(['search', 'active', 'category', 'stock_status', 'per_page']);
+            $filters = $request->only(['search', 'active', 'category', 'unit', 'stock_status', 'per_page']);
             $perPage = $request->get('per_page', 15);
             $filters['per_page'] = $perPage;
 
@@ -280,5 +280,18 @@ class ProductController extends Controller
         file_put_contents($tempFilePath, $templateContent);
 
         return response()->download($tempFilePath, 'products_template.csv', $headers)->deleteFileAfterSend(true);
+    }
+
+    public function pendingOrders($id): JsonResponse
+    {
+        try {
+            $orders = $this->productService->getPendingOrdersForProduct($id);
+            return response()->json(['data' => $orders]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Failed to load pending orders',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 }
