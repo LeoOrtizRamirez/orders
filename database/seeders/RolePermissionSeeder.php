@@ -116,7 +116,36 @@ class RolePermissionSeeder extends Seeder
 
             // PERMISOS PARA CONFIGURACIÓN
             ['name' => 'view settings', 'description' => 'Permite ver configuración'],
-            ['name' => 'manage settings', 'description' => 'Permite gestionar configuración']
+            ['name' => 'manage settings', 'description' => 'Permite gestionar configuración'],
+
+            // PERMISOS PARA EVENTOS
+            ['name' => 'view events', 'description' => 'Permite ver eventos'],
+            ['name' => 'create events', 'description' => 'Permite crear eventos'],
+            ['name' => 'edit events', 'description' => 'Permite editar eventos'],
+            ['name' => 'delete events', 'description' => 'Permite eliminar eventos'],
+
+            // PERMISOS PARA SERVICIOS
+            ['name' => 'view services', 'description' => 'Permite ver servicios'],
+            ['name' => 'create services', 'description' => 'Permite crear servicios'],
+            ['name' => 'edit services', 'description' => 'Permite editar servicios'],
+            ['name' => 'delete services', 'description' => 'Permite eliminar servicios'],
+            ['name' => 'manage services', 'description' => 'Permite gestionar servicios'],
+
+            // PERMISOS PARA VIDEOS
+            ['name' => 'view videos', 'description' => 'Permite ver videos'],
+            ['name' => 'create videos', 'description' => 'Permite crear videos'],
+            ['name' => 'edit videos', 'description' => 'Permite editar videos'],
+            ['name' => 'delete videos', 'description' => 'Permite eliminar videos'],
+
+            // PERMISOS PARA NOTAS DE USUARIO
+            ['name' => 'view user_notes', 'description' => 'Permite ver notas de usuario'],
+            ['name' => 'create user_notes', 'description' => 'Permite crear notas de usuario'],
+            ['name' => 'edit user_notes', 'description' => 'Permite editar notas de usuario'],
+            ['name' => 'delete user_notes', 'description' => 'Permite eliminar notas de usuario'],
+
+            // PERMISOS PARA MÉTRICAS
+            ['name' => 'view profile_metrics', 'description' => 'Permite ver métricas de perfil'],
+            ['name' => 'manage profile_metrics', 'description' => 'Permite gestionar métricas de perfil']
         ];
 
         foreach ($permissions as $permissionData) {
@@ -136,9 +165,9 @@ class RolePermissionSeeder extends Seeder
     {
         $roles = [
             ['name' => 'Administrador', 'description' => 'Administrador del sistema con todos los permisos', 'is_system' => true],
-            ['name' => 'Comercial', 'description' => '', 'is_system' => false],
-            ['name' => 'Despachos', 'description' => '', 'is_system' => false],
-            ['name' => 'Contabilidad', 'description' => '', 'is_system' => false]
+            ['name' => 'Comercial', 'description' => 'Acceso a ventas, productos y clientes', 'is_system' => false],
+            ['name' => 'Despachos', 'description' => 'Acceso a gestión de envíos y estados de órdenes', 'is_system' => false],
+            ['name' => 'Contabilidad', 'description' => 'Acceso a reportes y vista de órdenes', 'is_system' => false]
         ];
 
         foreach ($roles as $roleData) {
@@ -166,8 +195,34 @@ class RolePermissionSeeder extends Seeder
 
         // Asignar permisos a otros roles
         $this->assignPermissionsSafely('Comercial', $this->getManagerPermissions());
-        $this->assignPermissionsSafely('Despachos', []);
-        $this->assignPermissionsSafely('Contabilidad',[]);
+        
+        // Permisos para Despachos
+        $despachosPermissions = [
+            'view purchase_orders',
+            'change_order_status',
+            'assign_order_driver',
+            'view products',
+            'view inventory',
+            'view_order_history',
+            'view dashboard'
+        ];
+        $this->assignPermissionsSafely('Despachos', $despachosPermissions);
+
+        // Permisos para Contabilidad
+        $contabilidadPermissions = [
+            'view purchase_orders',
+            'view_order_history',
+            'view_order_reports',
+            'view suppliers',
+            'view_supplier_details',
+            'view_supplier_purchase_orders',
+            'view reports',
+            'generate reports',
+            'export reports',
+            'view dashboard',
+            'view products' // Agregado permiso para ver productos
+        ];
+        $this->assignPermissionsSafely('Contabilidad', $contabilidadPermissions);
 
         $this->command->info('Permissions assigned to roles successfully.');
     }
@@ -241,7 +296,23 @@ class RolePermissionSeeder extends Seeder
             'export reports',
             'manage inventory',
             'adjust inventory',
-            'manage settings'
+            'manage settings',
+            
+            // Nuevos permisos agregados para Manager/Comercial
+            'view events',
+            'create events',
+            'edit events',
+            'view services',
+            'create services',
+            'edit services',
+            'manage services',
+            'view videos',
+            'create videos',
+            'edit videos',
+            'view user_notes',
+            'create user_notes',
+            'edit user_notes',
+            'view profile_metrics'
         ];
     }
 

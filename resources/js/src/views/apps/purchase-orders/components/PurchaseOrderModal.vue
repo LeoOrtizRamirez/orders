@@ -82,92 +82,98 @@
                                     :key="index"
                                     class="border border-[#e0e6ed] dark:border-[#1b2e4b] rounded p-4 bg-gray-50 dark:bg-[#1a2234]"
                                 >
-                                    <div class="grid grid-cols-1 md:grid-cols-[auto_1.5fr_1fr_auto] gap-4 items-start">
-                                        <!-- Checkbox Visual -->
-                                        <div class="flex justify-center mt-8">
-                                            <input type="checkbox" class="form-checkbox w-5 h-5" v-model="item.checked" />
-                                        </div>
+                                    <div class="flex flex-col gap-3">
+                                        <!-- Fila Principal: Checkbox - Producto - Cantidad - Eliminar -->
+                                        <div class="flex items-start gap-3">
+                                            <!-- Checkbox -->
+                                            <div class="pt-2">
+                                                <input type="checkbox" class="form-checkbox w-5 h-5" v-model="item.checked" />
+                                            </div>
 
-                                        <!-- Producto -->
-                                        <div>
-                                            <label class="form-label">
-                                                {{ $t('purchase_orders_page.create_modal.fields.product') }} *
-                                            </label>
-                                            <select
-                                                v-model="item.product_id"
-                                                class="form-select"
-                                                :class="{ 
-                                                    'border-danger': errors[`items.${index}.product_id`] || 
-                                                    !item.product_id && item.quantity > 0 
-                                                }"
-                                                required
-                                            >
-                                                <option value="">{{ $t('purchase_orders_page.create_modal.placeholders.select_product') }}</option>
-                                                <option
-                                                    v-for="product in availableProducts"
-                                                    :key="product.id"
-                                                    :value="product.id"
+                                            <!-- Producto (Expandible) -->
+                                            <div class="flex-grow">
+                                                <multiselect
+                                                    :model-value="getProductInfo(item.product_id)"
+                                                    :options="availableProducts"
+                                                    class="custom-multiselect"
+                                                    :searchable="true"
+                                                    track-by="id"
+                                                    label="name"
+                                                    :placeholder="$t('purchase_orders_page.create_modal.placeholders.select_product')"
+                                                    selected-label=""
+                                                    select-label=""
+                                                    deselect-label=""
+                                                    @update:model-value="(selected: any) => item.product_id = selected ? selected.id : null"
                                                 >
-                                                    {{ product.name }} 
-                                                    <span v-if="!product.stock || product.stock <= 0" class="text-danger text-xs">
-                                                        (Sin stock)
-                                                    </span>
-                                                    <span v-else class="text-success text-xs">
-                                                        (Stock: {{ product.stock }})
-                                                    </span>
-                                                </option>
-                                            </select>
-                                            <div v-if="errors[`items.${index}.product_id`]" class="text-danger mt-1 text-xs">
-                                                {{ errors[`items.${index}.product_id`][0] }}
-                                            </div>
-                                        </div>
-
-                                        <!-- Cantidad -->
-                                        <div>
-                                            <label class="form-label">
-                                                {{ $t('purchase_orders_page.create_modal.fields.quantity') }} *
-                                            </label>
-                                            <input
-                                                type="number"
-                                                v-model.number="item.quantity"
-                                                min="1"
-                                                class="form-input"
-                                                :class="{ 
-                                                    'border-danger': errors[`items.${index}.quantity`] 
-                                                }"
-                                                @input="handleQuantityChange(index, item.quantity)"
-                                                required
-                                            />
-                                            <div v-if="errors[`items.${index}.quantity`]" class="text-danger mt-1 text-xs">
-                                                {{ errors[`items.${index}.quantity`][0] }}
-                                            </div>
-                                            <div v-if="item.product_id" 
-                                                 class="mt-1 text-xs"
-                                                 :class="getStockClass(item.product_id)">
-                                                Stock actual: {{ getMaxQuantity(item.product_id) }}
-                                            </div>
-
-                                            <!-- Notas del item -->
-                                            <div class="mt-3">
-                                                <label class="form-label font-semibold text-xs">{{ $t('user_notes.notes_label') }}</label>
-                                                <div class="bg-gray-100 dark:bg-gray-700 p-2 rounded space-y-2 max-h-24 overflow-y-auto mb-2">
-                                                    <div v-for="note in item.itemNotes" :key="note.id" class="text-xs pb-1 border-b dark:border-gray-600 last:border-b-0">
-                                                        <p class="font-semibold">{{ note.author?.name }} <span class="text-gray-500 text-xs">- {{ formatNoteTimestamp(note.created_at) }}</span></p>
-                                                        <p class="text-gray-600 dark:text-gray-300 whitespace-pre-wrap">{{ note.note }}</p>
-                                                    </div>
-                                                    <div v-if="!item.itemNotes || item.itemNotes.length === 0" class="text-gray-500 text-xs">
-                                                        {{ $t('user_notes.no_notes_for_item') }}
-                                                    </div>
+                                                    <template #option="{ option }">
+                                                        <div class="flex justify-between items-center w-full">
+                                                            <span>{{ option.name }}</span>
+                                                            <span v-if="!option.stock || option.stock <= 0" class="text-danger text-xs font-bold ml-2">
+                                                                (Sin stock)
+                                                            </span>
+                                                            <span v-else class="text-success text-xs ml-2">
+                                                                (Stock: {{ option.stock }})
+                                                            </span>
+                                                        </div>
+                                                    </template>
+                                                    <template #singleLabel="{ option }">
+                                                        <div class="flex items-center">
+                                                            <span>{{ option.name }}</span>
+                                                            <span v-if="option.stock !== undefined" class="text-gray-500 text-xs ml-2">
+                                                                (Stock: {{ option.stock }})
+                                                            </span>
+                                                        </div>
+                                                    </template>
+                                                </multiselect>
+                                                <div v-if="errors[`items.${index}.product_id`]" class="text-danger mt-1 text-xs">
+                                                    {{ errors[`items.${index}.product_id`][0] }}
                                                 </div>
-                                                <input type="text" class="form-input text-xs" :placeholder="$t('purchase_orders_page.create_modal.placeholders.item_notes')" v-model="item.notes">
                                             </div>
-                                        </div>
-                                        
-                                        <!-- Botón Eliminar Item -->
-                                        <div class="flex justify-end mt-7">
-                                            <button type="button" class="btn btn-outline-danger btn-sm p-2" @click="$emit('remove-item', index)" v-if="params.items.length > 1">
+
+                                            <!-- Cantidad (Fijo) -->
+                                            <div class="w-24">
+                                                <input
+                                                    type="number"
+                                                    v-model.number="item.quantity"
+                                                    :min="0"
+                                                    class="form-input h-[42px]" 
+                                                    :class="{ 'border-danger': errors[`items.${index}.quantity`] }"
+                                                    placeholder="Cant."
+                                                    @input="handleQuantityChange(index, item.quantity)"
+                                                    required
+                                                />
+                                            </div>
+
+                                            <!-- Botón Eliminar -->
+                                            <button 
+                                                type="button" 
+                                                class="btn btn-outline-danger btn-sm h-[42px] px-3" 
+                                                @click="$emit('remove-item', index)" 
+                                                v-if="params.items.length > 1"
+                                            >
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                                             </button>
+                                        </div>
+
+                                        <!-- Fila Secundaria: Errores de cantidad y Stock -->
+                                        <div class="pl-8">
+                                            <div v-if="errors[`items.${index}.quantity`]" class="text-danger text-xs mb-1">
+                                                {{ errors[`items.${index}.quantity`][0] }}
+                                            </div>
+                                            <div v-if="item.product_id" class="text-xs" :class="getStockClass(item.product_id)">
+                                                Stock actual: {{ getMaxQuantity(item.product_id) }}
+                                            </div>
+                                        </div>
+
+                                        <!-- Fila Terciaria: Notas -->
+                                        <div class="pl-8">
+                                            <div class="bg-gray-100 dark:bg-gray-700 p-2 rounded space-y-2 max-h-24 overflow-y-auto mb-2" v-if="item.itemNotes && item.itemNotes.length > 0">
+                                                <div v-for="note in item.itemNotes" :key="note.id" class="text-xs pb-1 border-b dark:border-gray-600 last:border-b-0">
+                                                    <p class="font-semibold">{{ note.author?.name }} <span class="text-gray-500 text-xs">- {{ formatNoteTimestamp(note.created_at) }}</span></p>
+                                                    <p class="text-gray-600 dark:text-gray-300 whitespace-pre-wrap">{{ note.note }}</p>
+                                                </div>
+                                            </div>
+                                            <input type="text" class="form-input text-xs" :placeholder="$t('purchase_orders_page.create_modal.placeholders.item_notes')" v-model="item.notes">
                                         </div>
                                     </div>
                                 </div>
@@ -242,6 +248,10 @@
     import { computed, ref } from 'vue';
     import type { UserNote, PurchaseOrderParams } from '@/types/purchase-orders';
     import { useI18n } from 'vue-i18n';
+    
+    // Importar Multiselect
+    import Multiselect from '@suadelabs/vue3-multiselect';
+    import '@suadelabs/vue3-multiselect/dist/vue3-multiselect.css';
 
     const { t } = useI18n();
 
@@ -284,10 +294,11 @@
     });
 
     // Methods
-    const handleQuantityChange = (index: number, quantity: number) => {
-        // Validar cantidad en tiempo real
-        if (quantity < 1) {
-            props.params.items[index].quantity = 1;
+    const handleQuantityChange = (index: number, quantity: any) => {
+        if (quantity === '' || quantity === null) return;
+
+        if (quantity < 0) {
+            props.params.items[index].quantity = 0;
         }
     };
 
@@ -295,6 +306,11 @@
         if (!productId) return 0;
         const product = props.products.find(p => p.id === productId);
         return product?.stock || 0;
+    };
+
+    const getProductInfo = (productId: number | null) => {
+        if (!productId) return null;
+        return props.products.find(product => product.id === productId) || null;
     };
 
     const getQuantityValidation = (productId: number | null, quantity: number) => {

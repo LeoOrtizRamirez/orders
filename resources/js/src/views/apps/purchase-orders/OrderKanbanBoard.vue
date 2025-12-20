@@ -14,7 +14,7 @@
                 <h2 class="text-xl leading-relaxed">{{ $t('ordenes.order_kanban_board') }}</h2>
                 <div class="flex sm:flex-row flex-col sm:items-center sm:gap-3 gap-4">
                     <div class="flex gap-3">
-                        <button type="button" class="btn btn-primary" @click="handleAddOrder">
+                        <button v-if="authStore.can('create purchase_orders')" type="button" class="btn btn-primary" @click="handleAddOrder">
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 width="24px"
@@ -112,13 +112,13 @@
                                                 <button type="button" class="btn btn-outline-info btn-sm" @click="handleViewOrder(order)">
                                                     {{ $t('ordenes.view_details') }}
                                                 </button>
-                                                <button type="button" class="btn btn-outline-secondary btn-sm" @click="handleEditOrder(order)">
+                                                <button v-if="authStore.can('edit purchase_orders')" type="button" class="btn btn-outline-secondary btn-sm" @click="handleEditOrder(order)">
                                                     {{ $t('edit') }}
                                                 </button>
-                                                <button v-if="canSplitOrder(order)" type="button" class="btn btn-outline-warning btn-sm" @click="handleShowSplitModal(order)">
+                                                <button v-if="canSplitOrder(order) && authStore.can('create purchase_orders')" type="button" class="btn btn-outline-warning btn-sm" @click="handleShowSplitModal(order)">
                                                     {{ $t('purchase_orders_page.actions.split') }}
                                                 </button>
-                                                <button type="button" class="btn btn-outline-danger btn-sm" @click="handleDeleteOrder(order)">
+                                                <button v-if="authStore.can('delete purchase_orders')" type="button" class="btn btn-outline-danger btn-sm" @click="handleDeleteOrder(order)">
                                                     {{ $t('delete') }}
                                                 </button>
                                             </div>
@@ -184,10 +184,12 @@
     import AlertMessages from '../../components/shared/AlertMessages.vue';
     import { useRouter, useRoute } from 'vue-router';
     import type { PurchaseOrder } from '@/types/purchase-orders';
+    import { useAuthStore } from '@/stores/auth';
 
     const { t } = useI18n();
     const router = useRouter(); 
     const route = useRoute();
+    const authStore = useAuthStore();
     useMeta({ title: t('ordenes.order_kanban_board') });
 
 

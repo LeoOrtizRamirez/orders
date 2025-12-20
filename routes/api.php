@@ -42,7 +42,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/notifications/{id}/mark-as-read', [NotificationController::class, 'markAsRead']);
 
     // Reports
-    Route::get('/reports/sales', [ReportController::class, 'salesReport']);
+    Route::get('/reports/sales', [ReportController::class, 'salesReport'])->middleware('permission:view reports');
     
     // Logout
     Route::post('/logout', [AuthController::class, 'logout']);
@@ -109,28 +109,38 @@ Route::middleware(['auth:sanctum'])->group(function () {
     });
 
 
-    Route::apiResource('services', ServiceController::class);
-    // Rutas adicionales para Services
+    // Rutas para Services
     Route::prefix('services')->group(function () {
-        Route::get('/active/list', [ServiceController::class, 'activeServices']);
-        Route::put('/{id}/toggle-status', [ServiceController::class, 'toggleStatus']);
-        Route::get('/slug/{slug}', [ServiceController::class, 'getServiceBySlug']);
+        Route::get('/', [ServiceController::class, 'index'])->middleware('permission:view services');
+        Route::post('/', [ServiceController::class, 'store'])->middleware('permission:create services');
+        Route::get('/{service}', [ServiceController::class, 'show'])->middleware('permission:view services');
+        Route::put('/{service}', [ServiceController::class, 'update'])->middleware('permission:edit services');
+        Route::delete('/{service}', [ServiceController::class, 'destroy'])->middleware('permission:delete services');
+        
+        Route::get('/active/list', [ServiceController::class, 'activeServices'])->middleware('permission:view services');
+        Route::put('/{id}/toggle-status', [ServiceController::class, 'toggleStatus'])->middleware('permission:edit services');
+        Route::get('/slug/{slug}', [ServiceController::class, 'getServiceBySlug']); // Público o Auth genérico
     });
 
-    Route::apiResource('videos', VideoController::class);
-    // Rutas adicionales para Videos
+    // Rutas para Videos
     Route::prefix('videos')->group(function () {
-        Route::get('/service/{serviceId}', [VideoController::class, 'byService']);
-        Route::get('/free/list', [VideoController::class, 'freeVideos']);
-        Route::put('/{id}/toggle-status', [VideoController::class, 'toggleStatus']);
+        Route::get('/', [VideoController::class, 'index'])->middleware('permission:view videos');
+        Route::post('/', [VideoController::class, 'store'])->middleware('permission:create videos');
+        Route::get('/{video}', [VideoController::class, 'show'])->middleware('permission:view videos');
+        Route::put('/{video}', [VideoController::class, 'update'])->middleware('permission:edit videos');
+        Route::delete('/{video}', [VideoController::class, 'destroy'])->middleware('permission:delete videos');
+
+        Route::get('/service/{serviceId}', [VideoController::class, 'byService'])->middleware('permission:view videos');
+        Route::get('/free/list', [VideoController::class, 'freeVideos']); // Probablemente público o básico
+        Route::put('/{id}/toggle-status', [VideoController::class, 'toggleStatus'])->middleware('permission:edit videos');
     });
 
     // Ruta principal para métricas
     Route::get('/profile-metrics', [ProfileMetricController::class, 'getUserMetrics'])
         ->name('profile-metrics.index');
     
-    // Rutas solo para admin
-    Route::prefix('profile-metrics')->group(function () {
+    // Rutas de métricas solo para admin/manager
+    Route::prefix('profile-metrics')->middleware('permission:manage profile_metrics')->group(function () {
         Route::get('/users', [ProfileMetricController::class, 'getUsersList'])
             ->name('profile-metrics.users');
         Route::get('/global', [ProfileMetricController::class, 'getGlobalMetrics'])
@@ -138,44 +148,62 @@ Route::middleware(['auth:sanctum'])->group(function () {
     });
 
     Route::prefix('user-notes')->group(function () {
-        Route::get('/', [UserNoteController::class, 'index']);
-        Route::post('/', [UserNoteController::class, 'store']);
-        Route::put('/{noteId}', [UserNoteController::class, 'update']);
-        Route::delete('/{noteId}', [UserNoteController::class, 'destroy']);
+        Route::get('/', [UserNoteController::class, 'index'])->middleware('permission:view user_notes');
+        Route::post('/', [UserNoteController::class, 'store'])->middleware('permission:create user_notes');
+        Route::put('/{noteId}', [UserNoteController::class, 'update'])->middleware('permission:edit user_notes');
+        Route::delete('/{noteId}', [UserNoteController::class, 'destroy'])->middleware('permission:delete user_notes');
     });
 
     // Rutas de productos
     Route::prefix('products')->group(function () {
-        Route::get('/active/list', [ProductController::class, 'activeProducts']);
-        Route::get('/low-stock', [ProductController::class, 'lowStockProducts']);
-        Route::get('/categories', [ProductController::class, 'categories']);
-        Route::get('/units', [ProductController::class, 'units']);
-        Route::put('/{id}/toggle-status', [ProductController::class, 'toggleStatus']);
-        Route::get('/sku/{sku}', [ProductController::class, 'getProductBySku']);
-        // New routes for CSV import/export
+        // Rutas específicas primero
+        Route::get('/active/list', [ProductController::class, 'activeProducts'])->middleware('permission:view products');
+        Route::get('/low-stock', [ProductController::class, 'lowStockProducts'])->middleware('permission:view products');
+        Route::get('/categories', [ProductController::class, 'categories'])->middleware('permission:view products');
+        Route::get('/units', [ProductController::class, 'units'])->middleware('permission:view products');
+        Route::put('/{id}/toggle-status', [ProductController::class, 'toggleStatus'])->middleware('permission:edit products');
+        Route::get('/sku/{sku}', [ProductController::class, 'getProductBySku'])->middleware('permission:view products');
+        Route::get('/{id}/pending-orders', [ProductController::class, 'pendingOrders'])->middleware('permission:view products');
+
+        // Import/Export (ya tenían middleware, se mantienen)
         Route::post('/import', [ProductController::class, 'importProductsCsv'])->middleware('permission:create products');
         Route::get('/template', [ProductController::class, 'downloadProductsCsvTemplate'])->middleware('permission:create products');
-        
-        // Ruta para ver órdenes pendientes de un producto (Detalle de Stock Comprometido)
-        Route::get('/{id}/pending-orders', [ProductController::class, 'pendingOrders']);
+
+        // CRUD estándar
+        Route::get('/', [ProductController::class, 'index'])->middleware('permission:view products');
+        Route::post('/', [ProductController::class, 'store'])->middleware('permission:create products');
+        Route::get('/{product}', [ProductController::class, 'show'])->middleware('permission:view products');
+        Route::put('/{product}', [ProductController::class, 'update'])->middleware('permission:edit products');
+        Route::delete('/{product}', [ProductController::class, 'destroy'])->middleware('permission:delete products');
     });
-    Route::apiResource('products', ProductController::class);
 
     // Rutas de proveedores
-    Route::get('/suppliers/active/list', [SupplierController::class, 'activeSuppliers']);
-    Route::get('/suppliers/for-select', [SupplierController::class, 'forSelect']);
-    Route::put('/suppliers/{id}/toggle-status', [SupplierController::class, 'toggleStatus']);
-    Route::apiResource('suppliers', SupplierController::class);
-
-    // Rutas de órdenes de compra (todas unificadas y ordenadas por especificidad)
-    Route::prefix('purchase-orders')->group(function () {
-        // Rutas con {purchaseOrder} para PurchaseOrderStatusController
-        Route::prefix('{purchaseOrder}')->group(function () {
-            Route::post('/split', [PurchaseOrderController::class, 'split'])->middleware('permission:create purchase_orders'); // New route for splitting orders
-            Route::put('/status', [PurchaseOrderStatusController::class, 'updateStatus']);
-        });
+    Route::prefix('suppliers')->group(function () {
+        Route::get('/active/list', [SupplierController::class, 'activeSuppliers'])->middleware('permission:view suppliers');
+        Route::get('/for-select', [SupplierController::class, 'forSelect'])->middleware('permission:view suppliers');
+        Route::put('/{id}/toggle-status', [SupplierController::class, 'toggleStatus'])->middleware('permission:toggle_supplier_status');
+        
+        // CRUD estándar
+        Route::get('/', [SupplierController::class, 'index'])->middleware('permission:view suppliers');
+        Route::post('/', [SupplierController::class, 'store'])->middleware('permission:create suppliers');
+        Route::get('/{supplier}', [SupplierController::class, 'show'])->middleware('permission:view suppliers');
+        Route::put('/{supplier}', [SupplierController::class, 'update'])->middleware('permission:edit suppliers');
+        Route::delete('/{supplier}', [SupplierController::class, 'destroy'])->middleware('permission:delete suppliers');
     });
 
-    // apiResource debe ir al final para no interceptar las rutas más específicas
-    Route::apiResource('purchase-orders', PurchaseOrderController::class);
+    // Rutas de órdenes de compra
+    Route::prefix('purchase-orders')->group(function () {
+        // Rutas específicas
+        Route::prefix('{purchaseOrder}')->group(function () {
+            Route::post('/split', [PurchaseOrderController::class, 'split'])->middleware('permission:create purchase_orders');
+            Route::put('/status', [PurchaseOrderStatusController::class, 'updateStatus'])->middleware('permission:change_order_status');
+        });
+
+        // CRUD estándar
+        Route::get('/', [PurchaseOrderController::class, 'index'])->middleware('permission:view purchase_orders');
+        Route::post('/', [PurchaseOrderController::class, 'store'])->middleware('permission:create purchase_orders');
+        Route::get('/{purchaseOrder}', [PurchaseOrderController::class, 'show'])->middleware('permission:view purchase_orders');
+        Route::put('/{purchaseOrder}', [PurchaseOrderController::class, 'update'])->middleware('permission:edit purchase_orders');
+        Route::delete('/{purchaseOrder}', [PurchaseOrderController::class, 'destroy'])->middleware('permission:delete purchase_orders');
+    });
 });

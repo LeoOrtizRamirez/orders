@@ -54,53 +54,53 @@ const routes: RouteRecordRaw[] = [
         path: '/apps/manage-roles/roles-list',
         name: 'roles-list',
         component: () => import(/* webpackChunkName: "apps-roles-list" */ '../views/apps/roles/roles-list.vue'),
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, permissions: ['view roles'] }
     },
     {
         path: '/apps/manage-roles/permissions-list',
         name: 'permissions-list',
         component: () => import(/* webpackChunkName: "apps-roles-preview" */ '../views/apps/roles/permissions-list.vue'),
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, permissions: ['view permissions'] }
     },
 
     {
         path: '/apps/products/',
         name: 'products',
         component: () => import(/* webpackChunkName: "apps-services" */ '../views/apps/products/Products.vue'),
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, permissions: ['view products'] }
     },
 
     {
         path: '/apps/suppliers/',
         name: 'suppliers',
         component: () => import(/* webpackChunkName: "apps-services" */ '../views/apps/suppliers/SuppliersPage.vue'),
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, permissions: ['view suppliers'] }
     },
 
     {
         path: '/apps/purchase-orders/kanban/:orderId?',
         name: 'purchase-orders-kanban',
         component: () => import(/* webpackChunkName: "apps-purchase-orders-kanban" */ '../views/apps/purchase-orders/OrderKanbanBoard.vue'),
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, permissions: ['view purchase_orders'] }
     },
 
     {
         path: '/apps/reports/sales',
         name: 'sales-dashboard',
         component: () => import(/* webpackChunkName: "apps-reports-sales" */ '../views/apps/reports/SalesDashboard.vue'),
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, permissions: ['view reports'] }
     },
     {
         path: '/apps/reports/inventory',
         name: 'inventory-report',
         component: () => import(/* webpackChunkName: "apps-reports-inventory" */ '../views/apps/reports/InventoryReport.vue'),
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, permissions: ['view reports'] }
     },
     {
         path: '/apps/reports/operations',
         name: 'operations-report',
         component: () => import(/* webpackChunkName: "apps-reports-operations" */ '../views/apps/reports/OperationsReport.vue'),
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, permissions: ['view reports'] }
     },
 
 
@@ -679,6 +679,24 @@ const authGuard = (to: any, from: any, next: any) => {
     } else if (to.meta.requiresGuest && authStore.isAuthenticated) {
         next('/');
     } else {
+        // Verificar permisos si la ruta los requiere
+        if (to.meta.permissions && Array.isArray(to.meta.permissions)) {
+            const hasPermission = to.meta.permissions.some((permission: string) => authStore.can(permission));
+            
+            if (!hasPermission) {
+                // Si es admin, dejar pasar (opcional, pero buena práctica si el admin tiene rol superuser)
+                if (authStore.isAdmin()) {
+                    next();
+                    return;
+                }
+                
+                // Redirigir si no tiene permisos
+                console.warn(`Access denied. Required permissions: ${to.meta.permissions.join(', ')}`);
+                next('/'); 
+                return;
+            }
+        }
+        
         next();
     }
 };

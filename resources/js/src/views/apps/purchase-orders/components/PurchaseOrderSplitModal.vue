@@ -111,17 +111,41 @@
                                             <div v-for="(newItem, index) in params.newItems" :key="index" class="flex flex-col mb-3 border p-3 rounded gap-3">
                                                 <div class="flex items-start justify-between gap-3">
                                                     <div class="flex-grow">
-                                                        <select v-model="newItem.product_id" class="form-select w-full" required>
-                                                            <option :value="null">Seleccionar Producto</option>
-                                                            <option v-for="product in products" :key="product.id" :value="product.id">
-                                                                {{ product.name }}
-                                                            </option>
-                                                        </select>
+                                                        <multiselect
+                                                            :model-value="getProductInfo(newItem.product_id)"
+                                                            :options="products"
+                                                            class="custom-multiselect"
+                                                            :searchable="true"
+                                                            track-by="id"
+                                                            label="name"
+                                                            placeholder="Seleccionar Producto"
+                                                            selected-label=""
+                                                            select-label=""
+                                                            deselect-label=""
+                                                            @update:model-value="(selected: any) => newItem.product_id = selected ? selected.id : null"
+                                                        >
+                                                            <template #option="{ option }">
+                                                                <div class="flex justify-between items-center w-full">
+                                                                    <span>{{ option.name }}</span>
+                                                                    <span v-if="option.stock !== undefined" :class="option.stock <= 0 ? 'text-danger' : 'text-success'" class="text-xs ml-2 font-bold">
+                                                                        (Stock: {{ option.stock }})
+                                                                    </span>
+                                                                </div>
+                                                            </template>
+                                                            <template #singleLabel="{ option }">
+                                                                <div class="flex items-center">
+                                                                    <span>{{ option.name }}</span>
+                                                                    <span v-if="option.stock !== undefined" class="text-gray-500 text-xs ml-2">
+                                                                        (Stock: {{ option.stock }})
+                                                                    </span>
+                                                                </div>
+                                                            </template>
+                                                        </multiselect>
                                                     </div>
                                                     <div class="w-24">
-                                                        <input type="number" class="form-input" v-model.number="newItem.quantity" min="1" placeholder="Cant." required>
+                                                        <input type="number" class="form-input h-[38px]" v-model.number="newItem.quantity" min="1" placeholder="Cant." required>
                                                     </div>
-                                                    <button type="button" class="btn btn-outline-danger btn-sm" @click="removeNewItem(index)">
+                                                    <button type="button" class="btn btn-outline-danger btn-sm h-[38px] p-2" @click="removeNewItem(index)">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                                                     </button>
                                                 </div>
@@ -140,7 +164,7 @@
                                         <button type="button" class="btn btn-outline-danger" @click="emit('close')">
                                             {{ t('purchase_orders_page.split_modal.buttons.cancel') }}
                                         </button>
-                                        <button type="submit" class="btn btn-primary ltr:ml-4 rtl:mr-4" :disabled="saving">
+                                        <button type="submit" class="btn btn-primary ltr:ml-4 rtl:mr-4" :disabled="saving || !isSplitValid">
                                             <span v-if="saving">{{ t('purchase_orders_page.split_modal.buttons.splitting') }}</span>
                                             <span v-else>{{ t('purchase_orders_page.split_modal.buttons.split') }}</span>
                                         </button>
@@ -156,9 +180,11 @@
 </template>
 
 <script lang="ts" setup>
-    import { ref, watch, reactive } from 'vue';
+    import { ref, watch, reactive, computed } from 'vue';
     import { useI18n } from 'vue-i18n';
     import { TransitionRoot, TransitionChild, Dialog, DialogPanel, DialogOverlay } from '@headlessui/vue';
+    import Multiselect from '@suadelabs/vue3-multiselect';
+    import '@suadelabs/vue3-multiselect/dist/vue3-multiselect.css';
 
     const { t } = useI18n();
 
@@ -229,6 +255,17 @@
     const removeNewItem = (index: number) => {
         params.newItems.splice(index, 1);
     };
+
+    const getProductInfo = (productId: number | null) => {
+        if (!productId) return null;
+        return props.products.find(product => product.id === productId) || null;
+    };
+
+    const isSplitValid = computed(() => {
+        const hasExistingItems = params.items.some(item => item.quantity && item.quantity > 0);
+        const hasNewItems = params.newItems.some(item => item.product_id && item.quantity && item.quantity > 0);
+        return hasExistingItems || hasNewItems;
+    });
 
     const handleSplit = () => {
         // Filter out existing items with quantity 0

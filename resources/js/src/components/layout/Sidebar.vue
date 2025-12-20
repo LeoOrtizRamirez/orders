@@ -170,7 +170,7 @@
                                     </vue-collapsible>
                                 </li>
 
-                                <li class="nav-item">
+                                <li class="nav-item" v-if="authStore.can('view suppliers')">
                                     <router-link to="/apps/suppliers" class="group" @click="toggleMobileMenu">
                                         <div class="flex items-center">
                                             <svg
@@ -199,7 +199,7 @@
                                     </router-link>
                                 </li>
 
-                                <li class="nav-item">
+                                <li class="nav-item" v-if="authStore.can('view products')">
                                     <router-link to="/apps/products" class="group" @click="toggleMobileMenu">
                                         <div class="flex items-center">
                                             <svg
@@ -227,7 +227,7 @@
                                     </router-link>
                                 </li>
 
-                                <li class="menu nav-item">
+                                <li class="menu nav-item" v-if="authStore.can('view reports')">
                                     <button
                                         type="button"
                                         class="nav-link group w-full"
