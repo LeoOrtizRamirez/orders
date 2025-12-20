@@ -140,23 +140,42 @@
                     </table>
                 </div>
 
-                <!-- Paginación -->
-                <div class="flex justify-center" v-if="productsPagination.last_page > 1">
-                    <ul class="inline-flex items-center space-x-1">
+                <!-- Paginación y Selector -->
+                <div class="flex flex-col md:flex-row justify-between items-center mt-4" v-if="productsPagination.last_page > 1 || productsPagination.total > 0">
+                    <div class="flex items-center gap-2 mb-4 md:mb-0">
+                        <span class="text-sm">Mostrar:</span>
+                        <select class="form-select w-20 h-9" :value="productsPagination.per_page" @change="updatePerPage">
+                            <option value="10">10</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </div>
+
+                    <ul class="inline-flex items-center space-x-1 rtl:space-x-reverse">
                         <li>
                             <button type="button" 
-                                class="btn btn-sm btn-outline-primary"
+                                class="flex justify-center font-semibold px-3.5 py-2 rounded transition text-dark hover:text-primary border-2 border-[#e0e6ed] dark:border-[#191e3a] hover:border-primary dark:hover:border-primary dark:text-white-light"
                                 :disabled="productsPagination.current_page === 1"
                                 @click="changeProductPage(productsPagination.current_page - 1)">
                                 Prev
                             </button>
                         </li>
-                        <li class="px-2">
-                            Página {{ productsPagination.current_page }} de {{ productsPagination.last_page }}
+                        <li v-for="(page, index) in displayedPages" :key="index">
+                            <button
+                                v-if="page !== '...'"
+                                type="button"
+                                class="flex justify-center font-semibold px-3.5 py-2 rounded transition"
+                                :class="{'text-primary border-2 border-primary dark:border-primary dark:text-white-light': productsPagination.current_page === page, 'text-dark hover:text-primary border-2 border-[#e0e6ed] dark:border-[#191e3a] hover:border-primary dark:hover:border-primary dark:text-white-light': productsPagination.current_page !== page}"
+                                @click="changeProductPage(page as number)"
+                            >
+                                {{ page }}
+                            </button>
+                            <span v-else class="px-3.5 py-2">...</span>
                         </li>
                         <li>
                             <button type="button" 
-                                class="btn btn-sm btn-outline-primary"
+                                class="flex justify-center font-semibold px-3.5 py-2 rounded transition text-dark hover:text-primary border-2 border-[#e0e6ed] dark:border-[#191e3a] hover:border-primary dark:hover:border-primary dark:text-white-light"
                                 :disabled="productsPagination.current_page === productsPagination.last_page"
                                 @click="changeProductPage(productsPagination.current_page + 1)">
                                 Next
@@ -235,7 +254,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, reactive } from 'vue';
+import { ref, onMounted, reactive, computed } from 'vue';
 import { useMeta } from '@/composables/use-meta';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
@@ -319,6 +338,40 @@ const productsPagination = ref({
     per_page: 15
 });
 
+const displayedPages = computed(() => {
+    const currentPage = productsPagination.value.current_page;
+    const lastPage = productsPagination.value.last_page;
+    const delta = 2;
+    const pages: (number | string)[] = [];
+
+    if (lastPage <= 7) {
+        for (let i = 1; i <= lastPage; i++) {
+            pages.push(i);
+        }
+        return pages;
+    }
+
+    pages.push(1);
+    if (currentPage > delta + 2) {
+        pages.push('...');
+    }
+
+    const start = Math.max(2, currentPage - delta);
+    const end = Math.min(lastPage - 1, currentPage + delta);
+
+    for (let i = start; i <= end; i++) {
+        pages.push(i);
+    }
+
+    if (currentPage < lastPage - delta - 1) {
+        pages.push('...');
+    }
+    
+    pages.push(lastPage);
+
+    return pages;
+});
+
 const filters = ref({
     category: '',
     unit: '', // Nuevo filtro
@@ -386,7 +439,15 @@ const fetchProductsList = async (page = 1) => {
 };
 
 const changeProductPage = (page: number) => {
-    fetchProductsList(page);
+    if (page > 0 && page <= productsPagination.value.last_page && page !== productsPagination.value.current_page) {
+        fetchProductsList(page);
+    }
+};
+
+const updatePerPage = (e: Event) => {
+    const target = e.target as HTMLSelectElement;
+    productsPagination.value.per_page = parseInt(target.value);
+    fetchProductsList(1);
 };
 
 const getStockClass = (product: any): string => {

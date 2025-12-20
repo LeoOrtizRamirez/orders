@@ -160,12 +160,14 @@
         };
         categories: {id: string, name: string}[];
         searchProduct: string;
+        perPage: number;
     }
 
     interface Emits {
         (e: 'update:display-type', value: 'list' | 'grid'): void;
         (e: 'update:filters', value: Props['filters']): void;
         (e: 'update:search-product', value: string): void;
+        (e: 'update:per-page', value: number): void;
         (e: 'add-product'): void;
         (e: 'open-import-modal'): void;
         (e: 'download-template'): void;

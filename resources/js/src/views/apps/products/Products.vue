@@ -6,9 +6,11 @@
             :filters="filters"
             :categories="categories"
             :search-product="searchProduct"
+            :per-page="pagination.per_page"
             @update:display-type="displayType = $event"
             @update:filters="handleFiltersUpdate"
             @update:search-product="searchProduct = $event"
+            @update:per-page="handlePerPageChange"
             @add-product="handleAddProduct"
             @open-import-modal="handleShowImportModal"
             @download-template="handleDownloadTemplate"
@@ -51,9 +53,19 @@
             />
         </div>
 
-        <!-- Paginación -->
-        <div class="mt-6 flex justify-center">
-            <ul class="inline-flex items-center space-x-1 rtl:space-x-reverse m-auto mb-4">
+        <!-- Paginación y Selector -->
+        <div class="mt-6 flex flex-col md:flex-row justify-between items-center" v-if="pagination.last_page > 1 || pagination.total > 0">
+            <div class="flex items-center gap-2 mb-4 md:mb-0">
+                <span class="text-sm">Mostrar:</span>
+                <select class="form-select w-20 h-9" :value="pagination.per_page" @change="handlePerPageChange(parseInt(($event.target as HTMLSelectElement).value))">
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+            </div>
+
+            <ul class="inline-flex items-center space-x-1 rtl:space-x-reverse">
                 <li>
                     <button
                         type="button"
@@ -274,6 +286,11 @@
 
     const handleFiltersUpdate = (newFilters: any) => {
         filters.value = newFilters;
+        fetchProducts(1);
+    };
+
+    const handlePerPageChange = (perPage: number) => {
+        pagination.value.per_page = perPage;
         fetchProducts(1);
     };
 </script>
