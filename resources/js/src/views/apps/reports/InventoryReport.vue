@@ -202,7 +202,14 @@
                                     <ul v-else class="divide-y divide-gray-200 dark:divide-gray-700 max-h-60 overflow-y-auto">
                                         <li v-for="order in pendingOrdersList" :key="order.id" class="py-3 flex justify-between items-center">
                                             <div>
-                                                <p class="text-sm font-medium text-primary">#{{ order.order_number }}</p>
+                                                <button 
+                                                    type="button" 
+                                                    class="text-sm font-medium text-primary hover:underline focus:outline-none"
+                                                    @click="goToOrder(order.id)"
+                                                    title="Ver orden en Pipeline"
+                                                >
+                                                    #{{ order.order_number }}
+                                                </button>
                                                 <p class="text-xs text-gray-500">{{ order.supplier }} - {{ order.date }}</p>
                                                 <span class="badge bg-info/10 text-info mt-1">{{ order.status }}</span>
                                             </div>
@@ -230,11 +237,13 @@
 <script lang="ts" setup>
 import { ref, onMounted, reactive } from 'vue';
 import { useMeta } from '@/composables/use-meta';
+import { useRouter } from 'vue-router';
 import axios from 'axios';
 import ProductStats from '../products/components/ProductStats.vue'; 
 
 useMeta({ title: 'Reporte de Inventario' });
 
+const router = useRouter();
 const loading = ref(true);
 const error = ref('');
 const reportData = ref<any>(null);
@@ -290,6 +299,14 @@ const openPendingOrdersModal = async (product: any) => {
 const closeOrdersModal = () => {
     showOrdersModal.value = false;
     currentProduct.value = null;
+};
+
+const goToOrder = (orderId: number) => {
+    closeOrdersModal();
+    router.push({ 
+        name: 'purchase-orders-kanban', 
+        params: { orderId: orderId.toString() } 
+    });
 };
 
 // Estados para la lista de productos
