@@ -429,7 +429,52 @@
     onMounted(async () => {
         await Promise.all([fetchOrdersKanban(), fetchSuppliers(), fetchProducts()]);
         findAndShowOrder(route.params.orderId);
+
+        // Suscripción a canal de tablero para actualizaciones en tiempo real
+        if (authStore.user?.id && window.Echo) {
+            window.Echo.private('orders.board')
+                .listen('OrderUpdated', (e: any) => {
+                    console.log('Orden actualizada en tiempo real:', e);
+                    // Actualizar la orden localmente sin recargar todo si es posible
+                    updateLocalOrder(e.id, e.status);
+                });
+        }
     });
+
+    const updateLocalOrder = (orderId: number, newStatus: string) => {
+        // Buscar la orden en todas las columnas
+        let orderToMove = null;
+        let oldStatusId = '';
+
+        for (const col of orderStatuses.value) {
+            const index = col.orders.findIndex(o => o.id === orderId);
+            if (index !== -1) {
+                orderToMove = col.orders[index];
+                oldStatusId = col.id;
+                // Si el estado es el mismo, no hacer nada (o actualizar datos si cambiaron otras cosas)
+                if (oldStatusId === newStatus) return;
+                
+                // Quitar de la columna vieja
+                col.orders.splice(index, 1);
+                break;
+            }
+        }
+
+        // Si encontramos la orden, moverla a la nueva columna
+        if (orderToMove) {
+            const newCol = orderStatuses.value.find(c => c.id === newStatus);
+            if (newCol) {
+                orderToMove.status = newStatus;
+                newCol.orders.unshift(orderToMove); // Añadir al principio de la nueva columna
+            } else {
+                // Si la columna nueva no existe en la vista actual, recargar todo por seguridad
+                fetchOrdersKanban();
+            }
+        } else {
+            // Si es una orden nueva que no teníamos, recargar
+            fetchOrdersKanban();
+        }
+    };
 
     watch(() => route.params.orderId, (newId) => {
         if (newId) {

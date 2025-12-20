@@ -364,8 +364,6 @@
             const userId = authStore.user.id;
             const channelName = `App.Models.User.${userId}`;
             
-            console.log(`Intentando suscribirse al canal privado: ${channelName}`);
-
             window.Echo.private(channelName)
                 .notification((notification: any) => {
                     console.log('Notificación en tiempo real recibida:', notification); 

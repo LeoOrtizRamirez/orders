@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\User;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderItem;
+use App\Events\OrderUpdated; // Importar evento
 use App\Notifications\OrderStatusChanged;
 use App\Repositories\ProductRepository;
 use App\Repositories\PurchaseOrderRepository;
@@ -222,6 +223,9 @@ class PurchaseOrderManagementService
         $purchaseOrder->update(['status' => $newStatus]); // Guardamos el status original que vino del request para consistencia visual si se desea
         
         $this->notifyUsersOnStatusChange($purchaseOrder, null);
+
+        // Disparar evento para actualizar tablero en tiempo real
+        event(new OrderUpdated($purchaseOrder));
 
         return $this->getPurchaseOrder($id);
     }
