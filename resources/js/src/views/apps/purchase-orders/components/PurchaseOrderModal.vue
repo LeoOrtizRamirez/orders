@@ -134,6 +134,7 @@
                                                     type="number"
                                                     v-model.number="item.quantity"
                                                     :min="0"
+                                                    step="any"
                                                     class="form-input h-[42px]" 
                                                     :class="{ 'border-danger': errors[`items.${index}.quantity`] }"
                                                     placeholder="Cant."

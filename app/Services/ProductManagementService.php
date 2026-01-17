@@ -122,7 +122,7 @@ class ProductManagementService
         return $this->productRepository->getCategories();
     }
 
-    public function updateStock(int $id, int $quantity)
+    public function updateStock(int $id, float $quantity)
     {
         $product = $this->getProduct($id);
         
@@ -254,7 +254,7 @@ class ProductManagementService
 
                             'description' => null,
 
-                            'stock' => (int)($data['ONHAND'] ?? 0),
+                            'stock' => (float)($data['ONHAND'] ?? 0),
 
                             'min_stock' => 5,
 

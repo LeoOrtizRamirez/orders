@@ -75,6 +75,7 @@
                                                             v-model.number="item.quantity"
                                                             :min="0"
                                                             :max="item.original_quantity"
+                                                            step="any"
                                                             @input="validateQuantity(index, item.original_quantity)"
                                                         />
                                                         <button type="button" class="btn btn-outline-danger btn-sm p-2" @click="removeExistingItem(index)">
@@ -143,7 +144,7 @@
                                                         </multiselect>
                                                     </div>
                                                     <div class="w-24">
-                                                        <input type="number" class="form-input h-[38px]" v-model.number="newItem.quantity" min="1" placeholder="Cant." required>
+                                                        <input type="number" class="form-input h-[38px]" v-model.number="newItem.quantity" min="0.01" step="any" placeholder="Cant." required>
                                                     </div>
                                                     <button type="button" class="btn btn-outline-danger btn-sm h-[38px] p-2" @click="removeNewItem(index)">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>

@@ -20,8 +20,8 @@ class PurchaseOrderItem extends Model
     ];
 
     protected $casts = [
-        'quantity' => 'integer',
-        'received_quantity' => 'integer',
+        'quantity' => 'float',
+        'received_quantity' => 'float',
         'checked' => 'boolean',
     ];
 
@@ -50,7 +50,7 @@ class PurchaseOrderItem extends Model
         // This logic is no longer needed
     }
 
-    public function getPendingQuantity(): int
+    public function getPendingQuantity(): float
     {
         return $this->quantity - $this->received_quantity;
     }

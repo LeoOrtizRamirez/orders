@@ -30,9 +30,9 @@ class Product extends Model
     ];
 
     protected $casts = [
-        'stock' => 'integer',
-        'min_stock' => 'integer',
-        'reorder_point' => 'integer',
+        'stock' => 'float',
+        'min_stock' => 'float',
+        'reorder_point' => 'float',
         'specifications' => 'array',
         'is_active' => 'boolean',
         'order' => 'integer',
@@ -65,7 +65,7 @@ class Product extends Model
         return $query->where('stock', '<=', 'reorder_point');
     }
 
-    public function updateStock(int $quantity): bool
+    public function updateStock(float $quantity): bool
     {
         $this->stock += $quantity;
         return $this->save();

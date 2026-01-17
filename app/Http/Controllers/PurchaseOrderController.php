@@ -63,7 +63,7 @@ class PurchaseOrderController extends Controller
                 'notes' => 'nullable|string', // Keep for main order, service will handle
                 'items' => 'required|array|min:1',
                 'items.*.product_id' => 'required|exists:products,id',
-                'items.*.quantity' => 'required|min:0',//PENDIENTE DESCOMENTAR CAMBIAR A 1
+                'items.*.quantity' => 'required|numeric|min:0.01',
                 'items.*.notes' => 'nullable|string', // Removed, handled by service as UserNote
                 'items.*.checked' => 'nullable|boolean',
             ]);
@@ -108,7 +108,7 @@ class PurchaseOrderController extends Controller
                 'items' => 'sometimes|array|min:1',
                 'items.*.id' => 'nullable|integer|exists:purchase_order_items,id',
                 'items.*.product_id' => 'required|exists:products,id',
-                'items.*.quantity' => 'required|integer|min:1',
+                'items.*.quantity' => 'required|numeric|min:0.01',
                 'items.*.notes' => 'nullable|string',
                 'items.*.checked' => 'nullable|boolean',
             ]);

@@ -29,7 +29,7 @@ class SplitPurchaseOrderRequest extends FormRequest
             'items' => 'required|array|min:1',
             'items.*.item_id' => 'required_without:items.*.product_id|nullable|exists:purchase_order_items,id',
             'items.*.product_id' => 'required_without:items.*.item_id|nullable|exists:products,id',
-            'items.*.quantity' => 'required|integer|min:1',
+            'items.*.quantity' => 'required|numeric|min:0.01',
             'items.*.notes' => 'nullable|string',
         ];
     }
