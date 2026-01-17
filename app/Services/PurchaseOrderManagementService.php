@@ -105,6 +105,10 @@ class PurchaseOrderManagementService
     {
         $purchaseOrder = $this->getPurchaseOrder($id);
         
+        if ($purchaseOrder->isReadOnly()) {
+            throw new Exception("La orden no se puede modificar, eliminar o dividir porque se encuentra en estado '{$purchaseOrder->status}' (etapa de facturación o posterior).", 422);
+        }
+
         return DB::transaction(function () use ($purchaseOrder, $data, $user) {
             $updateData = [];
 
@@ -193,6 +197,10 @@ class PurchaseOrderManagementService
     {
         $purchaseOrder = $this->getPurchaseOrder($id); // Check existence and load relationships
         
+        if ($purchaseOrder->isReadOnly()) {
+            throw new Exception("La orden no se puede modificar, eliminar o dividir porque se encuentra en estado '{$purchaseOrder->status}' (etapa de facturación o posterior).", 422);
+        }
+
         return DB::transaction(function () use ($purchaseOrder) {
             // Delete all associated UserNotes for the purchase order and its items
             $purchaseOrder->notes()->delete(); // Delete notes for the main order
@@ -208,18 +216,28 @@ class PurchaseOrderManagementService
 
     public function updateStatus(int $id, string $newStatus, int $userId)
     {
-        $normalizedStatus = mb_strtolower($newStatus, 'UTF-8');
+        $purchaseOrder = $this->getPurchaseOrder($id);
+        $normalizedNewStatus = mb_strtolower($newStatus, 'UTF-8');
+        $currentStatus = mb_strtolower($purchaseOrder->status, 'UTF-8');
 
-        if ($normalizedStatus === 'preparar pedido') {
+        $newStatusIndex = $this->getStatusIndex($normalizedNewStatus);
+        $currentStatusIndex = $this->getStatusIndex($currentStatus);
+        $billingIndex = $this->getStatusIndex('facturación');
+
+        // Restricción: A partir de facturación no se puede volver atrás
+        if ($currentStatusIndex >= $billingIndex && $newStatusIndex < $currentStatusIndex && $newStatusIndex !== -1) {
+            throw new Exception("No se puede devolver la orden a un estado anterior después de haber llegado a la etapa de facturación.", 422);
+        }
+
+        if ($normalizedNewStatus === 'preparar pedido') {
             return $this->prepareOrder($id, $userId);
         }
 
         // Manejar variaciones con y sin tilde para mayor robustez
-        if ($normalizedStatus === 'facturación' || $normalizedStatus === 'facturacion') {
+        if ($normalizedNewStatus === 'facturación' || $normalizedNewStatus === 'facturacion') {
             return $this->processBilling($id);
         }
 
-        $purchaseOrder = $this->getPurchaseOrder($id);
         $purchaseOrder->update(['status' => $newStatus]); // Guardamos el status original que vino del request para consistencia visual si se desea
         
         $this->notifyUsersOnStatusChange($purchaseOrder, null);
@@ -228,6 +246,26 @@ class PurchaseOrderManagementService
         event(new OrderUpdated($purchaseOrder));
 
         return $this->getPurchaseOrder($id);
+    }
+
+    private function getStatusIndex(string $status): int
+    {
+        $normalized = mb_strtolower($status, 'UTF-8');
+        if ($normalized === 'facturacion') $normalized = 'facturación';
+        
+        $order = [
+            'nuevo pedido',
+            'disponibilidad',
+            'preparar pedido',
+            'en preparación',
+            'facturación',
+            'en despacho',
+            'en ruta',
+            'entregado',
+        ];
+        
+        $index = array_search($normalized, $order);
+        return $index !== false ? $index : -1;
     }
 
     private function prepareOrder(int $id, int $userId)
@@ -331,10 +369,15 @@ class PurchaseOrderManagementService
         PurchaseOrder $parentOrder,
         array $itemsToSplit,
         ?string $expectedDeliveryDate,
-        ?string $notes, // This is a single string note for the sub-order
-        User $user
-    ): PurchaseOrder {
-        return DB::transaction(function () use ($parentOrder, $itemsToSplit, $expectedDeliveryDate, $notes, $user) {
+                ?string $notes, // This is a single string note for the sub-order
+                User $user
+            ): PurchaseOrder {
+                
+                if ($parentOrder->isReadOnly()) {
+                     throw new Exception("La orden no se puede modificar, eliminar o dividir porque se encuentra en estado '{$parentOrder->status}' (etapa de facturación o posterior).", 422);
+                }
+        
+                return DB::transaction(function () use ($parentOrder, $itemsToSplit, $expectedDeliveryDate, $notes, $user) {
             if ($parentOrder->parent_id !== null) {
                 throw new Exception('Cannot split a sub-order. Only main orders can be split.', 400);
             }

@@ -1016,6 +1016,7 @@
         "view_details": "View Details",
         "error_fetching_orders": "Error fetching orders.",
         "order_status_updated_successfully": "Order status updated successfully.",
+        "cannot_move_back_after_billing": "Cannot move the order back to a previous stage after reaching the billing stage.",
         "error_updating_order_status": "Error updating order status.",
         "list_orders": "List Orders",
         "sub_order": "Sub-order",

@@ -1016,6 +1016,7 @@
         "view_details": "Ver Detalles",
         "error_fetching_orders": "Error al cargar las órdenes.",
         "order_status_updated_successfully": "Estado de la orden actualizado correctamente.",
+        "cannot_move_back_after_billing": "No se puede devolver la orden a un estado anterior después de haber llegado a la etapa de facturación.",
         "error_updating_order_status": "Error al actualizar el estado de la orden.",
         "list_orders": "Listar Órdenes",
         "sub_order": "Sub-orden",

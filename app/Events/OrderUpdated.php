@@ -40,10 +40,8 @@ class OrderUpdated implements ShouldBroadcast
     public function broadcastWith(): array
     {
         return [
-            'id' => $this->order->id,
-            'order_number' => $this->order->order_number,
-            'status' => $this->order->status,
-            'updated_by' => auth()->id(), // Para evitar refrescar al propio usuario si se desea
+            'order' => $this->order->toArray(), // Enviamos toda la orden serializada
+            'updated_by' => auth()->id(),
         ];
     }
 }

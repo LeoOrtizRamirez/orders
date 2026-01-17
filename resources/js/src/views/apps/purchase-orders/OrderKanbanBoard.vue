@@ -1,20 +1,42 @@
 <template>
     <div>
-        <ul class="flex space-x-2 rtl:space-x-reverse mb-6">
-            <li>
-                <a href="javascript:;" class="text-primary hover:underline">{{ $t('dashboard') }}</a>
-            </li>
-            <li class="before:content-['/'] ltr:before:mr-2 rtl:before:ml-2">
-                <span>{{ $t('ordenes.kanban_board') }}</span>
-            </li>
-        </ul>
-
         <div class="scrumboard-v2 space-y-8">
             <div class="flex items-center justify-between flex-wrap gap-4">
                 <h2 class="text-xl leading-relaxed">{{ $t('ordenes.order_kanban_board') }}</h2>
-                <div class="flex sm:flex-row flex-col sm:items-center sm:gap-3 gap-4">
-                    <div class="flex gap-3">
-                        <button v-if="authStore.can('create purchase_orders')" type="button" class="btn btn-primary" @click="handleAddOrder">
+            </div>
+
+            <!-- Filtros y Acciones -->
+            <div class="panel mb-5">
+                <div class="flex flex-col md:flex-row justify-between items-end gap-4">
+                    <!-- Filtros (Izquierda) -->
+                    <div class="flex flex-col sm:flex-row items-end gap-4 flex-none">
+                        <!-- Proveedor -->
+                        <div class="w-full sm:w-64">
+                            <label class="text-xs font-bold mb-1">{{ $t('purchase_orders_page.table.supplier') }}</label>
+                            <select v-model="localFilters.supplier_id" class="form-select" @change="fetchOrdersKanban">
+                                <option value="">{{ $t('purchase_orders_page.filters.all_suppliers') }}</option>
+                                <option v-for="supplier in suppliers" :key="supplier.id" :value="supplier.id">
+                                    {{ supplier.name }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- Fecha Desde -->
+                        <div class="w-full sm:w-44">
+                            <label class="text-xs font-bold mb-1">{{ $t('calendar_page.from') }}</label>
+                            <input type="date" v-model="localFilters.date_from" class="form-input" @change="fetchOrdersKanban" />
+                        </div>
+
+                        <!-- Fecha Hasta -->
+                        <div class="w-full sm:w-44">
+                            <label class="text-xs font-bold mb-1">{{ $t('calendar_page.to') }}</label>
+                            <input type="date" v-model="localFilters.date_to" class="form-input" @change="fetchOrdersKanban" />
+                        </div>
+                    </div>
+
+                    <!-- Botón Crear (Derecha) -->
+                    <div class="flex-none w-full md:w-auto">
+                        <button v-if="authStore.can('create purchase_orders')" type="button" class="btn btn-primary w-full md:w-auto" @click="handleAddOrder">
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 width="24px"
@@ -25,30 +47,12 @@
                                 stroke-width="1.5"
                                 stroke-linecap="round"
                                 stroke-linejoin="round"
-                                class="w-5 h-5 ltr:mr-3 rtl:ml-3"
+                                class="w-5 h-5 ltr:mr-2 rtl:ml-2"
                             >
                                 <line x1="12" y1="5" x2="12" y2="19"></line>
                                 <line x1="5" y1="12" x2="19" y2="12"></line>
                             </svg>
                             {{ $t('purchase_orders_page.add_order_btn') }}
-                        </button>
-                        <button type="button" class="btn btn-primary" @click="fetchOrdersKanban">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5">
-                                <path
-                                    d="M20.9999 12C20.9999 16.9706 16.9705 21 11.9999 21C7.02934 21 2.99994 16.9706 2.99994 12C2.99994 7.02944 7.02934 3 11.9999 3"
-                                    stroke="currentColor"
-                                    stroke-width="1.5"
-                                    stroke-linecap="round"
-                                />
-                                <path
-                                    d="M18.8477 15.6529C19.7897 14.0533 20.2522 13.0166 20.4939 12"
-                                    stroke="currentColor"
-                                    stroke-width="1.5"
-                                    stroke-linecap="round"
-                                />
-                                <path d="M17.9999 3L20.9999 7H16.9999" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                            </svg>
-                            {{ $t('ordenes.refresh') }}
                         </button>
                     </div>
                 </div>
@@ -112,13 +116,13 @@
                                                 <button type="button" class="btn btn-outline-info btn-sm" @click="handleViewOrder(order)">
                                                     {{ $t('ordenes.view_details') }}
                                                 </button>
-                                                <button v-if="authStore.can('edit purchase_orders')" type="button" class="btn btn-outline-secondary btn-sm" @click="handleEditOrder(order)">
+                                                <button v-if="authStore.can('edit purchase_orders') && order.can_be_edited" type="button" class="btn btn-outline-secondary btn-sm" @click="handleEditOrder(order)">
                                                     {{ $t('edit') }}
                                                 </button>
-                                                <button v-if="canSplitOrder(order) && authStore.can('create purchase_orders')" type="button" class="btn btn-outline-warning btn-sm" @click="handleShowSplitModal(order)">
+                                                <button v-if="canSplitOrder(order) && authStore.can('create purchase_orders') && order.can_be_edited" type="button" class="btn btn-outline-warning btn-sm" @click="handleShowSplitModal(order)">
                                                     {{ $t('purchase_orders_page.actions.split') }}
                                                 </button>
-                                                <button v-if="authStore.can('delete purchase_orders')" type="button" class="btn btn-outline-danger btn-sm" @click="handleDeleteOrder(order)">
+                                                <button v-if="authStore.can('delete purchase_orders') && order.can_be_deleted" type="button" class="btn btn-outline-danger btn-sm" @click="handleDeleteOrder(order)">
                                                     {{ $t('delete') }}
                                                 </button>
                                             </div>
@@ -192,6 +196,12 @@
     const authStore = useAuthStore();
     useMeta({ title: t('ordenes.order_kanban_board') });
 
+    const localFilters = ref({
+        search: '',
+        supplier_id: '',
+        date_from: '',
+        date_to: '',
+    });
 
     const {
         fetchSuppliers, 
@@ -239,7 +249,13 @@
     const fetchOrdersKanban = async () => {
         loading.value = true;
         try {
-            const response = await axios.get('/api/purchase-orders');
+            const queryParams = new URLSearchParams();
+            if (localFilters.value.search) queryParams.append('search', localFilters.value.search);
+            if (localFilters.value.supplier_id) queryParams.append('supplier_id', localFilters.value.supplier_id);
+            if (localFilters.value.date_from) queryParams.append('date_from', localFilters.value.date_from);
+            if (localFilters.value.date_to) queryParams.append('date_to', localFilters.value.date_to);
+
+            const response = await axios.get(`/api/purchase-orders?${queryParams.toString()}`);
             const fetchedOrders = response.data.data;
 
             orderStatuses.value.forEach(statusCol => {
@@ -270,6 +286,16 @@
         }
     };
 
+    const clearFilters = () => {
+        localFilters.value = {
+            search: '',
+            supplier_id: '',
+            date_from: '',
+            date_to: '',
+        };
+        fetchOrdersKanban();
+    };
+
     const onDragEnd = async (event: any) => {
         const orderId = event.item._underlying_vm_.id; 
         const oldStatusId = event.from.dataset.statusId; 
@@ -278,6 +304,29 @@
         if (!newStatusId || !oldStatusId) {
             console.warn("Source or target status ID is undefined. Drag operation might be invalid. Reverting.");
             await fetchOrdersKanban(); 
+            return;
+        }
+
+        if (oldStatusId === newStatusId) return;
+
+        const statusOrder = [
+            'nuevo pedido',
+            'disponibilidad',
+            'preparar pedido',
+            'en preparación',
+            'facturación',
+            'en despacho',
+            'en ruta',
+            'entregado',
+        ];
+
+        const oldStatusIndex = statusOrder.indexOf(oldStatusId);
+        const newStatusIndex = statusOrder.indexOf(newStatusId);
+        const billingIndex = statusOrder.indexOf('facturación');
+
+        if (oldStatusIndex >= billingIndex && newStatusIndex < oldStatusIndex && newStatusIndex !== -1) {
+            showMessage(t('ordenes.cannot_move_back_after_billing'), 'error');
+            await fetchOrdersKanban();
             return;
         }
 
@@ -301,11 +350,13 @@
         const originalStatusOfDraggedItem = oldStatusId; 
 
         try {
-            await axios.put(`/api/purchase-orders/${orderId}/status`, { status: newStatusId });
+            const response = await axios.put(`/api/purchase-orders/${orderId}/status`, { status: newStatusId });
             showMessage(t('ordenes.order_status_updated_successfully'), 'success');
             
-            if (movedOrder) {
-                movedOrder.status = newStatusId;
+            if (movedOrder && response.data.order) {
+                // Actualizamos todo el objeto con la respuesta del servidor para que se refresquen
+                // las propiedades calculadas (appends) como can_be_edited, can_be_deleted, etc.
+                Object.assign(movedOrder, response.data.order);
             }
         } catch (err: any) {
             console.error('Error updating order status:', err);
@@ -435,13 +486,18 @@
             window.Echo.private('orders.board')
                 .listen('OrderUpdated', (e: any) => {
                     console.log('Orden actualizada en tiempo real:', e);
-                    // Actualizar la orden localmente sin recargar todo si es posible
-                    updateLocalOrder(e.id, e.status);
+                    // Actualizar la orden localmente con los datos completos
+                    if (e.order) {
+                        updateLocalOrder(e.order);
+                    }
                 });
         }
     });
 
-    const updateLocalOrder = (orderId: number, newStatus: string) => {
+    const updateLocalOrder = (updatedOrderData: any) => {
+        const orderId = updatedOrderData.id;
+        const newStatus = updatedOrderData.status;
+
         // Buscar la orden en todas las columnas
         let orderToMove = null;
         let oldStatusId = '';
@@ -451,7 +507,11 @@
             if (index !== -1) {
                 orderToMove = col.orders[index];
                 oldStatusId = col.id;
-                // Si el estado es el mismo, no hacer nada (o actualizar datos si cambiaron otras cosas)
+                
+                // Actualizar siempre los datos de la orden (por si cambiaron permisos o notas)
+                Object.assign(orderToMove, updatedOrderData);
+
+                // Si el estado es el mismo, no necesitamos moverla
                 if (oldStatusId === newStatus) return;
                 
                 // Quitar de la columna vieja
@@ -464,10 +524,9 @@
         if (orderToMove) {
             const newCol = orderStatuses.value.find(c => c.id === newStatus);
             if (newCol) {
-                orderToMove.status = newStatus;
-                newCol.orders.unshift(orderToMove); // Añadir al principio de la nueva columna
+                // orderToMove ya tiene el status actualizado por el Object.assign
+                newCol.orders.unshift(orderToMove); 
             } else {
-                // Si la columna nueva no existe en la vista actual, recargar todo por seguridad
                 fetchOrdersKanban();
             }
         } else {

@@ -82,44 +82,58 @@ class PurchaseOrder extends Model
         return $this->hasMany(PurchaseOrder::class, 'parent_id');
     }
 
+    public function isReadOnly(): bool
+    {
+        $normalizedStatus = mb_strtolower($this->status, 'UTF-8');
+        if ($normalizedStatus === 'facturacion') $normalizedStatus = 'facturación';
+
+        $readOnlyStatuses = [
+            'en despacho',
+            'en ruta',
+            'entregado'
+        ];
+
+        return in_array($normalizedStatus, $readOnlyStatuses);
+    }
+
     public function getCanBeEditedAttribute(): bool
     {
-        return true;
+        return !$this->isReadOnly();
     }
 
     public function getCanBeApprovedAttribute(): bool
     {
-        return true;
+        return $this->status === 'pending'; // Ejemplo, ajustar según flujo real si es necesario
     }
 
     public function getCanBeRejectedAttribute(): bool
     {
-        return true;
+         return $this->status === 'pending';
     }
 
     public function getCanBeReceivedAttribute(): bool
     {
-        return true;
+         return $this->status === 'ordered';
     }
 
     public function getCanBeMarkedOrderedAttribute(): bool
     {
-        return true;
+         return $this->status === 'approved';
     }
 
     public function getCanBeDeletedAttribute(): bool
     {
-        return true;
+        return !$this->isReadOnly();
     }
 
     public function getCanBeCancelledAttribute(): bool
     {
-        return true;
+        return !$this->isReadOnly();
     }
 
     public function getCanBeReopenedAttribute(): bool
     {
-        return true;
+        return $this->status === 'cancelled' || $this->status === 'rejected';
     }
 
     public static function getStatuses(): array
