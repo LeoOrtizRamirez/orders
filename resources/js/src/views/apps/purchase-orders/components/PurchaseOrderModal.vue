@@ -23,14 +23,13 @@
                             <!-- Proveedor -->
                             <div>
                                 <label for="supplier" class="form-label">
-                                    {{ $t('purchase_orders_page.create_modal.fields.supplier') }} *
+                                    {{ $t('purchase_orders_page.create_modal.fields.supplier') }}
                                 </label>
                                 <select
                                     id="supplier"
                                     v-model="params.supplier_id"
                                     class="form-select"
                                     :class="{ 'border-danger': errors.supplier_id }"
-                                    required
                                 >
                                     <option value="">{{ $t('purchase_orders_page.create_modal.placeholders.select_supplier') }}</option>
                                     <option v-for="supplier in suppliers" :key="supplier.id" :value="supplier.id">
@@ -45,7 +44,7 @@
                             <!-- Fecha de entrega esperada -->
                             <div>
                                 <label for="expected_delivery_date" class="form-label">
-                                    {{ $t('purchase_orders_page.create_modal.fields.expected_delivery_date') }} *
+                                    {{ $t('purchase_orders_page.create_modal.fields.expected_delivery_date') }}
                                 </label>
                                 <input
                                     id="expected_delivery_date"
@@ -53,7 +52,6 @@
                                     v-model="params.expected_delivery_date"
                                     class="form-input"
                                     :class="{ 'border-danger': errors.expected_delivery_date }"
-                                    required
                                 />
                                 <div v-if="errors.expected_delivery_date" class="text-danger mt-1 text-xs">
                                     {{ errors.expected_delivery_date[0] }}
@@ -288,9 +286,7 @@
                 item.quantity > 0
             );
         
-        return props.params.supplier_id && 
-               props.params.expected_delivery_date &&
-               hasValidItems;
+        return hasValidItems;
     });
 
     // Methods

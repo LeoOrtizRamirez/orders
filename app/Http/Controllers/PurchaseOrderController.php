@@ -102,7 +102,7 @@ class PurchaseOrderController extends Controller
     {
         try {
             $validated = $request->validate([
-                'supplier_id' => 'sometimes|exists:suppliers,id',
+                'supplier_id' => 'nullable|exists:suppliers,id',
                 'expected_delivery_date' => 'nullable|date',
                 'notes' => 'nullable|string',
                 'items' => 'sometimes|array|min:1',
