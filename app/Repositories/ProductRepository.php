@@ -65,7 +65,7 @@ class ProductRepository
 
     public function findBySku(string $sku): ?Product
     {
-        return $this->model->where('sku', $sku)->first();
+        return $this->model->withTrashed()->where('sku', $sku)->first();
     }
 
     public function create(array $data): Product

@@ -282,8 +282,12 @@ class ProductManagementService
 
                         if ($existingProduct) {
 
-                            // Update existing product
+                            // Si el producto está eliminado (soft delete), restaurarlo
+                            if ($existingProduct->trashed()) {
+                                $existingProduct->restore();
+                            }
 
+                            // Update existing product
                             $this->productRepository->update($existingProduct->id, $productData);
 
                             $updatedCount++;
