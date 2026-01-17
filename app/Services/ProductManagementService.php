@@ -248,9 +248,9 @@ class ProductManagementService
 
                         $productData = [
 
-                            'name' => $data['DESCRIPCION'],
+                            'name' => trim($data['DESCRIPCION']),
 
-                            'sku' => $data['ITEM'],
+                            'sku' => trim($data['ITEM']),
 
                             'description' => null,
 
