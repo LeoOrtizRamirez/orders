@@ -443,7 +443,7 @@
 
     const fetchPermissions = async () => {
         try {
-            const response = await axios.get('/api/admin/permissions');
+            const response = await axios.get('/api/admin/permissions?limit=1000');
             availablePermissions.value = response.data.data;
         } catch (error) {
             console.error('Error fetching permissions:', error);

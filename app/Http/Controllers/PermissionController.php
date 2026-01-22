@@ -20,7 +20,8 @@ class PermissionController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $permissions = Permission::paginate(15);
+        $limit = $request->input('limit', 15);
+        $permissions = Permission::paginate($limit);
         
         return response()->json([
             'data' => $permissions->items(),
