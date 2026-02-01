@@ -13,10 +13,13 @@ api.interceptors.request.use(
             config.headers.Authorization = `Bearer ${token}`;
         }
 
-        const xsrfToken = document.cookie
-            .split('; ')
-            .find((row) => row.startsWith('XSRF-TOKEN='))
-            ?.split('=')[1];
+        const getCookie = (name) => {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+        };
+
+        const xsrfToken = getCookie('XSRF-TOKEN');
 
         if (xsrfToken) {
             config.headers['X-XSRF-TOKEN'] = decodeURIComponent(xsrfToken);
@@ -33,9 +36,15 @@ api.interceptors.request.use(
 api.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (error.response?.status === 401) {
+        if (error.response?.status === 401 || error.response?.status === 419) {
             localStorage.removeItem('auth_token');
+            localStorage.removeItem('user');
+            localStorage.removeItem('permissions');
+            sessionStorage.removeItem('auth_token');
+            sessionStorage.removeItem('user');
+            sessionStorage.removeItem('permissions');
             window.location.href = '/auth/boxed-signin';
+            return new Promise(() => {});
         }
         return Promise.reject(error);
     }

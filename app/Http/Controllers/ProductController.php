@@ -9,13 +9,15 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
-use Symfony\Component\HttpFoundation\BinaryFileResponse; // Added
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use App\Exports\ProductsExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ProductController extends Controller
 {
     public function __construct(private ProductManagementService $productService)
     {
-        $this->middleware('permission:view products')->only(['index', 'show', 'activeProducts', 'categories', 'units']);
+        $this->middleware('permission:view products')->only(['index', 'show', 'activeProducts', 'categories', 'units', 'export']);
         $this->middleware('permission:create products')->only(['store', 'import']);
         $this->middleware('permission:edit products')->only(['update', 'toggleStatus']);
         $this->middleware('permission:delete products')->only(['destroy']);
@@ -42,6 +44,19 @@ class ProductController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Failed to load products',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function export(Request $request)
+    {
+        try {
+            $filters = $request->only(['search', 'active', 'category', 'unit', 'stock_status']);
+            return Excel::download(new ProductsExport($filters), 'inventario_' . date('Y-m-d') . '.xlsx');
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Failed to export inventory',
                 'message' => $e->getMessage()
             ], 500);
         }

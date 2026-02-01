@@ -164,6 +164,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::put('/{id}/toggle-status', [ProductController::class, 'toggleStatus'])->middleware('permission:edit products');
         Route::get('/sku/{sku}', [ProductController::class, 'getProductBySku'])->middleware('permission:view products');
         Route::get('/{id}/pending-orders', [ProductController::class, 'pendingOrders'])->middleware('permission:view products');
+        Route::get('/export', [ProductController::class, 'export'])->middleware('permission:view products');
 
         // Import/Export (ya tenían middleware, se mantienen)
         Route::post('/import', [ProductController::class, 'importProductsCsv'])->middleware('permission:create products');
