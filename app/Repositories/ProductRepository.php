@@ -12,7 +12,7 @@ class ProductRepository
 
     public function getAll(array $filters = []): LengthAwarePaginator
     {
-        $query = $this->model->withCount('purchaseOrderItems');
+        $query = $this->model->withTrashed()->withCount('purchaseOrderItems');
 
         // Calcular Stock Comprometido (Requerido en órdenes activas antes de facturación)
         $query->withSum(['purchaseOrderItems as committed_stock' => function($q) {
