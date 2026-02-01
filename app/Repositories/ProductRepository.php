@@ -60,7 +60,7 @@ class ProductRepository
 
     public function findById(int $id): ?Product
     {
-        return $this->model->withCount('purchaseOrderItems')->find($id);
+        return $this->model->withTrashed()->withCount('purchaseOrderItems')->find($id);
     }
 
     public function findBySku(string $sku): ?Product
