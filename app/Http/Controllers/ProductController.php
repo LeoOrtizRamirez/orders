@@ -100,7 +100,7 @@ class ProductController extends Controller
     public function show($id): JsonResponse
     {
         try {
-            $product = $this->productService->getProduct($id);
+            $product = $this->productService->getProduct((int) $id);
             
             return response()->json($product);
         } catch (\Exception $e) {
@@ -130,7 +130,7 @@ class ProductController extends Controller
                 'order' => 'sometimes|integer|min:0',
             ]);
 
-            $product = $this->productService->updateProduct($id, $validated);
+            $product = $this->productService->updateProduct((int) $id, $validated);
 
             return response()->json($product);
         } catch (ValidationException $e) {
@@ -150,7 +150,7 @@ class ProductController extends Controller
     public function destroy($id): JsonResponse
     {
         try {
-            $this->productService->deleteProduct($id);
+            $this->productService->deleteProduct((int) $id);
 
             return response()->json(null, 204);
         } catch (\Exception $e) {
@@ -165,7 +165,7 @@ class ProductController extends Controller
     public function toggleStatus($id): JsonResponse
     {
         try {
-            $product = $this->productService->toggleProductStatus($id);
+            $product = $this->productService->toggleProductStatus((int) $id);
 
             return response()->json($product);
         } catch (\Exception $e) {
@@ -300,7 +300,7 @@ class ProductController extends Controller
     public function pendingOrders($id): JsonResponse
     {
         try {
-            $orders = $this->productService->getPendingOrdersForProduct($id);
+            $orders = $this->productService->getPendingOrdersForProduct((int) $id);
             return response()->json(['data' => $orders]);
         } catch (\Exception $e) {
             return response()->json([
