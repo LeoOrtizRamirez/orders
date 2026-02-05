@@ -19,7 +19,7 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['http://distrifruver.local'],
+    'allowed_origins' => ['https://dev.blupage.co'],
 
     'allowed_origins_patterns' => [],
 
