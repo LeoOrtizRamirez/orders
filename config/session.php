@@ -155,7 +155,7 @@ return [
     |
     */
 
-    'domain' => env('APP_ENV') === 'local' ? 'orders.local' : preg_replace('#^https?://#', '', env('SESSION_DOMAIN')),
+    'domain' => env('APP_ENV') === 'local' ? 'dev.blupage.co' : preg_replace('#^https?://#', '', env('SESSION_DOMAIN')),
 
     /*
     |--------------------------------------------------------------------------

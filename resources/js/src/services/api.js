@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: import.meta.env.VITE_APP_URL || 'http://orders.local', // URL de tu backend Laravel
+    baseURL: import.meta.env.VITE_APP_URL || 'https://dev.blupage.co', // URL de tu backend Laravel
     withCredentials: true,
 });
 
