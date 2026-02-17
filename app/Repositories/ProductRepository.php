@@ -155,10 +155,10 @@ class ProductRepository
     public function getMetrics(): array
     {
         return [
-            'total' => $this->model->count(),
-            'active' => $this->model->where('is_active', true)->count(),
-            'low_stock' => $this->model->whereColumn('stock', '<=', 'reorder_point')->where('stock', '>', 0)->count(),
-            'out_of_stock' => $this->model->where('stock', 0)->count(),
+            'total' => $this->model->withTrashed()->count(),
+            'active' => $this->model->withTrashed()->where('is_active', true)->count(),
+            'low_stock' => $this->model->withTrashed()->whereColumn('stock', '<=', 'reorder_point')->where('stock', '>', 0)->count(),
+            'out_of_stock' => $this->model->withTrashed()->where('stock', 0)->count(),
         ];
     }
 }
