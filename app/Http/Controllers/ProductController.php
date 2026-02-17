@@ -31,6 +31,7 @@ class ProductController extends Controller
             $filters['per_page'] = $perPage;
 
             $products = $this->productService->getAllProducts($filters);
+            $metrics = $this->productService->getProductMetrics();
             
             return response()->json([
                 'data' => $products->items(),
@@ -39,7 +40,8 @@ class ProductController extends Controller
                     'last_page' => $products->lastPage(),
                     'per_page' => $products->perPage(),
                     'total' => $products->total(),
-                ]
+                ],
+                'metrics' => $metrics
             ]);
         } catch (\Exception $e) {
             return response()->json([

@@ -47,6 +47,13 @@ export function useProducts() {
         total: 0,
     });
 
+    const metrics = ref({
+        total: 0,
+        active: 0,
+        low_stock: 0,
+        out_of_stock: 0,
+    });
+
     const filters = ref<ProductFilters>({
         category: '',
         stock_status: ''
@@ -71,10 +78,10 @@ export function useProducts() {
     const params = ref<ProductParams>({ ...defaultParams });
 
     // Computed
-    const totalProducts = computed(() => pagination.value.total);
-    const activeProducts = computed(() => productsList.value.filter(p => p.is_active).length); // Note: This only reflects the current page
-    const lowStockProducts = computed(() => productsList.value.filter(p => p.stock <= p.reorder_point && p.stock > 0).length); // Note: This only reflects the current page
-    const outOfStockProducts = computed(() => productsList.value.filter(p => p.stock === 0).length); // Note: This only reflects the current page
+    const totalProducts = computed(() => metrics.value.total);
+    const activeProducts = computed(() => metrics.value.active);
+    const lowStockProducts = computed(() => metrics.value.low_stock);
+    const outOfStockProducts = computed(() => metrics.value.out_of_stock);
 
     // Methods
     const fetchProducts = async (page: number = 1) => {
@@ -91,6 +98,9 @@ export function useProducts() {
             const response = await axios.get(`/api/products?${queryParams}`);
             productsList.value = response.data.data;
             pagination.value = response.data.meta;
+            if (response.data.metrics) {
+                metrics.value = response.data.metrics;
+            }
         } catch (error) {
             console.error('Error fetching products:', error);
             errorMessage.value = t('products_page.alerts.loading_error');

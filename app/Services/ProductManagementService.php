@@ -338,7 +338,12 @@ class ProductManagementService
 
     
 
-        public function getPendingOrdersForProduct(int $productId)
+        public function getProductMetrics(): array
+    {
+        return $this->productRepository->getMetrics();
+    }
+
+    public function getPendingOrdersForProduct(int $productId)
 
         {
 
