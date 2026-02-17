@@ -116,13 +116,13 @@
                                                 <button type="button" class="btn btn-outline-info btn-sm" @click="handleViewOrder(order)">
                                                     {{ $t('ordenes.view_details') }}
                                                 </button>
-                                                <button v-if="authStore.can('edit purchase_orders') && order.can_be_edited" type="button" class="btn btn-outline-secondary btn-sm" @click="handleEditOrder(order)">
+                                                <button v-if="authStore.can('edit purchase_orders') && (order.can_be_edited || authStore.can('override_order_restrictions'))" type="button" class="btn btn-outline-secondary btn-sm" @click="handleEditOrder(order)">
                                                     {{ $t('edit') }}
                                                 </button>
-                                                <button v-if="canSplitOrder(order) && authStore.can('create purchase_orders') && order.can_be_edited" type="button" class="btn btn-outline-warning btn-sm" @click="handleShowSplitModal(order)">
+                                                <button v-if="authStore.can('create purchase_orders') && (canSplitOrder(order) || authStore.can('override_order_restrictions'))" type="button" class="btn btn-outline-warning btn-sm" @click="handleShowSplitModal(order)">
                                                     {{ $t('purchase_orders_page.actions.split') }}
                                                 </button>
-                                                <button v-if="authStore.can('delete purchase_orders') && order.can_be_deleted" type="button" class="btn btn-outline-danger btn-sm" @click="handleDeleteOrder(order)">
+                                                <button v-if="authStore.can('delete purchase_orders') && (order.can_be_deleted || authStore.can('override_order_restrictions'))" type="button" class="btn btn-outline-danger btn-sm" @click="handleDeleteOrder(order)">
                                                     {{ $t('delete') }}
                                                 </button>
                                             </div>
@@ -324,7 +324,7 @@
         const newStatusIndex = statusOrder.indexOf(newStatusId);
         const billingIndex = statusOrder.indexOf('facturación');
 
-        if (oldStatusIndex >= billingIndex && newStatusIndex < oldStatusIndex && newStatusIndex !== -1) {
+        if (oldStatusIndex >= billingIndex && newStatusIndex < oldStatusIndex && newStatusIndex !== -1 && !authStore.can('override_order_restrictions')) {
             showMessage(t('ordenes.cannot_move_back_after_billing'), 'error');
             await fetchOrdersKanban();
             return;

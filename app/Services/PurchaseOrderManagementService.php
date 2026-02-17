@@ -105,7 +105,7 @@ class PurchaseOrderManagementService
     {
         $purchaseOrder = $this->getPurchaseOrder($id);
         
-        if ($purchaseOrder->isReadOnly()) {
+        if ($purchaseOrder->isReadOnly() && !$user->can('override_order_restrictions')) {
             throw new Exception("La orden no se puede modificar, eliminar o dividir porque se encuentra en estado '{$purchaseOrder->status}' (etapa de facturación o posterior).", 422);
         }
 
@@ -195,13 +195,23 @@ class PurchaseOrderManagementService
 
     public function deletePurchaseOrder(int $id)
     {
-        $purchaseOrder = $this->getPurchaseOrder($id); // Check existence and load relationships
+        $purchaseOrder = $this->getPurchaseOrder($id); 
+        $user = auth()->user();
         
-        if ($purchaseOrder->isReadOnly()) {
+        if ($purchaseOrder->isReadOnly() && (!$user || !$user->can('override_order_restrictions'))) {
             throw new Exception("La orden no se puede modificar, eliminar o dividir porque se encuentra en estado '{$purchaseOrder->status}' (etapa de facturación o posterior).", 422);
         }
 
-        return DB::transaction(function () use ($purchaseOrder) {
+        return DB::transaction(function () use ($purchaseOrder, $id) {
+            // Si la orden ya impactó el stock, lo restauramos antes de eliminar
+            $currentStatus = mb_strtolower($purchaseOrder->status, 'UTF-8');
+            $currentStatusIndex = $this->getStatusIndex($currentStatus);
+            $billingIndex = $this->getStatusIndex('facturación');
+
+            if ($currentStatusIndex >= $billingIndex && $currentStatusIndex !== -1) {
+                $this->restoreStock($id);
+            }
+
             // Delete all associated UserNotes for the purchase order and its items
             $purchaseOrder->notes()->delete(); // Delete notes for the main order
             foreach ($purchaseOrder->items as $item) {
@@ -224,9 +234,17 @@ class PurchaseOrderManagementService
         $currentStatusIndex = $this->getStatusIndex($currentStatus);
         $billingIndex = $this->getStatusIndex('facturación');
 
-        // Restricción: A partir de facturación no se puede volver atrás
+        // Restricción: A partir de facturación no se puede volver atrás, a menos que tenga el permiso especial
         if ($currentStatusIndex >= $billingIndex && $newStatusIndex < $currentStatusIndex && $newStatusIndex !== -1) {
-            throw new Exception("No se puede devolver la orden a un estado anterior después de haber llegado a la etapa de facturación.", 422);
+            $user = auth()->user();
+            if (!$user || !$user->can('override_order_restrictions')) {
+                throw new Exception("No se puede devolver la orden a un estado anterior después de haber llegado a la etapa de facturación.", 422);
+            }
+
+            // Si estamos volviendo de un estado post-facturación a uno pre-facturación, restablecemos stock
+            if ($newStatusIndex < $billingIndex) {
+                $this->restoreStock($id);
+            }
         }
 
         if ($normalizedNewStatus === 'preparar pedido') {
@@ -238,7 +256,7 @@ class PurchaseOrderManagementService
             return $this->processBilling($id);
         }
 
-        $purchaseOrder->update(['status' => $newStatus]); // Guardamos el status original que vino del request para consistencia visual si se desea
+        $purchaseOrder->update(['status' => $newStatus]); 
         
         $this->notifyUsersOnStatusChange($purchaseOrder, null);
 
@@ -246,6 +264,23 @@ class PurchaseOrderManagementService
         event(new OrderUpdated($purchaseOrder));
 
         return $this->getPurchaseOrder($id);
+    }
+
+    private function restoreStock(int $id)
+    {
+        Log::info("Iniciando restoreStock para Orden #{$id}");
+
+        DB::transaction(function () use ($id) {
+            $purchaseOrder = $this->getPurchaseOrder($id);
+            $purchaseOrder->load('items.product');
+
+            foreach ($purchaseOrder->items as $item) {
+                $qty = $item->quantity;
+                Log::info("Restaurando stock. Producto {$item->product_id}. Cantidad a sumar: {$qty}");
+                $updated = $item->product->updateStock($qty);
+                Log::info("Resultado restoreStock: " . ($updated ? 'true' : 'false') . ". Nuevo Stock: {$item->product->stock}");
+            }
+        });
     }
 
     private function getStatusIndex(string $status): int
@@ -294,22 +329,20 @@ class PurchaseOrderManagementService
             
             // Protección contra doble descuento de stock
             $currentStatus = mb_strtolower($purchaseOrder->status, 'UTF-8');
-            if ($currentStatus === 'facturación' || $currentStatus === 'facturacion') {
-                 Log::warning("Orden #{$id} ya está en estado facturación. Omitiendo proceso de facturación.");
+            $currentStatusIndex = $this->getStatusIndex($currentStatus);
+            $billingIndex = $this->getStatusIndex('facturación');
+
+            if ($currentStatusIndex >= $billingIndex && $currentStatusIndex !== -1) {
+                 Log::warning("Orden #{$id} ya pasó por la etapa de facturación (Estado actual: {$currentStatus}). Omitiendo descuento de stock.");
+                 
+                 // Solo actualizamos el nombre del estado por si acaso (ej. de facturacion a facturación)
+                 $purchaseOrder->update(['status' => 'facturación']);
                  return $purchaseOrder;
             }
 
             $purchaseOrder->load('items.product');
 
             Log::info("Orden cargada. Items: " . $purchaseOrder->items->count());
-
-            foreach ($purchaseOrder->items as $item) {
-                Log::info("Verificando stock para Item {$item->id} (Producto {$item->product_id}). Stock: {$item->product->stock}, Cantidad: {$item->quantity}");
-                if ($item->product->stock < $item->quantity) {
-                    Log::error("Stock insuficiente para Item {$item->id}");
-                    throw new Exception("Stock insuficiente para 'facturación': {$item->product->name}. Disponible: {$item->product->stock}, Solicitado: {$item->quantity}", 400);
-                }
-            }
 
             foreach ($purchaseOrder->items as $item) {
                 $qty = -$item->quantity;
@@ -373,7 +406,7 @@ class PurchaseOrderManagementService
                 User $user
             ): PurchaseOrder {
                 
-                if ($parentOrder->isReadOnly()) {
+                if ($parentOrder->isReadOnly() && !$user->can('override_order_restrictions')) {
                      throw new Exception("La orden no se puede modificar, eliminar o dividir porque se encuentra en estado '{$parentOrder->status}' (etapa de facturación o posterior).", 422);
                 }
         

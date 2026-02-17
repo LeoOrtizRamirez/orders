@@ -98,7 +98,7 @@ class PurchaseOrder extends Model
 
     public function getCanBeEditedAttribute(): bool
     {
-        return !$this->isReadOnly();
+        return !$this->isReadOnly() || (auth()->check() && auth()->user()->can('override_order_restrictions'));
     }
 
     public function getCanBeApprovedAttribute(): bool
@@ -123,12 +123,12 @@ class PurchaseOrder extends Model
 
     public function getCanBeDeletedAttribute(): bool
     {
-        return !$this->isReadOnly();
+        return !$this->isReadOnly() || (auth()->check() && auth()->user()->can('override_order_restrictions'));
     }
 
     public function getCanBeCancelledAttribute(): bool
     {
-        return !$this->isReadOnly();
+        return !$this->isReadOnly() || (auth()->check() && auth()->user()->can('override_order_restrictions'));
     }
 
     public function getCanBeReopenedAttribute(): bool
