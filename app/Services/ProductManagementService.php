@@ -24,7 +24,7 @@ class ProductManagementService
         $product = $this->productRepository->findById($id);
         
         if (!$product) {
-            throw new Exception('Producto no encontrado', 404);
+            throw new Exception("Producto no encontrado (ID: $id)", 404);
         }
 
         return $product;
@@ -35,7 +35,7 @@ class ProductManagementService
         $product = $this->productRepository->findBySku($sku);
         
         if (!$product) {
-            throw new Exception('Producto no encontrado', 404);
+            throw new Exception("Producto no encontrado (SKU: $sku)", 404);
         }
 
         return $product;
