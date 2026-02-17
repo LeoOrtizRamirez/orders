@@ -20,8 +20,20 @@ class PermissionController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $limit = $request->input('limit', 15);
-        $permissions = Permission::paginate($limit);
+        $search = $request->input('search');
+        $perPage = $request->input('per_page', 15);
+
+        $query = Permission::query();
+
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%")
+                  ->orWhere('group', 'like', "%{$search}%");
+            });
+        }
+
+        $permissions = $query->paginate($perPage);
         
         return response()->json([
             'data' => $permissions->items(),

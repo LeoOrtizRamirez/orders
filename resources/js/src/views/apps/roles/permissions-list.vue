@@ -42,7 +42,7 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                        <tr v-for="permission in filteredPermissions" :key="permission.id">
+                        <tr v-for="permission in permissions" :key="permission.id">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center">
                                     <div class="h-10 w-10 rounded-full bg-success flex items-center justify-center text-white font-bold mr-3">
@@ -78,7 +78,7 @@
                                         Editar
                                     </button>
                                     <button 
-                                        v-if="authStore.can('delete permisos') && permission.roles_count === 0"
+                                        v-if="authStore.can('delete permisos') && (!permission.roles_count || permission.roles_count === 0)"
                                         type="button" 
                                         class="btn btn-sm btn-outline-danger" 
                                         @click="deletePermission(permission)"
@@ -98,6 +98,54 @@
                         </tr>
                     </tbody>
                 </table>
+            </div>
+
+            <!-- Paginación y Selector -->
+            <div class="mt-6 flex flex-col md:flex-row justify-between items-center px-5 pb-5" v-if="pagination.last_page > 1 || pagination.total > 0">
+                <div class="flex items-center gap-2 mb-4 md:mb-0">
+                    <span class="text-sm">{{ $t('pagination.show') }}:</span>
+                    <select class="form-select w-20 h-9" :value="pagination.per_page" @change="handlePerPageChange(parseInt(($event.target as HTMLSelectElement).value))">
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
+
+                <ul class="inline-flex items-center space-x-1 rtl:space-x-reverse">
+                    <li>
+                        <button
+                            type="button"
+                            class="flex justify-center font-semibold px-3.5 py-2 rounded transition text-dark hover:text-primary border-2 border-[#e0e6ed] dark:border-[#191e3a] hover:border-primary dark:hover:border-primary dark:text-white-light"
+                            :disabled="pagination.current_page === 1"
+                            @click="changePage(pagination.current_page - 1)"
+                        >
+                            {{ $t('pagination.prev') }}
+                        </button>
+                    </li>
+                    <li v-for="(page, index) in displayedPages" :key="index">
+                        <button
+                            v-if="page !== '...'"
+                            type="button"
+                            class="flex justify-center font-semibold px-3.5 py-2 rounded transition"
+                            :class="{'text-primary border-2 border-primary dark:border-primary dark:text-white-light': pagination.current_page === page, 'text-dark hover:text-primary border-2 border-[#e0e6ed] dark:border-[#191e3a] hover:border-primary dark:hover:border-primary dark:text-white-light': pagination.current_page !== page}"
+                            @click="changePage(page as number)"
+                        >
+                            {{ page }}
+                        </button>
+                        <span v-else class="px-3.5 py-2">...</span>
+                    </li>
+                    <li>
+                        <button
+                            type="button"
+                            class="flex justify-center font-semibold px-3.5 py-2 rounded transition text-dark hover:text-primary border-2 border-[#e0e6ed] dark:border-[#191e3a] hover:border-primary dark:hover:border-primary dark:text-white-light"
+                            :disabled="pagination.current_page === pagination.last_page"
+                            @click="changePage(pagination.current_page + 1)"
+                        >
+                            {{ $t('pagination.next') }}
+                        </button>
+                    </li>
+                </ul>
             </div>
 
             <!-- Loading State -->
@@ -221,7 +269,7 @@
 </template>
 
 <script lang="ts" setup>
-    import { ref, onMounted, computed } from 'vue';
+    import { ref, onMounted, computed, watch } from 'vue';
     import { TransitionRoot, TransitionChild, Dialog, DialogPanel, DialogOverlay } from '@headlessui/vue';
     import { useAuthStore } from '@/stores/auth';
     import axios from 'axios';
@@ -237,6 +285,13 @@
 
     // Datos
     const permissions = ref<any[]>([]);
+    
+    const pagination = ref({
+        current_page: 1,
+        last_page: 1,
+        per_page: 15,
+        total: 0,
+    });
 
     // Formulario de permiso
     const permissionForm = ref({
@@ -246,22 +301,19 @@
         description: ''
     });
 
-    // Permisos filtrados
-    const filteredPermissions = computed(() => {
-        if (!search.value) return permissions.value;
-        return permissions.value.filter(permission => 
-            permission.name.toLowerCase().includes(search.value.toLowerCase()) ||
-            (permission.description && permission.description.toLowerCase().includes(search.value.toLowerCase())) ||
-            (permission.group && permission.group.toLowerCase().includes(search.value.toLowerCase()))
-        );
-    });
-
     // Cargar datos
-    const fetchPermissions = async () => {
+    const fetchPermissions = async (page = 1) => {
         loading.value = true;
         try {
-            const response = await axios.get('/api/admin/permissions');
+            const response = await axios.get('/api/admin/permissions', {
+                params: {
+                    page: page,
+                    per_page: pagination.value.per_page,
+                    search: search.value
+                }
+            });
             permissions.value = response.data.data;
+            pagination.value = response.data.meta;
         } catch (error) {
             console.error('Error fetching permissions:', error);
             Swal.fire('Error', 'No se pudieron cargar los permisos', 'error');
@@ -269,6 +321,59 @@
             loading.value = false;
         }
     };
+
+    let searchTimer: any;
+    watch(search, () => {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => {
+            fetchPermissions(1);
+        }, 300);
+    });
+
+    const changePage = (page: number) => {
+        if (page > 0 && page <= pagination.value.last_page && page !== pagination.value.current_page) {
+            fetchPermissions(page);
+        }
+    };
+
+    const handlePerPageChange = (perPage: number) => {
+        pagination.value.per_page = perPage;
+        fetchPermissions(1);
+    };
+
+    const displayedPages = computed(() => {
+        const currentPage = pagination.value.current_page;
+        const lastPage = pagination.value.last_page;
+        const delta = 2;
+        const pages: (number | string)[] = [];
+
+        if (lastPage <= 7) {
+            for (let i = 1; i <= lastPage; i++) {
+                pages.push(i);
+            }
+            return pages;
+        }
+
+        pages.push(1);
+        if (currentPage > delta + 2) {
+            pages.push('...');
+        }
+
+        const start = Math.max(2, currentPage - delta);
+        const end = Math.min(lastPage - 1, currentPage + delta);
+
+        for (let i = start; i <= end; i++) {
+            pages.push(i);
+        }
+
+        if (currentPage < lastPage - delta - 1) {
+            pages.push('...');
+        }
+        
+        pages.push(lastPage);
+
+        return pages;
+    });
 
     // Formatear fecha
     const formatDate = (dateString: string) => {
@@ -312,11 +417,11 @@
                 Swal.fire('Éxito', 'Permiso actualizado correctamente', 'success');
             } else {
                 // Crear permiso
-                const response = await axios.post('/api/admin/permissions', permissionForm.value);
-                permissions.value.unshift(response.data.data);
+                await axios.post('/api/admin/permissions', permissionForm.value);
                 Swal.fire('Éxito', 'Permiso creado correctamente', 'success');
             }
             showPermissionModal.value = false;
+            fetchPermissions(permissionForm.value.id ? pagination.value.current_page : 1);
         } catch (error: any) {
             if (error.response && error.response.status === 422) {
                 errors.value = error.response.data.errors;
@@ -347,8 +452,8 @@
             
             try {
                 await axios.delete(`/api/admin/permissions/${permission.id}`);
-                permissions.value = permissions.value.filter(p => p.id !== permission.id);
                 Swal.fire('Eliminado', 'El permiso ha sido eliminado', 'success');
+                fetchPermissions(pagination.value.current_page);
             } catch (error: any) {
                 console.error('Error deleting permission:', error);
                 let errorMessage = 'No se pudo eliminar el permiso';

@@ -82,7 +82,11 @@
     "infobox": "Caja de información",
     "jumbotron": "jumbotron",
     "loader": "cargadores",
-    "pagination": "paginación",
+    "pagination": {
+        "show": "Mostrar",
+        "prev": "Anterior",
+        "next": "Siguiente"
+    },
     "popovers": "popovers",
     "progress_bar": "barra de progreso",
     "search": "Búsqueda",
@@ -170,7 +174,10 @@
         "confirm_password_placeholder": "Confirmar contraseña",
         "actions": "Acciones",
         "modal_add_title": "Agregar usuario",
-        "modal_edit_title": "Editar usuario"
+        "modal_edit_title": "Editar usuario",
+        "show": "Mostrar",
+        "prev": "Anterior",
+        "next": "Siguiente"
     },
 
     "services_page": {

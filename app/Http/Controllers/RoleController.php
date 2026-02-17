@@ -20,7 +20,17 @@ class RoleController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $roles = Role::with('permissions')->paginate(10);
+        $search = $request->input('search');
+        $perPage = $request->input('per_page', 10);
+
+        $query = Role::with('permissions');
+
+        if ($search) {
+            $query->where('name', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+        }
+
+        $roles = $query->paginate($perPage);
         
         return response()->json([
             'data' => $roles->items(),

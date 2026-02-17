@@ -134,7 +134,7 @@
                                 </tr>
                             </template>
                             <template v-else>
-                                <template v-for="role in filteredRolesList" :key="role.id">
+                                <template v-for="role in rolesList" :key="role.id">
                                     <tr>
                                         <td>
                                             <div class="flex items-center w-max">
@@ -159,7 +159,7 @@
                                                 </button>
 
                                                 <button 
-                                                    v-if="authStore.can('delete roles') && !role.is_system && !role.is_default && role.users_count === 0"
+                                                    v-if="authStore.can('delete roles') && !role.is_system && !role.is_default && (!role.users_count || role.users_count === 0)"
                                                     type="button" 
                                                     class="btn btn-sm btn-outline-danger" 
                                                     @click="deleteRole(role)"
@@ -215,7 +215,7 @@
                     </div>
                 </template>
                 <template v-else>
-                    <template v-for="role in filteredRolesList" :key="role.id">
+                    <template v-for="role in rolesList" :key="role.id">
                         <div class="bg-white dark:bg-[#1c232f] rounded-md overflow-hidden text-center shadow relative">
                             <div class="bg-white/40 rounded-t-md bg-[url('/assets/images/notification-bg.png')] bg-center bg-cover p-6 pb-0">
                                 <div class="grid place-content-center h-20 w-20 mx-auto rounded-full bg-primary text-white text-2xl font-semibold">
@@ -257,7 +257,7 @@
                                     Editar
                                 </button>
                                 <button 
-                                    v-if="authStore.can('delete roles') && !role.is_system && !role.is_default && role.users_count === 0"
+                                    v-if="authStore.can('delete roles') && !role.is_system && !role.is_default && (!role.users_count || role.users_count === 0)"
                                     type="button" 
                                     class="btn btn-outline-danger w-1/2" 
                                     @click="deleteRole(role)"
@@ -280,6 +280,54 @@
                 </template>
             </div>
         </template>
+
+        <!-- Paginación y Selector -->
+        <div class="mt-6 flex flex-col md:flex-row justify-between items-center" v-if="pagination.last_page > 1 || pagination.total > 0">
+            <div class="flex items-center gap-2 mb-4 md:mb-0">
+                <span class="text-sm">{{ $t('pagination.show') }}:</span>
+                <select class="form-select w-20 h-9" :value="pagination.per_page" @change="handlePerPageChange(parseInt(($event.target as HTMLSelectElement).value))">
+                    <option value="10">10</option>
+                    <option value="25">25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+            </div>
+
+            <ul class="inline-flex items-center space-x-1 rtl:space-x-reverse">
+                <li>
+                    <button
+                        type="button"
+                        class="flex justify-center font-semibold px-3.5 py-2 rounded transition text-dark hover:text-primary border-2 border-[#e0e6ed] dark:border-[#191e3a] hover:border-primary dark:hover:border-primary dark:text-white-light"
+                        :disabled="pagination.current_page === 1"
+                        @click="changePage(pagination.current_page - 1)"
+                    >
+                        {{ $t('pagination.prev') }}
+                    </button>
+                </li>
+                <li v-for="(page, index) in displayedPages" :key="index">
+                    <button
+                        v-if="page !== '...'"
+                        type="button"
+                        class="flex justify-center font-semibold px-3.5 py-2 rounded transition"
+                        :class="{'text-primary border-2 border-primary dark:border-primary dark:text-white-light': pagination.current_page === page, 'text-dark hover:text-primary border-2 border-[#e0e6ed] dark:border-[#191e3a] hover:border-primary dark:hover:border-primary dark:text-white-light': pagination.current_page !== page}"
+                        @click="changePage(page as number)"
+                    >
+                        {{ page }}
+                    </button>
+                    <span v-else class="px-3.5 py-2">...</span>
+                </li>
+                <li>
+                    <button
+                        type="button"
+                        class="flex justify-center font-semibold px-3.5 py-2 rounded transition text-dark hover:text-primary border-2 border-[#e0e6ed] dark:border-[#191e3a] hover:border-primary dark:hover:border-primary dark:text-white-light"
+                        :disabled="pagination.current_page === pagination.last_page"
+                        @click="changePage(pagination.current_page + 1)"
+                    >
+                        {{ $t('pagination.next') }}
+                    </button>
+                </li>
+            </ul>
+        </div>
 
         <!-- add role modal -->
         <TransitionRoot appear :show="addRoleModal" as="template">
@@ -379,7 +427,7 @@
 </template>
 
 <script lang="ts" setup>
-    import { ref, onMounted, computed } from 'vue';
+    import { ref, onMounted, computed, watch } from 'vue';
     import { TransitionRoot, TransitionChild, Dialog, DialogPanel, DialogOverlay } from '@headlessui/vue';
     import Swal from 'sweetalert2';
     import { useMeta } from '@/composables/use-meta';
@@ -400,6 +448,13 @@
     const searchRole = ref('');
     const availablePermissions = ref([]);
     
+    const pagination = ref({
+        current_page: 1,
+        last_page: 1,
+        per_page: 10,
+        total: 0,
+    });
+
     const defaultParams = ref({
         id: null,
         name: '',
@@ -410,28 +465,24 @@
     const params = ref({...defaultParams.value});
     const rolesList = ref([]);
 
-    // Computed property for filtered roles
-    const filteredRolesList = computed(() => {
-        if (!searchRole.value) {
-            return rolesList.value;
-        }
-        return rolesList.value.filter((role) => 
-            role.name.toLowerCase().includes(searchRole.value.toLowerCase()) ||
-            (role.description && role.description.toLowerCase().includes(searchRole.value.toLowerCase()))
-        );
-    });
-
     onMounted(() => {
         fetchRoles();
         fetchPermissions();
     });
 
-    const fetchRoles = async () => {
+    const fetchRoles = async (page = 1) => {
         loading.value = true;
         errorMessage.value = '';
         try {
-            const response = await axios.get('/api/admin/roles');
+            const response = await axios.get('/api/admin/roles', {
+                params: {
+                    page: page,
+                    per_page: pagination.value.per_page,
+                    search: searchRole.value
+                }
+            });
             rolesList.value = response.data.data;
+            pagination.value = response.data.meta;
         } catch (error) {
             console.error('Error fetching roles:', error);
             errorMessage.value = 'Error al cargar los roles. Por favor, intente nuevamente.';
@@ -441,9 +492,62 @@
         }
     };
 
+    let searchTimer: any;
+    watch(searchRole, () => {
+        clearTimeout(searchTimer);
+        searchTimer = setTimeout(() => {
+            fetchRoles(1);
+        }, 300);
+    });
+
+    const changePage = (page: number) => {
+        if (page > 0 && page <= pagination.value.last_page && page !== pagination.value.current_page) {
+            fetchRoles(page);
+        }
+    };
+
+    const handlePerPageChange = (perPage: number) => {
+        pagination.value.per_page = perPage;
+        fetchRoles(1);
+    };
+
+    const displayedPages = computed(() => {
+        const currentPage = pagination.value.current_page;
+        const lastPage = pagination.value.last_page;
+        const delta = 2;
+        const pages: (number | string)[] = [];
+
+        if (lastPage <= 7) {
+            for (let i = 1; i <= lastPage; i++) {
+                pages.push(i);
+            }
+            return pages;
+        }
+
+        pages.push(1);
+        if (currentPage > delta + 2) {
+            pages.push('...');
+        }
+
+        const start = Math.max(2, currentPage - delta);
+        const end = Math.min(lastPage - 1, currentPage + delta);
+
+        for (let i = start; i <= end; i++) {
+            pages.push(i);
+        }
+
+        if (currentPage < lastPage - delta - 1) {
+            pages.push('...');
+        }
+        
+        pages.push(lastPage);
+
+        return pages;
+    });
+
     const fetchPermissions = async () => {
         try {
-            const response = await axios.get('/api/admin/permissions?limit=1000');
+            const response = await axios.get('/api/admin/permissions?per_page=1000');
             availablePermissions.value = response.data.data;
         } catch (error) {
             console.error('Error fetching permissions:', error);
@@ -451,7 +555,7 @@
     };
 
     const searchRoles = () => {
-        // Search is handled by the computed property
+        // Search is now handled by watcher
     };
 
     const editRole = (role: any = null) => {
@@ -478,27 +582,23 @@
         try {
             if (params.value.id) {
                 // Update role
-                const { data } = await axios.put(`/api/admin/roles/${params.value.id}`, {
+                await axios.put(`/api/admin/roles/${params.value.id}`, {
                     name: params.value.name,
                     description: params.value.description,
                     permissions: params.value.permissions
                 });
-                const index = rolesList.value.findIndex(role => role.id === params.value.id);
-                if (index !== -1) {
-                    rolesList.value.splice(index, 1, data.data);
-                }
                 showMessage('Rol actualizado exitosamente.');
             } else {
                 // Create role
-                const { data } = await axios.post('/api/admin/roles', {
+                await axios.post('/api/admin/roles', {
                     name: params.value.name,
                     description: params.value.description,
                     permissions: params.value.permissions
                 });
-                rolesList.value.unshift(data.data);
                 showMessage('Rol creado exitosamente.');
             }
             addRoleModal.value = false;
+            fetchRoles(params.value.id ? pagination.value.current_page : 1);
         } catch (error: any) {
             if (error.response && error.response.status === 422) {
                 errors.value = error.response.data.errors;
@@ -528,8 +628,8 @@
         if (result.isConfirmed) {
             try {
                 await axios.delete(`/api/admin/roles/${role.id}`);
-                rolesList.value = rolesList.value.filter(r => r.id !== role.id);
                 showMessage('Rol eliminado exitosamente.');
+                fetchRoles(pagination.value.current_page);
             } catch (error: any) {
                 console.error('Error deleting role:', error);
                 let errorMessage = 'Error al eliminar el rol.';

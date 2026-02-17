@@ -56,7 +56,7 @@
         <!-- Paginación y Selector -->
         <div class="mt-6 flex flex-col md:flex-row justify-between items-center" v-if="pagination.last_page > 1 || pagination.total > 0">
             <div class="flex items-center gap-2 mb-4 md:mb-0">
-                <span class="text-sm">Mostrar:</span>
+                <span class="text-sm">{{ $t('pagination.show') }}:</span>
                 <select class="form-select w-20 h-9" :value="pagination.per_page" @change="handlePerPageChange(parseInt(($event.target as HTMLSelectElement).value))">
                     <option value="10">10</option>
                     <option value="25">25</option>
@@ -73,7 +73,7 @@
                         :disabled="pagination.current_page === 1"
                         @click="changePage(pagination.current_page - 1)"
                     >
-                        Prev
+                        {{ $t('pagination.prev') }}
                     </button>
                 </li>
                 <li v-for="(page, index) in displayedPages" :key="index">
@@ -95,7 +95,7 @@
                         :disabled="pagination.current_page === pagination.last_page"
                         @click="changePage(pagination.current_page + 1)"
                     >
-                        Next
+                        {{ $t('pagination.next') }}
                     </button>
                 </li>
             </ul>

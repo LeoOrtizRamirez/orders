@@ -82,7 +82,11 @@
     "infobox": "Infobox",
     "jumbotron": "Jumbotron",
     "loader": "Loader",
-    "pagination": "Pagination",
+    "pagination": {
+        "show": "Show",
+        "prev": "Prev",
+        "next": "Next"
+    },
     "popovers": "Popovers",
     "progress_bar": "Progress Bar",
     "search": "Search",
@@ -170,7 +174,10 @@
         "confirm_password_placeholder": "Confirm Password",
         "actions": "Actions",
         "modal_add_title": "Add User",
-        "modal_edit_title": "Edit User"
+        "modal_edit_title": "Edit User",
+        "show": "Show",
+        "prev": "Prev",
+        "next": "Next"
     },
 
     "services_page": {

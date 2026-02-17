@@ -58,7 +58,7 @@
                         :disabled="pagination.current_page === 1"
                         @click="changePage(pagination.current_page - 1)"
                     >
-                        Prev
+                        {{ $t('pagination.prev') }}
                     </button>
                 </li>
                 <li v-for="(page, index) in displayedPages" :key="index">
@@ -80,7 +80,7 @@
                         :disabled="pagination.current_page === pagination.last_page"
                         @click="changePage(pagination.current_page + 1)"
                     >
-                        Next
+                        {{ $t('pagination.next') }}
                     </button>
                 </li>
             </ul>
