@@ -8,10 +8,11 @@ use Spatie\Permission\Traits\HasRoles;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, Notifiable, HasRoles, HasFactory;
+    use HasApiTokens, Notifiable, HasRoles, HasFactory, SoftDeletes;
 
     protected $fillable = [
         'name',
