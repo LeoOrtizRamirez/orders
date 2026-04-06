@@ -27,7 +27,7 @@
                         <DialogPanel class="panel border-0 p-0 rounded-lg overflow-hidden w-full max-w-4xl text-black dark:text-white-dark">
                             <button
                                 type="button"
-                                class="absolute top-4 ltr:right-4 rtl:left-4 text-gray-400 hover:text-gray-800 dark:hover:text-gray-600 outline-none"
+                                class="absolute top-4 ltr:right-4 rtl:left-4 text-gray-400 hover:text-gray-800 dark:hover:text-gray-600 outline-none print:hidden"
                                 @click="handleClose()"
                             >
                                 <svg
@@ -46,10 +46,34 @@
                                     <line x1="6" y1="6" x2="18" y2="18"></line>
                                 </svg>
                             </button>
-                            <div class="text-lg font-medium bg-[#fbfbfb] dark:bg-[#121c2c] ltr:pl-5 rtl:pr-5 py-3 ltr:pr-[50px] rtl:pl-[50px]">
+                            
+                            <!-- Título Web (Oculto en impresión) -->
+                            <div class="text-lg font-medium bg-[#fbfbfb] dark:bg-[#121c2c] ltr:pl-5 rtl:pr-5 py-3 ltr:pr-[50px] rtl:pl-[50px] print:hidden">
                                 {{ $t('purchase_orders_page.view_modal.title') }} 
                                 <span v-if="order">{{ order.order_number }}</span>
                                 <span v-else class="text-gray-500">{{ $t('purchase_orders_page.view_modal.status.loading') }}</span>
+                            </div>
+
+                            <!-- Encabezado de Impresión (Solo visible en impresión) -->
+                            <div class="hidden print:block p-8 border-b-2 border-gray-200">
+                                <div class="flex justify-between items-start">
+                                    <div class="flex items-center gap-6">
+                                        <img src="/assets/images/logo.svg" alt="Logo" class="h-20 w-auto" />
+                                        <div>
+                                            <h1 class="text-3xl font-bold text-black uppercase tracking-wider">Orden de Compra</h1>
+                                            <p class="text-sm text-gray-600 font-medium">Documento de Control Interno</p>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-2xl font-black text-primary mb-1">#{{ order?.order_number }}</div>
+                                        <div class="space-y-1">
+                                            <p class="text-sm font-bold text-gray-800">
+                                                Fecha de Orden: <span class="font-normal">{{ order ? formatDate(order.order_date) : '-' }}</span>
+                                            </p>
+                                            <p class="text-xs text-gray-500 italic">Fecha Impresión: {{ formatDate(new Date().toISOString()) }}</p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             
                             <!-- Contenido del modal -->
@@ -223,8 +247,22 @@
                                         </div>
                                     </div>
 
+                                    <!-- Firmas (Solo visible en impresión) -->
+                                    <div class="hidden print:grid grid-cols-2 gap-12 mt-16 pt-8 border-t-2 border-gray-100">
+                                        <div class="text-center">
+                                            <div class="border-t border-black w-48 mx-auto mb-2"></div>
+                                            <p class="font-bold text-sm">Solicitado por</p>
+                                            <p class="text-xs text-gray-600">{{ order?.creator?.name }}</p>
+                                        </div>
+                                        <div class="text-center">
+                                            <div class="border-t border-black w-48 mx-auto mb-2"></div>
+                                            <p class="font-bold text-sm">Autorizado por</p>
+                                            <p class="text-xs text-gray-600">{{ order?.approver?.name || 'Firma Autorizada' }}</p>
+                                        </div>
+                                    </div>
+
                                     <!-- Botones de Acción -->
-                                    <div class="flex justify-end items-center mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+                                    <div class="flex justify-end items-center mt-8 pt-6 border-t border-gray-200 dark:border-gray-700 print:hidden">
                                         <button 
                                             type="button" 
                                             class="btn btn-outline-primary" 
@@ -345,10 +383,56 @@
     
     .panel {
         box-shadow: none !important;
-        border: 1px solid #ccc !important;
+        border: none !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        position: static !important;
+        background: white !important;
+        color: black !important;
+    }
+
+    /* Forzar visibilidad de colores de fondo (badges, etc) */
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+    }
+
+    /* Ajustar tablas */
+    table {
+        border-collapse: collapse !important;
+        width: 100% !important;
+    }
+
+    th, td {
+        border: 1px solid #e5e7eb !important;
+        padding: 10px 8px !important;
+        text-align: left !important;
+    }
+
+    th {
+        background-color: #f9fafb !important;
+        font-weight: bold !important;
+    }
+
+    .table-responsive {
+        overflow: visible !important;
+    }
+
+    /* Ajustar rejillas de información */
+    .grid {
+        display: grid !important;
+    }
+
+    /* Ocultar elementos web restantes */
+    .fixed.inset-0 {
+        position: absolute !important;
+        overflow: visible !important;
     }
     
-    button {
+    .bg-\[black\]\/60 {
         display: none !important;
     }
 }
