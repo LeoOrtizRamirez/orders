@@ -85,7 +85,7 @@
         <div class="flex justify-between items-start mb-12">
             <div class="flex items-center gap-6">
                 <!-- Pequeño contenedor oscuro para que el logo blanco sea visible -->
-                <div class="bg-slate-900 p-2 rounded-xl shadow-sm">
+                <div>
                     <img src="/assets/images/logo-white.png" alt="Logo" class="h-10 w-auto object-contain">
                 </div>
                 <div class="border-l border-slate-200 pl-6">
