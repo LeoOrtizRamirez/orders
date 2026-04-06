@@ -366,7 +366,9 @@
     };
 
     const printOrder = () => {
-        window.print();
+        if (props.order) {
+            window.open(`/purchase-orders/${props.order.id}/print`, '_blank');
+        }
     };
 
     const handleClose = () => {

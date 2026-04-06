@@ -14,4 +14,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+Route::get('/purchase-orders/{id}/print', [App\Http\Controllers\PurchaseOrderController::class, 'print'])
+    ->name('purchase-orders.print')
+    ->middleware('auth');
 Route::get('/{any}', [AppController::class, 'index'])->where('any', '.*');

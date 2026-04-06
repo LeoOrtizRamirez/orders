@@ -14,7 +14,7 @@ class PurchaseOrderController extends Controller
 {
     public function __construct(private PurchaseOrderManagementService $purchaseOrderService)
     {
-        $this->middleware('permission:view purchase_orders')->only(['index', 'show']);
+        $this->middleware('permission:view purchase_orders')->only(['index', 'show', 'print']);
         $this->middleware('permission:create purchase_orders')->only(['store']);
         $this->middleware('permission:edit purchase_orders')->only(['update']);
         $this->middleware('permission:delete purchase_orders')->only(['destroy']);
@@ -95,6 +95,16 @@ class PurchaseOrderController extends Controller
                 'error' => 'Purchase order not found',
                 'message' => $e->getMessage()
             ], 404);
+        }
+    }
+
+    public function print($id)
+    {
+        try {
+            $purchaseOrder = $this->purchaseOrderService->getPurchaseOrder((int)$id);
+            return view('purchase-orders.print', compact('purchaseOrder'));
+        } catch (\Exception $e) {
+            abort(404, 'Orden de compra no encontrada');
         }
     }
 
