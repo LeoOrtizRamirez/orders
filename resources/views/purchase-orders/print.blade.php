@@ -11,7 +11,7 @@
         @media print {
             @page {
                 size: A4;
-                margin: 0.8cm;
+                margin: 0.6cm;
             }
             body {
                 print-color-adjust: exact;
@@ -19,12 +19,14 @@
                 background-color: white !important;
             }
             .no-print { display: none !important; }
-            .page { 
-                box-shadow: none !important; 
-                margin: 0 !important; 
+            .page {
+                box-shadow: none !important;
+                margin: 0 !important;
                 padding: 0 !important;
                 width: 100% !important;
+                min-height: 0 !important;
             }
+            tr { page-break-inside: avoid; }
         }
 
         body {
@@ -38,25 +40,26 @@
             max-width: 210mm;
             min-height: 297mm;
             margin: 1rem auto;
-            padding: 2.5rem;
+            padding: 1rem 1.25rem;
             box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
             display: flex;
             flex-direction: column;
         }
 
         table { border-collapse: collapse; width: 100%; }
-        th { 
-            font-size: 0.65rem; 
-            text-transform: uppercase; 
-            letter-spacing: 0.1em; 
-            padding: 0.75rem 0.5rem;
+        th {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 0.25rem 0.4rem;
             color: #64748b;
-            border-bottom: 2px solid #f1f5f9;
+            border-bottom: 1.5px solid #f1f5f9;
         }
-        td { 
-            font-size: 0.8rem; 
-            padding: 0.75rem 0.5rem; 
-            border-bottom: 1px solid #f1f5f9;
+        td {
+            font-size: 0.7rem;
+            padding: 0.18rem 0.4rem;
+            border-bottom: 1px solid #f5f7fa;
+            line-height: 1.15;
         }
         
         .label { 
@@ -82,32 +85,31 @@
 
     <div class="page">
         <!-- Encabezado Claro (Fondo Blanco) -->
-        <div class="flex justify-between items-start mb-12">
-            <div class="flex items-center gap-6">
-                <!-- Pequeño contenedor oscuro para que el logo blanco sea visible -->
+        <div class="flex justify-between items-start mb-3">
+            <div class="flex items-center gap-3">
                 <div>
-                    <img src="/assets/images/logo-white.png" alt="Logo" class="h-10 w-auto object-contain">
+                    <img src="/assets/images/logo-white.png" alt="Logo" class="h-7 w-auto object-contain">
                 </div>
-                <div class="border-l border-slate-200 pl-6">
-                    <h1 class="text-2xl font-black tracking-tight text-slate-900">ORDEN DE COMPRA</h1>
-                    <p class="text-[0.6rem] font-bold text-slate-400 tracking-[0.3em] uppercase">Gestión de Operaciones e Inventario</p>
+                <div class="border-l border-slate-200 pl-3">
+                    <h1 class="text-base font-black tracking-tight text-slate-900">ORDEN DE COMPRA</h1>
+                    <p class="text-[0.5rem] font-bold text-slate-400 tracking-[0.25em] uppercase">Gestión de Operaciones e Inventario</p>
                 </div>
             </div>
             <div class="text-right">
                 <div class="label text-[0.5rem]">Número de Documento</div>
-                <div class="text-xl font-mono font-black text-slate-900 leading-none mt-1">#{{ $purchaseOrder->order_number }}</div>
+                <div class="text-base font-mono font-black text-slate-900 leading-none mt-0.5">#{{ $purchaseOrder->order_number }}</div>
             </div>
         </div>
 
         <!-- Información de la Orden -->
-        <div class="grid grid-cols-3 gap-12 mb-12">
+        <div class="grid grid-cols-3 gap-6 mb-3">
             <div class="col-span-1">
                 <div class="label">Proveedor</div>
                 <div class="text-sm font-bold text-slate-900 uppercase tracking-tight">{{ $purchaseOrder->supplier->name ?? 'N/A' }}</div>
                 <div class="text-xs text-slate-500 mt-1">{{ $purchaseOrder->supplier->contact_person ?? '' }}</div>
                 <div class="text-xs text-slate-400 mt-0.5 italic">{{ $purchaseOrder->supplier->email ?? '' }}</div>
             </div>
-            <div class="col-span-1 border-l border-slate-100 pl-12">
+            <div class="col-span-1 border-l border-slate-100 pl-6">
                 <div class="label">Detalle de Fechas</div>
                 <div class="flex justify-between text-xs mb-1.5">
                     <span class="text-slate-400">Emisión:</span>
@@ -118,7 +120,7 @@
                     <span class="font-bold text-slate-700">{{ $purchaseOrder->expected_delivery_date ? \Carbon\Carbon::parse($purchaseOrder->expected_delivery_date)->format('d/m/Y') : '-' }}</span>
                 </div>
             </div>
-            <div class="col-span-1 border-l border-slate-100 pl-12">
+            <div class="col-span-1 border-l border-slate-100 pl-6">
                 <div class="label">Estado Actual</div>
                 <div class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[0.6rem] font-black uppercase tracking-wider bg-slate-100 text-slate-800 border border-slate-200">
                     {{ $purchaseOrder->status }}
@@ -144,18 +146,18 @@
                 <tbody class="text-slate-700">
                     @foreach($purchaseOrder->items as $index => $item)
                     <tr>
-                        <td class="text-slate-300 font-mono text-[0.65rem]">{{ str_pad($index + 1, 2, '0', STR_PAD_LEFT) }}</td>
+                        <td class="text-slate-300 font-mono text-[0.6rem]">{{ str_pad($index + 1, 2, '0', STR_PAD_LEFT) }}</td>
                         <td>
-                            <div class="font-bold text-slate-800 text-[0.85rem]">{{ $item->product->name ?? 'N/A' }}</div>
+                            <div class="font-semibold text-slate-800 text-[0.72rem] leading-tight">{{ $item->product->name ?? 'N/A' }}</div>
                             @foreach($item->itemNotes as $note)
-                                <div class="text-[0.65rem] text-slate-400 mt-1 border-l-2 border-slate-100 pl-2">
+                                <div class="text-[0.55rem] text-slate-400 border-l-2 border-slate-100 pl-1.5 leading-tight">
                                     Nota: {{ $note->note }}
                                 </div>
                             @endforeach
                         </td>
-                        <td class="text-slate-500 font-mono text-[0.7rem] uppercase tracking-tighter">{{ $item->product->sku ?? '-' }}</td>
-                        <td class="text-center font-black text-slate-900">{{ number_format($item->quantity, 2) }}</td>
-                        <td class="text-center text-slate-400 text-[0.65rem] font-bold uppercase">{{ $item->product->unit ?? 'un' }}</td>
+                        <td class="text-slate-500 font-mono text-[0.6rem] uppercase tracking-tighter">{{ $item->product->sku ?? '-' }}</td>
+                        <td class="text-center font-black text-slate-900 text-[0.72rem]">{{ number_format($item->quantity, 2) }}</td>
+                        <td class="text-center text-slate-400 text-[0.55rem] font-bold uppercase">{{ $item->product->unit ?? 'un' }}</td>
                     </tr>
                     @endforeach
                 </tbody>
@@ -164,7 +166,7 @@
 
         <!-- Observaciones -->
         @if($purchaseOrder->notes && $purchaseOrder->notes->count() > 0)
-        <div class="mt-8 p-4 bg-slate-50/50 rounded-xl border border-slate-100">
+        <div class="mt-3 p-2 bg-slate-50/50 rounded-xl border border-slate-100">
             <div class="label mb-2">Observaciones Generales de la Orden</div>
             <div class="space-y-2">
                 @foreach($purchaseOrder->notes as $note)
@@ -178,7 +180,7 @@
         @endif
 
         <!-- Pie de Página Minimalista -->
-        <div class="pt-8 border-t border-slate-100 flex justify-between items-center text-[0.5rem] text-slate-300 uppercase tracking-[0.2em]">
+        <div class="pt-2 mt-3 border-t border-slate-100 flex justify-between items-center text-[0.5rem] text-slate-300 uppercase tracking-[0.2em]">
             <div>Documento Generado</div>
             <div class="font-mono text-[0.6rem] normal-case">ID: {{ $purchaseOrder->id }}</div>
             <div>Página 1 de 1</div>
