@@ -97,7 +97,7 @@ class ProductRepository
 
     public function getActiveProducts()
     {
-        return $this->model->where('is_active', true)->orderBy('name', 'asc')->get();
+        return $this->model->withTrashed()->where('is_active', true)->orderBy('name', 'asc')->get();
     }
 
     public function getLowStockProducts()
