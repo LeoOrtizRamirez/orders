@@ -124,11 +124,13 @@ export function usePurchaseOrders() {
 
     const fetchProducts = async () => {
         try {
-            const response = await axios.get('/api/products/active/list');
-            if (Array.isArray(response.data)) {
-                products.value = response.data;
-            } else if (response.data && Array.isArray(response.data.data)) {
+            const response = await axios.get('/api/products', {
+                params: { per_page: 9999 }
+            });
+            if (response.data && Array.isArray(response.data.data)) {
                 products.value = response.data.data;
+            } else if (Array.isArray(response.data)) {
+                products.value = response.data;
             } else {
                 console.warn('Estructura de respuesta inesperada para products:', response.data);
                 products.value = [];

@@ -277,7 +277,7 @@
 
     // Computed
     const availableProducts = computed(() => {
-        return props.products.filter(product => product.is_active !== false);
+        return props.products.filter(product => product.is_active === true || product.is_active === 1);
     });
 
     const isFormValid = computed(() => {
