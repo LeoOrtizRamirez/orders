@@ -11,7 +11,13 @@ class PurchaseOrderRepository
 
     public function getAll(array $filters = []): LengthAwarePaginator
     {
-        $query = $this->model->with(['supplier', 'creator', 'items.product', 'parent', 'subOrders']);
+        $query = $this->model->with([
+            'supplier',
+            'creator',
+            'items.product' => fn($q) => $q->withTrashed(),
+            'parent',
+            'subOrders',
+        ]);
 
         if (isset($filters['status'])) {
             $query->where('status', $filters['status']);
@@ -44,23 +50,27 @@ class PurchaseOrderRepository
     public function findById(int $id): ?PurchaseOrder
     {
         return $this->model->with([
-            'supplier', 
-            'creator', 
-            'approver', 
+            'supplier',
+            'creator',
+            'approver',
             'items' => function($query) {
                 $query->join('products', 'purchase_order_items.product_id', '=', 'products.id')
                       ->orderBy('products.name', 'asc')
                       ->select('purchase_order_items.*');
             },
-            'items.product', 
-            'parent', 
+            'items.product' => fn($q) => $q->withTrashed(),
+            'parent',
             'subOrders'
         ])->find($id);
     }
 
     public function findByOrderNumber(string $orderNumber): ?PurchaseOrder
     {
-        return $this->model->with(['supplier', 'creator', 'items.product'])->where('order_number', $orderNumber)->first();
+        return $this->model->with([
+            'supplier',
+            'creator',
+            'items.product' => fn($q) => $q->withTrashed(),
+        ])->where('order_number', $orderNumber)->first();
     }
 
     public function create(array $data): PurchaseOrder
@@ -127,7 +137,13 @@ class PurchaseOrderRepository
 
                 public function getKanbanOrders()
                 {
-                    return $this->model->with(['supplier', 'creator', 'items.product', 'parent', 'subOrders'])->get();
+                    return $this->model->with([
+                        'supplier',
+                        'creator',
+                        'items.product' => fn($q) => $q->withTrashed(),
+                        'parent',
+                        'subOrders',
+                    ])->get();
                 }
     }
 
