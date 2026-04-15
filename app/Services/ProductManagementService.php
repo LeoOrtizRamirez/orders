@@ -48,9 +48,14 @@ class ProductManagementService
             $data['sku'] = $this->generateSku($data['name']);
         }
 
-        // Validar SKU único
+        // Si el SKU pertenece a un producto eliminado, restaurarlo y actualizarlo
         $existingProduct = $this->productRepository->findBySku($data['sku']);
         if ($existingProduct) {
+            if ($existingProduct->trashed()) {
+                $existingProduct->restore();
+                $this->productRepository->update($existingProduct->id, $data);
+                return $this->getProduct($existingProduct->id);
+            }
             throw new Exception('El SKU ya está en uso', 400);
         }
 
@@ -61,10 +66,10 @@ class ProductManagementService
     {
         $product = $this->getProduct($id);
 
-        // Si se actualiza el SKU, validar que sea único
+        // Si se actualiza el SKU, validar que sea único (ignorando eliminados)
         if (isset($data['sku']) && $data['sku'] !== $product->sku) {
             $existingProduct = $this->productRepository->findBySku($data['sku']);
-            if ($existingProduct && $existingProduct->id != $id) {
+            if ($existingProduct && $existingProduct->id != $id && !$existingProduct->trashed()) {
                 throw new Exception('El SKU ya está en uso', 400);
             }
         }

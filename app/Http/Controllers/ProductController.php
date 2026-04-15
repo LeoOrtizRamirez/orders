@@ -69,7 +69,7 @@ class ProductController extends Controller
         try {
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
-                'sku' => 'nullable|string|max:255|unique:products,sku',
+                'sku' => ['nullable', 'string', 'max:255', Rule::unique('products', 'sku')->whereNull('deleted_at')],
                 'description' => 'nullable|string',
                 'stock' => 'required|numeric|min:0',
                 'min_stock' => 'required|numeric|min:0',
@@ -118,7 +118,7 @@ class ProductController extends Controller
         try {
             $validated = $request->validate([
                 'name' => 'sometimes|string|max:255',
-                'sku' => 'sometimes|string|max:255|unique:products,sku,' . $id,
+                'sku' => ['sometimes', 'string', 'max:255', Rule::unique('products', 'sku')->ignore($id)->whereNull('deleted_at')],
                 'description' => 'nullable|string',
                 'stock' => 'sometimes|numeric|min:0',
                 'min_stock' => 'sometimes|numeric|min:0',
