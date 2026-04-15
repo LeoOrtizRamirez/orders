@@ -12,7 +12,7 @@ class ProductRepository
 
     public function getAll(array $filters = []): LengthAwarePaginator
     {
-        $query = $this->model->withTrashed()->withCount('purchaseOrderItems');
+        $query = $this->model->withCount('purchaseOrderItems');
 
         // Calcular Stock Comprometido (Requerido en órdenes activas antes de facturación)
         $query->withSum(['purchaseOrderItems as committed_stock' => function($q) {
@@ -97,7 +97,7 @@ class ProductRepository
 
     public function getActiveProducts()
     {
-        return $this->model->withTrashed()->where('is_active', true)->orderBy('name', 'asc')->get();
+        return $this->model->where('is_active', true)->orderBy('name', 'asc')->get();
     }
 
     public function getLowStockProducts()
@@ -155,10 +155,10 @@ class ProductRepository
     public function getMetrics(): array
     {
         return [
-            'total' => $this->model->withTrashed()->count(),
-            'active' => $this->model->withTrashed()->where('is_active', true)->count(),
-            'low_stock' => $this->model->withTrashed()->whereColumn('stock', '<=', 'reorder_point')->where('stock', '>', 0)->count(),
-            'out_of_stock' => $this->model->withTrashed()->where('stock', 0)->count(),
+            'total' => $this->model->count(),
+            'active' => $this->model->where('is_active', true)->count(),
+            'low_stock' => $this->model->whereColumn('stock', '<=', 'reorder_point')->where('stock', '>', 0)->count(),
+            'out_of_stock' => $this->model->where('stock', 0)->count(),
         ];
     }
 }

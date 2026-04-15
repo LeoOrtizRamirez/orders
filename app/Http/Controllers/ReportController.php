@@ -34,7 +34,8 @@ class ReportController extends Controller
                 if (!$query->getQuery()->joins || !collect($query->getQuery()->joins)->contains('table', 'products')) {
                      $query->join('products', 'purchase_order_items.product_id', '=', 'products.id');
                 }
-                $query->where('products.category', $category);
+                $query->where('products.category', $category)
+                      ->whereNull('products.deleted_at');
             }
         };
 
@@ -68,8 +69,9 @@ class ReportController extends Controller
 
         // 3. Obtener los productos más vendidos
         $topSoldQuery = PurchaseOrderItem::query()
-            ->join('products', 'purchase_order_items.product_id', '=', 'products.id'); // Join explícito base
-        
+            ->join('products', 'purchase_order_items.product_id', '=', 'products.id')
+            ->whereNull('products.deleted_at'); // Join explícito base, excluyendo productos eliminados
+
         // Re-aplicamos lógica manual similar al helper pero ajustada pq ya tenemos el join products
         $topSoldQuery->join('purchase_orders', 'purchase_order_items.purchase_order_id', '=', 'purchase_orders.id')
                      ->whereBetween('purchase_orders.order_date', [$startDate, $endDate]);
@@ -106,8 +108,9 @@ class ReportController extends Controller
 
         // 6. Ventas por Categoría (Si se selecciona una categoría, mostrará 100% esa, pero útil para validar)
         $catSalesQuery = PurchaseOrderItem::query()
-            ->join('products', 'purchase_order_items.product_id', '=', 'products.id');
-        
+            ->join('products', 'purchase_order_items.product_id', '=', 'products.id')
+            ->whereNull('products.deleted_at');
+
         $catSalesQuery->join('purchase_orders', 'purchase_order_items.purchase_order_id', '=', 'purchase_orders.id')
                       ->whereBetween('purchase_orders.order_date', [$startDate, $endDate]);
         
