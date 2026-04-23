@@ -140,11 +140,31 @@
                         <th class="text-left">Descripción del Producto</th>
                         <th class="text-left w-32">SKU</th>
                         <th class="text-center w-24">Cantidad</th>
+                        <th class="text-center w-20">Stock</th>
                         <th class="text-center w-16">Und</th>
                     </tr>
                 </thead>
                 <tbody class="text-slate-700">
                     @foreach($purchaseOrder->items as $index => $item)
+                    @php
+                        $stockValue = $item->product->stock ?? null;
+                        $reorderPoint = $item->product->reorder_point ?? 0;
+                        $stockColor = 'text-slate-400';
+                        if ($stockValue !== null) {
+                            if ($stockValue <= 0) {
+                                $stockColor = 'text-red-600';
+                            } elseif ($stockValue <= $reorderPoint) {
+                                $stockColor = 'text-amber-500';
+                            } else {
+                                $stockColor = 'text-emerald-600';
+                            }
+                        }
+                        $stockDisplay = $stockValue === null
+                            ? '-'
+                            : (fmod((float)$stockValue, 1) === 0.0
+                                ? number_format($stockValue, 0)
+                                : number_format($stockValue, 2));
+                    @endphp
                     <tr>
                         <td class="text-slate-300 font-mono text-[0.6rem]">{{ str_pad($index + 1, 2, '0', STR_PAD_LEFT) }}</td>
                         <td>
@@ -157,6 +177,7 @@
                         </td>
                         <td class="text-slate-500 font-mono text-[0.6rem] uppercase tracking-tighter">{{ $item->product->sku ?? '-' }}</td>
                         <td class="text-center font-black text-slate-900 text-[0.72rem]">{{ number_format($item->quantity, 2) }}</td>
+                        <td class="text-center font-bold text-[0.72rem] {{ $stockColor }}">{{ $stockDisplay }}</td>
                         <td class="text-center text-slate-400 text-[0.55rem] font-bold uppercase">{{ $item->product->unit ?? 'un' }}</td>
                     </tr>
                     @endforeach
