@@ -255,9 +255,12 @@ class ProductController extends Controller
         try {
             $request->validate([
                 'file' => 'required|file|mimes:csv,txt',
+                'reset_missing_stock' => 'nullable|boolean',
             ]);
 
-            $result = $this->productService->importProducts($request->file('file'));
+            $resetMissingStock = $request->boolean('reset_missing_stock', true);
+
+            $result = $this->productService->importProducts($request->file('file'), $resetMissingStock);
 
             return response()->json([
                 'success' => true,

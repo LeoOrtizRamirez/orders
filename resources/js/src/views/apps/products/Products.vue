@@ -259,10 +259,10 @@
         showImportModal.value = true;
     };
 
-    const handleImportCsv = async (file: File) => {
+    const handleImportCsv = async (file: File, resetMissingStock: boolean) => {
         importLoading.value = true;
         try {
-            const success = await importProductsCsv(file);
+            const success = await importProductsCsv(file, resetMissingStock);
             if (success) {
                 showImportModal.value = false;
                 fetchProducts(1);

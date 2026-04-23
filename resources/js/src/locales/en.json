@@ -647,6 +647,8 @@
             "loading_btn": "Importing...",
             "upload_btn": "Upload CSV",
             "download_template_btn": "Download Template",
+            "reset_missing_label": "Reset stock for products not included in the file",
+            "reset_missing_hint": "Active products not present in the CSV will be set to stock 0.",
             "import_success": "Import completed. Imported: {imported}, Updated: {updated}, Reset: {reset}, Failed: {failed}",
             "import_failed": "Failed to import products.",
             "import_error": "Error during import.",

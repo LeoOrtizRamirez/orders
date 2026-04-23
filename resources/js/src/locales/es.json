@@ -647,6 +647,8 @@
             "loading_btn": "Importando...",
             "upload_btn": "Subir CSV",
             "download_template_btn": "Descargar Plantilla",
+            "reset_missing_label": "Resetear stock de productos no incluidos en el archivo",
+            "reset_missing_hint": "Los productos activos que no aparezcan en el CSV quedarán con stock en 0.",
             "import_success": "Importación completada. Importados: {imported}, Actualizados: {updated}, Reseteados: {reset}, Fallidos: {failed}",
             "import_failed": "Error al importar productos.",
             "import_error": "Error durante la importación.",

@@ -148,7 +148,7 @@ class ProductManagementService
         return $prefix . '-' . substr($timestamp, -6);
     }
 
-        public function importProducts(UploadedFile $file): array
+        public function importProducts(UploadedFile $file, bool $resetMissingStock = true): array
 
         {
 
@@ -332,7 +332,7 @@ class ProductManagementService
 
             }
 
-            if (!empty($processedSkus)) {
+            if ($resetMissingStock && !empty($processedSkus)) {
                 $resetCount = Product::whereNotIn('sku', $processedSkus)
                     ->where('stock', '!=', 0)
                     ->update(['stock' => 0]);

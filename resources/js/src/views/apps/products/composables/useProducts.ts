@@ -276,13 +276,14 @@ export function useProducts() {
         }).format(valor);
     };
 
-    const importProductsCsv = async (file: File): Promise<boolean> => {
+    const importProductsCsv = async (file: File, resetMissingStock: boolean = true): Promise<boolean> => {
         errorMessage.value = '';
         successMessage.value = '';
 
         try {
             const formData = new FormData();
             formData.append('file', file);
+            formData.append('reset_missing_stock', resetMissingStock ? '1' : '0');
 
             const response = await axios.post('/api/products/import', formData, {
                 headers: {

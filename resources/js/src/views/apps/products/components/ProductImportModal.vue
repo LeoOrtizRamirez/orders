@@ -67,6 +67,22 @@
                                                 {{ $t('products_page.import_modal.supported_formats') }}
                                             </p>
                                         </div>
+
+                                        <div>
+                                            <label class="flex items-start gap-2 cursor-pointer">
+                                                <input
+                                                    type="checkbox"
+                                                    class="form-checkbox mt-0.5"
+                                                    v-model="resetMissingStock"
+                                                />
+                                                <span class="text-sm">
+                                                    {{ $t('products_page.import_modal.reset_missing_label') }}
+                                                    <span class="block text-xs text-gray-500 mt-0.5">
+                                                        {{ $t('products_page.import_modal.reset_missing_hint') }}
+                                                    </span>
+                                                </span>
+                                            </label>
+                                        </div>
                                     </div>
 
                                     <div class="flex justify-end items-center mt-8">
@@ -106,13 +122,14 @@
 
     interface Emits {
         (e: 'close'): void;
-        (e: 'import', file: File): void;
+        (e: 'import', file: File, resetMissingStock: boolean): void;
     }
 
     const props = defineProps<Props>();
     const emit = defineEmits<Emits>();
 
     const selectedFile = ref<File | null>(null);
+    const resetMissingStock = ref(true);
 
     const onFileChange = (event: Event) => {
         const input = event.target as HTMLInputElement;
@@ -125,7 +142,7 @@
 
     const handleImport = () => {
         if (selectedFile.value) {
-            emit('import', selectedFile.value);
+            emit('import', selectedFile.value, resetMissingStock.value);
         }
     };
 </script>
