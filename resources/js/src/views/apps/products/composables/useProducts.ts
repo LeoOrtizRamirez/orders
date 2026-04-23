@@ -294,6 +294,7 @@ export function useProducts() {
                 showMessage(t('products_page.import_modal.import_success', {
                     imported: response.data.imported,
                     updated: response.data.updated,
+                    reset: response.data.reset ?? 0,
                     failed: response.data.failed
                 }), 'success');
                 await fetchProducts(); // Refresh first page

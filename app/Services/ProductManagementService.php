@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Product;
 use App\Repositories\ProductRepository;
 use Exception;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -157,7 +158,11 @@ class ProductManagementService
 
             $failedCount = 0;
 
+            $resetCount = 0;
+
             $errors = [];
+
+            $processedSkus = [];
 
     
 
@@ -219,6 +224,8 @@ class ProductManagementService
 
                         }
 
+                        $processedSkus[] = trim($data['ITEM']);
+
     
 
                         // Normalize Category (LINEA) from Code (01, 02) to Enum Value
@@ -257,8 +264,6 @@ class ProductManagementService
 
                             'sku' => trim($data['ITEM']),
 
-                            'description' => null,
-
                             'stock' => (float)($data['ONHAND'] ?? 0),
 
                             'min_stock' => 5,
@@ -292,8 +297,10 @@ class ProductManagementService
                                 $existingProduct->restore();
                             }
 
-                            // Update existing product
-                            $this->productRepository->update($existingProduct->id, $productData);
+                            $updateData = $productData;
+                            unset($updateData['description']);
+
+                            $this->productRepository->update($existingProduct->id, $updateData);
 
                             $updatedCount++;
 
@@ -325,7 +332,11 @@ class ProductManagementService
 
             }
 
-    
+            if (!empty($processedSkus)) {
+                $resetCount = Product::whereNotIn('sku', $processedSkus)
+                    ->where('stock', '!=', 0)
+                    ->update(['stock' => 0]);
+            }
 
             return [
 
@@ -334,6 +345,8 @@ class ProductManagementService
                 'updated' => $updatedCount,
 
                 'failed' => $failedCount,
+
+                'reset' => $resetCount,
 
                 'errors' => $errors,
 

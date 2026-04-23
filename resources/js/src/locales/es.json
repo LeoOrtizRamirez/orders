@@ -647,7 +647,7 @@
             "loading_btn": "Importando...",
             "upload_btn": "Subir CSV",
             "download_template_btn": "Descargar Plantilla",
-            "import_success": "Importación completada. Importados: {imported}, Actualizados: {updated}, Fallidos: {failed}",
+            "import_success": "Importación completada. Importados: {imported}, Actualizados: {updated}, Reseteados: {reset}, Fallidos: {failed}",
             "import_failed": "Error al importar productos.",
             "import_error": "Error durante la importación.",
             "validation_errors": "Errores de validación en el archivo CSV."

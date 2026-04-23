@@ -647,7 +647,7 @@
             "loading_btn": "Importing...",
             "upload_btn": "Upload CSV",
             "download_template_btn": "Download Template",
-            "import_success": "Import completed. Imported: {imported}, Updated: {updated}, Failed: {failed}",
+            "import_success": "Import completed. Imported: {imported}, Updated: {updated}, Reset: {reset}, Failed: {failed}",
             "import_failed": "Failed to import products.",
             "import_error": "Error during import.",
             "validation_errors": "Validation errors in CSV file."

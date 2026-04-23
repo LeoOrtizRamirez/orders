@@ -265,6 +265,7 @@ class ProductController extends Controller
                 'imported' => $result['imported'],
                 'updated' => $result['updated'],
                 'failed' => $result['failed'],
+                'reset' => $result['reset'] ?? 0,
                 'errors' => $result['errors'] ?? [],
             ]);
         } catch (ValidationException $e) {
