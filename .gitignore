@@ -17,3 +17,5 @@ yarn-error.log
 /.idea
 /.vscode
 .htaccess
+# Vite compiled assets
+public/build
