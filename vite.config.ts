@@ -78,7 +78,7 @@ export default defineConfig({
     build: {
         outDir: "public/build",
         emptyOutDir: true,
-        manifest: true,
+        manifest: "manifest.json",
         sourcemap: process.env.NODE_ENV !== "production",
         rollupOptions: {
             output: {
